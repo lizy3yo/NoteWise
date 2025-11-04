@@ -16,7 +16,7 @@ export async function GET() {
       password: 1
     }).limit(5);
     
-    const userInfo = users.map(user => ({
+    const userInfo = users.map((user: any) => ({
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,

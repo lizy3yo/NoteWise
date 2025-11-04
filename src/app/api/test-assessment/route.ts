@@ -80,8 +80,7 @@ export async function GET(request: NextRequest) {
         title: savedAssessment.title,
         accessCode: savedAssessment.accessCode,
         published: savedAssessment.published,
-        studentUrl: `/student_page/dashboard`, // Classes functionality removed
-        teacherUrl: `/teacher_page/class/${classId}/assessments/quiz/${savedAssessment._id.toString()}`
+        studentUrl: `/student_page/dashboard` // Classes functionality removed
       }
     });
 

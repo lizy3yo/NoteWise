@@ -19,8 +19,17 @@ import { authenticate } from '@/lib/middleware/authenticate';
 import { authorize } from '@/lib/middleware/authorize';
 import { logger } from '@/lib/winston';
 
+// Define the type for due items
+interface DueItem {
+  id: string;
+  title: string;
+  type: 'assignment' | 'quiz' | 'exam' | 'project';
+  dueAt: string;
+  subject?: string;
+}
+
 // NOTE: Classes functionality removed - returning empty array
-function mockDueItems(now = new Date()) {
+function mockDueItems(): DueItem[] {
   return [];
 }
 

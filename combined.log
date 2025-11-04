@@ -219,3 +219,6 @@
 {"timestamp":"2025-11-04T06:04:36.792Z","level":"info","message":"User logged in successfully:","service":"gc-quest-api","meta":{"userId":"690839ab9eb7a822a2dd04ac","email":"dejesuskharl32@gmail.com","username":"user-kg57ftd2fli"}}
 {"timestamp":"2025-11-04T06:10:55.516Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 690839ab9eb7a822a2dd04ac","service":"gc-quest-api"}
 {"timestamp":"2025-11-04T06:22:46.046Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 690839ab9eb7a822a2dd04ac","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T06:39:51.502Z","level":"info","message":"InternalFlashcardGenerator initialized","service":"gc-quest-api","meta":{"hasFlashcardKey":true,"hasBackupKey":false,"keyPreview":"AIzaSyC-tG...","keyLength":39}}
+{"timestamp":"2025-11-04T06:40:48.232Z","level":"info","message":"InternalFlashcardGenerator initialized","service":"gc-quest-api","meta":{"hasFlashcardKey":true,"hasBackupKey":false,"keyPreview":"AIzaSyC-tG...","keyLength":39}}
+{"timestamp":"2025-11-04T06:41:44.713Z","level":"info","message":"InternalFlashcardGenerator initialized","service":"gc-quest-api","meta":{"hasFlashcardKey":true,"hasBackupKey":false,"keyPreview":"AIzaSyC-tG...","keyLength":39}}
