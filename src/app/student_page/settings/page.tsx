@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function SettingsPage() {
+  const { theme, changeTheme } = useTheme();
   const [settings, setSettings] = useState({
     notifications: true,
-    darkMode: false,
     studyReminders: true,
     emailUpdates: false,
     autoGenerateFlashcards: true
@@ -33,10 +34,34 @@ export default function SettingsPage() {
 
         {/* Settings Sections */}
         <div className="space-y-6">
+          {/* Appearance Settings */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Appearance
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Theme
+                </label>
+                <select
+                  value={theme}
+                  onChange={(e) => changeTheme(e.target.value as 'light' | 'dark' | 'system')}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="system">System</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           {/* General Settings */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              General
+              Notifications
             </h2>
             
             <div className="space-y-4">

@@ -25,20 +25,20 @@ type ButtonAsLink = CommonProps & {
 type Props = ButtonAsButton | ButtonAsLink;
 
 const baseClasses =
-  "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2e7d32]";
+  "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-500";
 
 /**
  * Primary action button
- * - Light + Dark: solid #2e7d32 background, white text
+ * - Light + Dark: solid teal background, white text
  */
 export function PrimaryActionButton(props: Props) {
   const { className, children, title } = props as CommonProps;
   const classes = [
     baseClasses,
-    // Light mode solid green with white text
-    "bg-[#2e7d32] text-white hover:opacity-90",
+    // Light mode solid teal with white text
+    "bg-teal-600 text-white hover:bg-teal-700",
     // Dark mode: same color as light mode
-    "dark:bg-[#2e7d32] dark:text-white",
+    "dark:bg-teal-600 dark:text-white dark:hover:bg-teal-700",
     // Disabled state styling for buttons
     "disabled:opacity-50 disabled:cursor-not-allowed",
   ]

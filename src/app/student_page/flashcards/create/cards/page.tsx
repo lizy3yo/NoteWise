@@ -178,30 +178,30 @@ export default function FlashcardsCreateCardsPage() {
           <div className="flex items-center mb-2">
             <button
               onClick={() => router.push("/student_page/flashcards/create/set")}
-              className="mr-4 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              className="mr-4 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Flashcards • Cards</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Flashcards • Cards</h1>
           </div>
-          <p className="text-slate-600 dark:text-slate-400">Step 2 of 2 · Add your terms and definitions</p>
+          <p className="text-gray-600 dark:text-gray-400">Step 2 of 2 · Add your terms and definitions</p>
 
-          <div className="mt-4 text-slate-500 dark:text-slate-400 text-sm">
-            <span className="font-medium text-slate-700 dark:text-slate-300">Set:</span> {title}
+          <div className="mt-4 text-gray-500 dark:text-gray-400 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">Set:</span> {title}
             {subject ? <span className="ml-2">• {subject}</span> : null}
             {isPublic ? <span className="ml-2">• Public</span> : <span className="ml-2">• Private</span>}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Cards ({cards.length})</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Cards ({cards.length})</h2>
             <button
               type="button"
               onClick={addCard}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+              className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -212,14 +212,14 @@ export default function FlashcardsCreateCardsPage() {
 
           <div className="space-y-6">
             {cards.map((card, index) => (
-              <div key={index} className="border border-slate-200 dark:border-slate-600 rounded-lg p-6 bg-slate-50 dark:bg-slate-700/50">
+              <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-6 bg-gray-50 dark:bg-gray-700/50">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Card {index + 1}</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Card {index + 1}</span>
                   {cards.length > 2 && (
                     <button
                       type="button"
                       onClick={() => removeCard(index)}
-                      className="text-red-500 hover:text-red-700 p-1"
+                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -230,21 +230,21 @@ export default function FlashcardsCreateCardsPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Term</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Term</label>
                     <textarea
                       value={card.question}
                       onChange={(e) => updateCard(index, "question", e.target.value)}
-                      className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       placeholder="Enter term"
                       rows={3}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Definition</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Definition</label>
                     <textarea
                       value={card.answer}
                       onChange={(e) => updateCard(index, "answer", e.target.value)}
-                      className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       placeholder="Enter definition"
                       rows={3}
                     />
@@ -259,7 +259,7 @@ export default function FlashcardsCreateCardsPage() {
           <button
             type="button"
             onClick={() => router.push("/student_page/flashcards/create/set")}
-            className="px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Back
           </button>

@@ -309,19 +309,19 @@ function GeneratePracticeTestContent() {
       {/* Customization Modal */}
       {showCustomModal && !isGenerating && !practiceTest && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-8">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Customize Practice Test
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Configure your test settings before generating
               </p>
 
               <div className="space-y-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Test Title (Optional)
                   </label>
                   <input
@@ -329,21 +329,21 @@ function GeneratePracticeTestContent() {
                     value={customTitle}
                     onChange={(e) => setCustomTitle(e.target.value)}
                     placeholder="Leave empty for auto-generated title"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                 </div>
 
                 {/* Subject/Class Selection - Only show for upload and paste sources */}
                 {(source === 'upload' || source === 'paste') && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Subject/Class <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       required
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     >
                       <option value="">Select subject (required)</option>
                       {userSubjects.length > 0 ? (
@@ -356,7 +356,7 @@ function GeneratePracticeTestContent() {
                         <option disabled>No enrolled classes found</option>
                       )}
                     </select>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {userSubjects.length > 0 
                         ? 'Select the class/subject for this practice test' 
                         : 'Please enroll in a class first'}
@@ -366,7 +366,7 @@ function GeneratePracticeTestContent() {
 
                 {/* Questions */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Questions (max. 100)
                   </label>
                   <input
@@ -395,16 +395,16 @@ function GeneratePracticeTestContent() {
                     }}
                     min="5"
                     max="100"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Total questions to generate (minimum 5, maximum 100)
                   </p>
                 </div>
 
                 {/* Time Limit */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Timer (minutes)
                   </label>
                   <input
@@ -430,13 +430,13 @@ function GeneratePracticeTestContent() {
                       }
                     }}
                     min="5"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                 </div>
 
                 {/* Question Types */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Question Types
                   </label>
                   <div className="space-y-3">
@@ -445,18 +445,18 @@ function GeneratePracticeTestContent() {
                         type="checkbox"
                         checked={includeMultipleChoice}
                         onChange={(e) => setIncludeMultipleChoice(e.target.checked)}
-                        className="w-5 h-5 rounded border-slate-300"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-teal-600 focus:ring-teal-500"
                       />
-                      <span className="text-slate-700 dark:text-slate-300">Multiple choice</span>
+                      <span className="text-gray-700 dark:text-gray-300">Multiple choice</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={includeWritten}
                         onChange={(e) => setIncludeWritten(e.target.checked)}
-                        className="w-5 h-5 rounded border-slate-300"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-teal-600 focus:ring-teal-500"
                       />
-                      <span className="text-slate-700 dark:text-slate-300">Written</span>
+                      <span className="text-gray-700 dark:text-gray-300">Written</span>
                     </label>
                   </div>
                   {!includeMultipleChoice && !includeWritten && (
@@ -466,24 +466,24 @@ function GeneratePracticeTestContent() {
 
                 {/* Library Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Save To
                   </label>
                   <div className="space-y-3">
-                    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border-2 border-[#1C2B1C] dark:border-[#1C2B1C] bg-green-50 dark:bg-green-900/20">
+                    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border-2 border-teal-600 dark:border-teal-600 bg-teal-50 dark:bg-teal-900/20">
                       <input
                         type="radio"
                         name="library-type"
                         checked={true}
                         readOnly
-                        className="w-5 h-5"
+                        className="w-5 h-5 text-teal-600"
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">📚</span>
-                          <span className="font-medium text-slate-900 dark:text-slate-100">Library</span>
+                          <span className="font-medium text-gray-900 dark:text-white">Library</span>
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 ml-7">Save to your personal library</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 ml-7">Save to your personal library</p>
                       </div>
                     </label>
                   </div>
@@ -493,7 +493,7 @@ function GeneratePracticeTestContent() {
                 <div className="flex gap-4 pt-4">
                   <button
                     onClick={() => router.back()}
-                    className="flex-1 px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="flex-1 px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancel
                   </button>
@@ -503,7 +503,7 @@ function GeneratePracticeTestContent() {
                       (!includeMultipleChoice && !includeWritten) ||
                       ((source === 'upload' || source === 'paste') && !subject)
                     }
-                    className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
+                    className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
                   >
                     Generate Test
                   </button>
@@ -520,11 +520,11 @@ function GeneratePracticeTestContent() {
       {/* Generating State */}
       {isGenerating && (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+          <div className="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Generating your practice test...
           </h2>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-gray-600 dark:text-gray-400">
             This may take up to 30 seconds. Please wait.
           </p>
         </div>
@@ -555,7 +555,7 @@ function GeneratePracticeTestContent() {
       {practiceTest && !isGenerating && (
         <div className="space-y-6">
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 text-white shadow-xl">
+          <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-8 text-white shadow-xl">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
@@ -565,8 +565,8 @@ function GeneratePracticeTestContent() {
                   </span>
                 </div>
                 <h2 className="text-xl font-semibold mb-2">{practiceTest.title}</h2>
-                <p className="text-green-50 mb-4">{practiceTest.description}</p>
-                <p className="text-sm text-green-100 mb-4">
+                <p className="text-teal-50 mb-4">{practiceTest.description}</p>
+                <p className="text-sm text-teal-100 mb-4">
                   ✓ Saved to your {isPublic ? 'Public' : 'Private'} Library
                 </p>
                 
@@ -614,7 +614,7 @@ function GeneratePracticeTestContent() {
           <div className="flex gap-4">
             <button
               onClick={handleTakeTest}
-              className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all"
+              className="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-teal-600 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all"
             >
               Take This Test Now
             </button>

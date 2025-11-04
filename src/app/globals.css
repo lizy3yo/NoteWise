@@ -17,6 +17,15 @@
   box-sizing: border-box;
 }
 
+/* Prevent flash of unstyled content */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 body {
   height: 100%;
   font-family: "Inter", sans-serif;

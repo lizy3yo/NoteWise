@@ -394,13 +394,13 @@ function PrivateLibraryContent() {
     <div className="max-w-7xl mx-auto">
       {/* Header Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Library</h1>
-        <p className="text-slate-600 dark:text-slate-400">Manage and organize your study materials</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Library</h1>
+        <p className="text-gray-600 dark:text-gray-400">Manage and organize your study materials</p>
       </div>
 
       {/* Navigation Tabs - matching Student Class page style */}
       <div className="mb-8 bg-transparent">
-        <div className="flex gap-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
           {['flashcards', 'practice_tests', 'study_notes'].map((tab) => {
             const label = tab
               .split('_')
@@ -411,8 +411,8 @@ function PrivateLibraryContent() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`py-3 text-sm font-medium transition-colors ${activeTab === tab
-                  ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white -mb-[2px]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'text-gray-900 dark:text-white border-b-2 border-teal-500 -mb-[2px]'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
               >
                 {label}
@@ -426,12 +426,12 @@ function PrivateLibraryContent() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1">
             <button
               onClick={() => setViewMode('folders')}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'folders'
-                ? 'bg-[#1C2B1C] text-white'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                ? 'bg-teal-600 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               title="View by folders"
             >
@@ -443,8 +443,8 @@ function PrivateLibraryContent() {
             <button
               onClick={() => setViewMode('list')}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'list'
-                ? 'bg-[#1C2B1C] text-white'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                ? 'bg-teal-600 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               title="View as list"
             >
@@ -460,7 +460,7 @@ function PrivateLibraryContent() {
               id="subject-filter"
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1C2B1C] focus:border-[#1C2B1C] shadow-sm"
+              className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
             >
               <option value="all">All Subjects</option>
               {subjects.map((subject) => (
@@ -475,13 +475,13 @@ function PrivateLibraryContent() {
             id="filter"
             value={filter}
             onChange={handleFilterChange}
-            className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1C2B1C] focus:border-[#1C2B1C] shadow-sm"
+            className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
           >
             <option value="recent">Recent</option>
             <option value="popular">Most Cards</option>
             <option value="alphabetical">A-Z</option>
           </select>
-          <span className="text-sm text-slate-500 dark:text-slate-400">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {activeTab === 'flashcards' && (
               viewMode === 'folders'
                 ? `${flashcardsBySubject.size} ${flashcardsBySubject.size === 1 ? 'class' : 'classes'}, ${flashcards.length} ${flashcards.length === 1 ? 'set' : 'sets'}`

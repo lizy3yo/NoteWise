@@ -107,7 +107,7 @@ export default function ResultsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function ResultsPage() {
           </p>
           <Link
             href="/student_page/practice_tests"
-            className="inline-block px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+            className="inline-block px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 no-underline"
           >
             Back to Practice Tests
           </Link>
@@ -180,25 +180,25 @@ export default function ResultsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <button
           onClick={() => setShowAnswers(!showAnswers)}
-          className="px-6 py-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 shadow-lg"
+          className="px-6 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 shadow-lg text-gray-900 dark:text-white"
         >
           {showAnswers ? 'Hide' : 'Show'} Answers
         </button>
         <Link
           href="/student_page/practice_tests"
-          className="px-6 py-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 shadow-lg text-center"
+          className="px-6 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 shadow-lg text-center text-gray-900 dark:text-white no-underline"
         >
           New Test
         </Link>
         <button
           onClick={() => window.print()}
-          className="px-6 py-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 shadow-lg"
+          className="px-6 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 shadow-lg text-gray-900 dark:text-white"
         >
           Export PDF
         </button>
         <Link
           href="/student_page/library"
-          className="px-6 py-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold hover:from-green-600 hover:to-green-700 shadow-lg text-center"
+          className="px-6 py-4 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-600 hover:to-teal-700 shadow-lg text-center no-underline"
         >
           My Library
         </Link>
@@ -206,8 +206,8 @@ export default function ResultsPage() {
 
       {/* Answer Review */}
       {showAnswers && practiceTest && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             Answer Review
           </h2>
           
@@ -364,19 +364,19 @@ export default function ResultsPage() {
 
       {/* Performance Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
             Performance Breakdown
           </h3>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600 dark:text-slate-400">Overall Score</span>
+                <span className="text-gray-600 dark:text-gray-400">Overall Score</span>
                 <span className="font-semibold">{submission.score}%</span>
               </div>
-              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <div
-                  className="bg-green-500 h-3 rounded-full transition-all"
+                  className="bg-teal-500 h-3 rounded-full transition-all"
                   style={{ width: `${submission.score}%` }}
                 ></div>
               </div>
@@ -384,10 +384,10 @@ export default function ResultsPage() {
             
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600 dark:text-slate-400">Points Earned</span>
+                <span className="text-gray-600 dark:text-gray-400">Points Earned</span>
                 <span className="font-semibold">{submission.pointsEarned}/{submission.totalPoints}</span>
               </div>
-              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <div
                   className="bg-blue-500 h-3 rounded-full transition-all"
                   style={{ width: `${(submission.pointsEarned / submission.totalPoints) * 100}%` }}
@@ -397,28 +397,28 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
             Next Steps
           </h3>
           <ul className="space-y-3">
             {submission.score < 70 && (
               <li className="flex items-start gap-3">
                 <span className="text-amber-500">📚</span>
-                <span className="text-slate-700 dark:text-slate-300">
+                <span className="text-gray-700 dark:text-gray-300">
                   Review the material and try again to improve your score
                 </span>
               </li>
             )}
             <li className="flex items-start gap-3">
               <span className="text-blue-500">🎯</span>
-              <span className="text-slate-700 dark:text-slate-300">
+              <span className="text-gray-700 dark:text-gray-300">
                 Practice similar questions to master the concepts
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-500">✨</span>
-              <span className="text-slate-700 dark:text-slate-300">
+              <span className="text-teal-500">✨</span>
+              <span className="text-gray-700 dark:text-gray-300">
                 Create new flashcards from questions you missed
               </span>
             </li>

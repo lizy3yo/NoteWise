@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import TermsOfService from "@/components/legal/TermsOfService";
 import PrivacyPolicy from "@/components/legal/PrivacyPolicy";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import "./home.css";
 
 export default function Home() {
@@ -34,10 +35,10 @@ export default function Home() {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="main-container">
+    <div className="main-container bg-white dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
       <header
-        className={`header ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}
+        className={`header bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}
       >
         <div className="header-content">
           <div className="header-inner">
@@ -49,26 +50,27 @@ export default function Home() {
                 height={44}
                 className="logo-image"
               />
-              <h1 className="logo-text">NoteWise</h1>
+              <h1 className="logo-text text-gray-900 dark:text-white">NoteWise</h1>
             </div>
 
             {/* Desktop Navigation */}
             <nav className="navigation desktop-nav">
-              <a href="#home" className="nav-link">
+              <a href="#home" className="nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400">
                 Home
               </a>
-              <a href="#features" className="nav-link">
+              <a href="#features" className="nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400">
                 Features
               </a>
-              <a href="#target-users" className="nav-link">
+              <a href="#target-users" className="nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400">
                 Target Users
               </a>
-              <a href="#how-it-works" className="nav-link">
+              <a href="#how-it-works" className="nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400">
                 How It Works
               </a>
             </nav>
 
             <div className="header-buttons">
+              <ThemeToggle className="hidden lg:block" />
               <div className="desktop-get-started">
                 <button
                   className="px-6 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-all duration-200"
@@ -77,7 +79,7 @@ export default function Home() {
                   Sign Up
                 </button>
                 <button
-                  className="px-6 py-2 border border-teal-200 text-teal-600 font-medium rounded-lg hover:bg-teal-50 transition-all duration-200"
+                  className="px-6 py-2 border border-teal-200 dark:border-teal-700 text-teal-600 dark:text-teal-400 font-medium rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all duration-200"
                   onClick={() => router.push("/auth/login")}
                 >
                   Sign In
@@ -100,17 +102,21 @@ export default function Home() {
           </div>
 
           {/* Mobile Navigation Menu */}
-          <div className={`mobile-nav ${isMobileMenuOpen ? 'active' : ''}`}>
+          <div className={`mobile-nav bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 ${isMobileMenuOpen ? 'active' : ''}`}>
             <nav className="mobile-nav-content">
-              <a href="#home" className="mobile-nav-link" onClick={toggleMobileMenu}>Home</a>
-              <a href="#features" className="mobile-nav-link" onClick={toggleMobileMenu}>Features</a>
-              <a href="#target-users" className="mobile-nav-link" onClick={toggleMobileMenu}>Target Users</a>
-              <a href="#how-it-works" className="mobile-nav-link" onClick={toggleMobileMenu}>How It Works</a>
-              <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</span>
+                <ThemeToggle showLabel />
+              </div>
+              <a href="#home" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>Home</a>
+              <a href="#features" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>Features</a>
+              <a href="#target-users" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>Target Users</a>
+              <a href="#how-it-works" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>How It Works</a>
+              <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button className="mobile-get-started-btn" onClick={() => { router.push('/auth/signup'); toggleMobileMenu(); }}>
                   Sign Up
                 </button>
-                <button className="px-6 py-3 border border-teal-200 text-teal-600 font-medium rounded-lg hover:bg-teal-50 transition-all duration-200" onClick={() => { router.push('/auth/login'); toggleMobileMenu(); }}>
+                <button className="px-6 py-3 border border-teal-200 dark:border-teal-700 text-teal-600 dark:text-teal-400 font-medium rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all duration-200" onClick={() => { router.push('/auth/login'); toggleMobileMenu(); }}>
                   Sign In
                 </button>
               </div>
@@ -120,19 +126,19 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section id="home" className="hero-section">
+      <section id="home" className="hero-section bg-gradient-to-br from-gray-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="hero-bg"></div>
         <div className="hero-decoration"></div>
 
         <div className="hero-content">
-          <h2 className="hero-title">
+          <h2 className="hero-title text-gray-900 dark:text-white">
             Transform your notes into
-            <span className="hero-title-highlight">
+            <span className="hero-title-highlight text-teal-600 dark:text-teal-400">
               interactive learning
             </span>
           </h2>
 
-          <p className="hero-description">
+          <p className="hero-description text-gray-600 dark:text-gray-300">
             Empower your studies with an AI-powered platform that turns study materials into
             clear summaries and interactive flashcards, helping you learn smarter and retain knowledge better.
           </p>
@@ -141,72 +147,72 @@ export default function Home() {
 
           {/* Feature Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-20 max-w-6xl mx-auto">
-            <div className="bg-white p-8 rounded-2xl text-center border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-teal-500/30 shadow-md">
-              <div className="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-teal-500 hover:scale-110 group">
-                <svg className="w-8 h-8 text-teal-600 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-100 dark:border-gray-700 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-teal-500/30 dark:hover:border-teal-400/30 shadow-md">
+              <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-teal-500 hover:scale-110 group">
+                <svg className="w-8 h-8 text-teal-600 dark:text-teal-400 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Transform Learning Materials</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">Upload notes and get clear, easy-to-digest AI-generated summaries</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Transform Learning Materials</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Upload notes and get clear, easy-to-digest AI-generated summaries</p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl text-center border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-amber-500/30 shadow-md">
-              <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-amber-500 hover:scale-110 group">
-                <svg className="w-8 h-8 text-amber-600 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-100 dark:border-gray-700 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-amber-500/30 dark:hover:border-amber-400/30 shadow-md">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-amber-500 hover:scale-110 group">
+                <svg className="w-8 h-8 text-amber-600 dark:text-amber-400 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Create Interactive Flashcards</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">Turn your summaries into engaging flashcards for active learning</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Create Interactive Flashcards</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Turn your summaries into engaging flashcards for active learning</p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl text-center border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-emerald-500/30 shadow-md">
-              <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-emerald-500 hover:scale-110 group">
-                <svg className="w-8 h-8 text-emerald-600 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-100 dark:border-gray-700 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-emerald-500/30 dark:hover:border-emerald-400/30 shadow-md">
+              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-emerald-500 hover:scale-110 group">
+                <svg className="w-8 h-8 text-emerald-600 dark:text-emerald-400 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Save Time and Effort</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">Learn faster and smarter with AI assistance and automated study tools</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Save Time and Effort</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Learn faster and smarter with AI assistance and automated study tools</p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl text-center border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-cyan-500/30 shadow-md">
-              <div className="w-16 h-16 bg-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-cyan-500 hover:scale-110 group">
-                <svg className="w-8 h-8 text-cyan-600 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-100 dark:border-gray-700 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-cyan-500/30 dark:hover:border-cyan-400/30 shadow-md">
+              <div className="w-16 h-16 bg-cyan-100 dark:bg-cyan-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all hover:bg-cyan-500 hover:scale-110 group">
+                <svg className="w-8 h-8 text-cyan-600 dark:text-cyan-400 transition-colors group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Encourage Smarter Studying</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">Focus on understanding rather than memorizing with intelligent study methods</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Encourage Smarter Studying</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">Focus on understanding rather than memorizing with intelligent study methods</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#1C2B1C]/10 rounded-full blur-3xl opacity-50"></div>
+      <section id="features" className="py-24 bg-white dark:bg-gray-900 relative overflow-hidden transition-colors duration-300">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 dark:bg-teal-400/10 rounded-full blur-3xl opacity-50"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-6">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm font-medium mb-6">
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               AI-Powered Study Features
             </div>
-            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               NoteWise's MVP Features
             </h3>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Comprehensive AI-powered tools designed to transform how students learn and retain knowledge
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* AI-Powered Summarization */}
-            <div className="relative p-8 rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-teal-200 dark:border-teal-700 bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 dark:from-teal-900/20 dark:via-cyan-900/20 dark:to-emerald-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -216,34 +222,34 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">AI-Powered Summarization</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">AI-Powered Summarization</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Automatically generates clear, concise summaries from uploaded notes and documents.
                 </p>
 
                 <div className="space-y-3">
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-teal-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">PDF, DOCX, TXT support</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">PDF, DOCX, TXT support</span>
                   </div>
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-teal-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Instant AI processing</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Instant AI processing</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Flashcard Generation Engine */}
-            <div className="relative p-8 rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-amber-200 dark:border-amber-700 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-amber-900/20 dark:via-yellow-900/20 dark:to-orange-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -253,34 +259,34 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">Flashcard Generation Engine</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Flashcard Generation Engine</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Transforms key concepts from summaries into interactive flashcards for active recall.
                 </p>
 
                 <div className="space-y-3">
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-amber-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Auto-generated Q&A pairs</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-generated Q&A pairs</span>
                   </div>
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-amber-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Interactive study mode</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Interactive study mode</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* File Upload Interface */}
-            <div className="relative p-8 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-emerald-200 dark:border-emerald-700 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-green-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -290,27 +296,27 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">File Upload Interface</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">File Upload Interface</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Allows users to upload learning materials in PDF, DOCX, or TXT formats for instant AI processing.
                 </p>
 
                 <div className="space-y-3">
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-emerald-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Drag & drop interface</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Drag & drop interface</span>
                   </div>
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-emerald-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Multiple format support</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Multiple format support</span>
                   </div>
                 </div>
               </div>
@@ -320,7 +326,7 @@ export default function Home() {
           {/* Additional Features Row */}
           <div className="grid lg:grid-cols-2 gap-8 mt-8">
             {/* Summary Customization */}
-            <div className="relative p-8 rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-orange-200 dark:border-orange-700 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900/20 dark:via-amber-900/20 dark:to-yellow-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -330,34 +336,34 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">Summary Customization</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Summary Customization</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Lets users adjust the summary length, focus, or writing style to match their study preferences.
                 </p>
 
                 <div className="space-y-3">
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-orange-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Adjustable length & focus</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Adjustable length & focus</span>
                   </div>
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-orange-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Personalized study style</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Personalized study style</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Flashcard Review Mode */}
-            <div className="relative p-8 rounded-3xl border border-pink-200 bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-pink-200 dark:border-pink-700 bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 dark:from-pink-900/20 dark:via-rose-900/20 dark:to-red-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-rose-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -367,27 +373,27 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">Flashcard Review Mode</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Flashcard Review Mode</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Provides an engaging, quiz-like experience to help students test and retain knowledge effectively.
                 </p>
 
                 <div className="space-y-3">
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-pink-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Interactive quiz experience</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Interactive quiz experience</span>
                   </div>
-                  <div className="flex items-center p-2 bg-white/60 rounded-lg">
+                  <div className="flex items-center p-2 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                     <div className="w-6 h-6 bg-pink-500 rounded-md flex items-center justify-center mr-3">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Knowledge retention tracking</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Knowledge retention tracking</span>
                   </div>
                 </div>
               </div>
@@ -397,29 +403,29 @@ export default function Home() {
       </section>
 
       {/* Target Users Section */}
-      <section id="target-users" className="py-24 bg-gradient-to-br from-gray-50 to-purple-50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-200/30 rounded-full blur-2xl opacity-40"></div>
+      <section id="target-users" className="py-24 bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-900 dark:to-purple-900/20 relative overflow-hidden transition-colors duration-300">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200/30 dark:bg-purple-500/10 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-200/30 dark:bg-indigo-500/10 rounded-full blur-2xl opacity-40"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium mb-6">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-6">
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Perfect for Every Student
             </div>
-            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               Who Are The Target Users?
             </h3>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               NoteWise is designed for students at every level who want to optimize their learning experience
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* The Overloaded Student */}
-            <div className="relative p-8 rounded-3xl border border-red-200 bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-red-200 dark:border-red-700 bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 dark:from-red-900/20 dark:via-pink-900/20 dark:to-rose-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -429,26 +435,26 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">The Overloaded Student</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">The Overloaded Student</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Struggles to manage multiple subjects, notes, and materials at once.
                 </p>
 
                 <div className="space-y-3">
                   <div className="flex items-start">
                     <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">Needs a tool that quickly summarizes long readings into clear points</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Needs a tool that quickly summarizes long readings into clear points</span>
                   </div>
                   <div className="flex items-start">
                     <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">Values organized and accessible notes for easier review and study</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Values organized and accessible notes for easier review and study</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* The Active Learner */}
-            <div className="relative p-8 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-blue-200 dark:border-blue-700 bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-teal-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-teal-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -458,26 +464,26 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">The Active Learner</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">The Active Learner</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Enjoys interactive and engaging study methods like flashcards.
                 </p>
 
                 <div className="space-y-3">
                   <div className="flex items-start">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">Uses quizzes and repetition to strengthen memory and understanding</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Uses quizzes and repetition to strengthen memory and understanding</span>
                   </div>
                   <div className="flex items-start">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">Looks for tools that make studying fun and less repetitive</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Looks for tools that make studying fun and less repetitive</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* The Efficient Achiever */}
-            <div className="relative p-8 rounded-3xl border border-green-200 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+            <div className="relative p-8 rounded-3xl border border-green-200 dark:border-green-700 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 transition-all hover:shadow-2xl hover:-translate-y-2 group">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
@@ -487,19 +493,19 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">The Efficient Achiever</h4>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">The Efficient Achiever</h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Enjoys interactive and engaging study methods like flashcards.
                 </p>
 
                 <div className="space-y-3">
                   <div className="flex items-start">
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">Uses quizzes and repetition to strengthen memory and understanding</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Uses quizzes and repetition to strengthen memory and understanding</span>
                   </div>
                   <div className="flex items-start">
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm text-gray-700">Looks for tools that make studying fun and less repetitive</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Looks for tools that make studying fun and less repetitive</span>
                   </div>
                 </div>
               </div>
@@ -509,22 +515,22 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 bg-white relative overflow-hidden">
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl opacity-40"></div>
-        <div className="absolute top-1/2 right-0 w-64 h-64 bg-indigo-200/20 rounded-full blur-2xl opacity-30"></div>
+      <section id="how-it-works" className="py-24 bg-white dark:bg-gray-900 relative overflow-hidden transition-colors duration-300">
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200/20 dark:bg-purple-500/10 rounded-full blur-3xl opacity-40"></div>
+        <div className="absolute top-1/2 right-0 w-64 h-64 bg-indigo-200/20 dark:bg-indigo-500/10 rounded-full blur-2xl opacity-30"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium mb-6">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-6">
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               Simple 3-Step Process
             </div>
-            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               How NoteWise Works
             </h3>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Transform your study materials into interactive learning experiences in just three simple steps
             </p>
           </div>
@@ -537,9 +543,9 @@ export default function Home() {
                 </div>
                 <div className="hidden md:block absolute top-10 left-full w-full h-0.5 bg-purple-300 -z-10"></div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-lg transition-all hover:shadow-xl border border-gray-100">
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">Upload Your Materials</h4>
-                <p className="text-gray-600 leading-relaxed">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg transition-all hover:shadow-xl border border-gray-100 dark:border-gray-700">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Upload Your Materials</h4>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   Simply drag and drop your study notes, PDFs, or documents into NoteWise. Our AI instantly processes your materials and prepares them for transformation.
                 </p>
               </div>
@@ -552,9 +558,9 @@ export default function Home() {
                 </div>
                 <div className="hidden md:block absolute top-10 left-full w-full h-0.5 bg-blue-300 -z-10"></div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-lg transition-all hover:shadow-xl border border-gray-100">
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">Get AI Summaries</h4>
-                <p className="text-gray-600 leading-relaxed">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg transition-all hover:shadow-xl border border-gray-100 dark:border-gray-700">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Get AI Summaries</h4>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   Our AI analyzes your content and creates clear, concise summaries. Customize the length and focus to match your study preferences and learning goals.
                 </p>
               </div>
@@ -566,9 +572,9 @@ export default function Home() {
                   <span className="text-3xl font-bold text-white">3</span>
                 </div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-lg transition-all hover:shadow-xl border border-gray-100">
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">Study with Flashcards</h4>
-                <p className="text-gray-600 leading-relaxed">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg transition-all hover:shadow-xl border border-gray-100 dark:border-gray-700">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Study with Flashcards</h4>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   Practice with automatically generated flashcards in an interactive review mode. Test your knowledge and track your progress as you master the material.
                 </p>
               </div>

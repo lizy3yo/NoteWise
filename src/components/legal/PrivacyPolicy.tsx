@@ -2,10 +2,10 @@
 
 export default function PrivacyPolicy() {
   return (
-    <div className="prose prose-gray max-w-none">
-      <div className="space-y-6 text-gray-700 leading-relaxed">
+    <div className="prose prose-gray dark:prose-invert max-w-none">
+      <div className="space-y-6 text-gray-700 dark:text-gray-300 leading-relaxed">
         <div>
-          <p className="text-sm text-gray-500 mb-4">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Last updated: {new Date().toLocaleDateString()}</p>
           <p className="text-lg">
             At NoteWise, we're committed to protecting your privacy and being transparent about how we handle your data. 
             This Privacy Policy explains how we collect, use, and safeguard your information.
@@ -13,11 +13,11 @@ export default function PrivacyPolicy() {
         </div>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">1. Information We Collect</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">1. Information We Collect</h3>
           
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-gray-900">Account Information</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white">Account Information</h4>
               <ul className="list-disc pl-6 mt-2 space-y-1">
                 <li>Name and email address</li>
                 <li>Account credentials (encrypted passwords)</li>
@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900">Study Materials</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white">Study Materials</h4>
               <ul className="list-disc pl-6 mt-2 space-y-1">
                 <li>Documents you upload (PDF, DOCX, TXT files)</li>
                 <li>Text content extracted from your files</li>
@@ -36,7 +36,7 @@ export default function PrivacyPolicy() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900">Usage Information</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white">Usage Information</h4>
               <ul className="list-disc pl-6 mt-2 space-y-1">
                 <li>How you interact with our platform</li>
                 <li>Features you use and time spent studying</li>
@@ -48,11 +48,11 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">2. How We Use Your Information</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">2. How We Use Your Information</h3>
           
           <div className="space-y-3">
             <div>
-              <h4 className="font-semibold text-gray-900">Core Services</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white">Core Services</h4>
               <ul className="list-disc pl-6 mt-2 space-y-1">
                 <li>Process your study materials with AI to generate summaries</li>
                 <li>Create personalized flashcards from your content</li>
@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900">Platform Improvement</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white">Platform Improvement</h4>
               <ul className="list-disc pl-6 mt-2 space-y-1">
                 <li>Improve our AI algorithms and accuracy</li>
                 <li>Develop new features and study tools</li>
@@ -74,9 +74,9 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">3. AI Processing and Your Content</h3>
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <p className="text-blue-800 font-medium">Important: How We Handle Your Study Materials</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">3. AI Processing and Your Content</h3>
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <p className="text-blue-800 dark:text-blue-300 font-medium">Important: How We Handle Your Study Materials</p>
           </div>
           <div className="space-y-3">
             <p><strong>Content Processing:</strong> We use AI to analyze your uploaded materials to provide summaries and generate flashcards.</p>
@@ -87,7 +87,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">4. Information Sharing and Disclosure</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">4. Information Sharing and Disclosure</h3>
           <p>We may share your information only in these limited circumstances:</p>
           <ul className="list-disc pl-6 mt-2 space-y-1">
             <li><strong>Service Providers:</strong> Trusted partners who help us operate our platform (cloud storage, AI processing)</li>
@@ -98,7 +98,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">5. Data Security</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">5. Data Security</h3>
           <div className="space-y-3">
             <p><strong>Encryption:</strong> We use industry-standard encryption for data in transit and at rest.</p>
             <p><strong>Access Controls:</strong> Strict access controls limit who can view your information.</p>
@@ -108,7 +108,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">6. Your Privacy Rights</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">6. Your Privacy Rights</h3>
           <div className="space-y-3">
             <p><strong>Access:</strong> You can view and download your account information and study materials.</p>
             <p><strong>Correction:</strong> You can update or correct your personal information at any time.</p>
@@ -119,7 +119,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">7. Cookies and Tracking</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">7. Cookies and Tracking</h3>
           <div className="space-y-3">
             <p><strong>Essential Cookies:</strong> Required for basic platform functionality and security.</p>
             <p><strong>Analytics:</strong> Help us understand how users interact with our platform (anonymized data).</p>
@@ -129,7 +129,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">8. International Data Transfers</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">8. International Data Transfers</h3>
           <p>
             Your information may be processed in countries other than your own. We ensure appropriate safeguards 
             are in place to protect your data according to this Privacy Policy and applicable laws.
@@ -137,7 +137,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">9. Children's Privacy</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">9. Children's Privacy</h3>
           <p>
             NoteWise is designed for users 13 years and older. We don't knowingly collect personal information 
             from children under 13. If we become aware of such collection, we'll delete the information promptly.
@@ -145,7 +145,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">10. Data Retention</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">10. Data Retention</h3>
           <div className="space-y-3">
             <p><strong>Account Data:</strong> Retained while your account is active and for a reasonable period after deletion.</p>
             <p><strong>Study Materials:</strong> Retained as long as you use our services or as required by law.</p>
@@ -154,7 +154,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">11. Changes to This Policy</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">11. Changes to This Policy</h3>
           <p>
             We may update this Privacy Policy periodically. We'll notify you of significant changes via email 
             or platform notifications. We encourage you to review this policy regularly.
@@ -162,19 +162,19 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">12. Contact Us</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">12. Contact Us</h3>
           <p>
             If you have questions about this Privacy Policy or how we handle your data, please contact us:
           </p>
-          <div className="bg-gray-50 p-4 rounded-lg mt-2">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mt-2">
             <p><strong>Privacy Officer:</strong> privacy@notewise.com</p>
             <p><strong>General Support:</strong> support@notewise.com</p>
             <p><strong>Data Protection Requests:</strong> data-protection@notewise.com</p>
           </div>
         </section>
 
-        <div className="border-t pt-6 mt-8">
-          <p className="text-sm text-gray-500">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             By using NoteWise, you acknowledge that you have read and understood this Privacy Policy and 
             consent to the collection and use of your information as described herein.
           </p>

@@ -82,12 +82,12 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="dashboard-root">
+    <div className="dashboard-root bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
       <div className="dashboard-container">
         {/* Header with user greeting */}
         <header className="greet-block" aria-label="Welcome">
-          <h1 className="greet-title">{`Welcome Back, ${firstName}!`}</h1>
-          <p className="greet-sub">
+          <h1 className="greet-title text-gray-900 dark:text-white">{`Welcome Back, ${firstName}!`}</h1>
+          <p className="greet-sub text-gray-600 dark:text-gray-400">
             Ready to continue your learning journey?
           </p>
         </header>
@@ -97,7 +97,7 @@ export default function UserDashboard() {
           <div className="col-span-12">
             <div className="summary-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {/* Total Uploads Card */}
-              <div className="metric-card panel p-5">
+              <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +114,7 @@ export default function UserDashboard() {
               </div>
 
               {/* Flashcards Card */}
-              <div className="metric-card panel p-5">
+              <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@ export default function UserDashboard() {
               </div>
 
               {/* Study Streak Card */}
-              <div className="metric-card panel p-5">
+              <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +149,7 @@ export default function UserDashboard() {
               </div>
 
               {/* Progress Card */}
-              <div className="metric-card panel p-5">
+              <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,8 +171,8 @@ export default function UserDashboard() {
         {/* Recent Activity and Quick Actions Section */}
         <div className="dashboard-grid">
           <div className="col-span-8">
-            <div className="panel panel-padded-lg h-80">
-              <h2 className="section-title mb-4">Recent Activity</h2>
+            <div className="panel panel-padded-lg h-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Recent Activity</h2>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="w-8 h-8 bg-teal-100 dark:bg-teal-800 rounded-full flex items-center justify-center">
@@ -214,10 +214,10 @@ export default function UserDashboard() {
           </div>
 
           <div className="col-span-4">
-            <div className="panel panel-padded-lg h-80 flex flex-col">
-              <h2 className="section-title mb-4">Quick Actions</h2>
+            <div className="panel panel-padded-lg h-80 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Quick Actions</h2>
               <div className="qa-group flex-1 flex flex-col justify-center">
-                <Link href="/student_page/flashcards/upload" className="qa-link qa-chip">
+                <Link href="/student_page/flashcards/upload" className="qa-link qa-chip flex items-center gap-3 p-3 mb-3 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors no-underline">
                   <div className="qa-icon">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -226,7 +226,7 @@ export default function UserDashboard() {
                   <span className="qa-text">Upload Notes</span>
                 </Link>
 
-                <Link href="/student_page/flashcards/create" className="qa-link">
+                <Link href="/student_page/flashcards/create" className="qa-link flex items-center gap-3 p-3 mb-3 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors no-underline">
                   <div className="qa-icon">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -235,7 +235,7 @@ export default function UserDashboard() {
                   <span className="qa-text">Create Flashcards</span>
                 </Link>
 
-                <Link href="/student_page/study_mode" className="qa-link">
+                <Link href="/student_page/study_mode" className="qa-link flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors no-underline">
                   <div className="qa-icon">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />

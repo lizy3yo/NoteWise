@@ -189,7 +189,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
       <Alert
         type={alert.type}
         message={alert.message}
@@ -219,14 +219,14 @@ export default function Signup() {
             NoteWise
           </h1>
         </div>
-        <p className="text-gray-600 text-base sm:text-lg">Your AI-powered study companion</p>
+        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Your AI-powered study companion</p>
       </div>
 
-      <div className="relative z-10 w-full max-w-md sm:max-w-lg lg:max-w-xl p-6 sm:p-8 lg:p-10 bg-white/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-200/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)]">
+      <div className="relative z-10 w-full max-w-md sm:max-w-lg lg:max-w-xl p-6 sm:p-8 lg:p-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)] border border-teal-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)] dark:hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
         {/* Back Button - Inside Container - Hidden on mobile/tablet */}
         <button
           type="button"
-          className="hidden lg:flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
+          className="hidden lg:flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
           onClick={() => router.push("/")}
           disabled={isLoading}
           aria-label="Go back to home"
@@ -247,7 +247,7 @@ export default function Signup() {
                   className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
                     step <= currentStep
                       ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white shadow-lg"
-                      : "bg-gray-200 text-gray-500"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {step}
@@ -255,7 +255,7 @@ export default function Signup() {
                 {step < 2 && (
                   <div
                     className={`w-8 sm:w-12 h-1 mx-2 rounded-full transition-all duration-300 ${
-                      step < currentStep ? "bg-gradient-to-r from-teal-500 to-cyan-600" : "bg-gray-200"
+                      step < currentStep ? "bg-gradient-to-r from-teal-500 to-cyan-600" : "bg-gray-200 dark:bg-gray-700"
                     }`}
                   />
                 )}
@@ -265,11 +265,11 @@ export default function Signup() {
         </div>
 
         <div className="mb-6 sm:mb-8 text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
             {currentStep === 1 && "Create Your Account"}
             {currentStep === 2 && "Secure Your Account"}
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
             {currentStep === 1 && "Let's start with your basic information"}
             {currentStep === 2 && "Set up your password and preferences"}
           </p>
@@ -281,7 +281,7 @@ export default function Signup() {
             <div className="space-y-5 sm:space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     First Name
                   </label>
                   <input
@@ -291,13 +291,13 @@ export default function Signup() {
                     required
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+                    className="w-full px-4 py-3 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="Enter your first name"
                     disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Last Name
                   </label>
                   <input
@@ -307,14 +307,14 @@ export default function Signup() {
                     required
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+                    className="w-full px-4 py-3 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="Enter your last name"
                     disabled={isLoading}
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Email Address
                 </label>
                 <input
@@ -324,7 +324,7 @@ export default function Signup() {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+                  className="w-full px-4 py-3 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="Enter your email address"
                   disabled={isLoading}
                 />
@@ -336,7 +336,7 @@ export default function Signup() {
           {currentStep === 2 && (
             <div className="space-y-5 sm:space-y-6">
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -347,7 +347,7 @@ export default function Signup() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+                    className="w-full px-4 py-3 pr-12 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="Create a strong password"
                     disabled={isLoading}
                   />
@@ -371,10 +371,10 @@ export default function Signup() {
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Password must be at least 8 characters long</p>
               </div>
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -385,7 +385,7 @@ export default function Signup() {
                     required
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+                    className="w-full px-4 py-3 pr-12 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="Confirm your password"
                     disabled={isLoading}
                   />
@@ -420,7 +420,7 @@ export default function Signup() {
                   className="mt-1 w-4 h-4 text-teal-600 border-teal-300 rounded focus:ring-teal-500 flex-shrink-0"
                   disabled={isLoading}
                 />
-                <label htmlFor="agreeToTerms" className="text-sm text-gray-600 leading-relaxed">
+                <label htmlFor="agreeToTerms" className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   I agree to the{" "}
                   <button
                     type="button"
@@ -473,13 +473,13 @@ export default function Signup() {
         </form>
 
         {/* Login link */}
-        <div className="text-center pt-6 border-t border-gray-200">
-          <p className="text-gray-600 text-sm sm:text-base">
+        <div className="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
             Already have an account?{" "}
             <button
               type="button"
               onClick={() => router.push("/auth/login")}
-              className="text-teal-600 hover:text-teal-700 font-semibold transition-colors"
+              className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold transition-colors"
               disabled={isLoading}
             >
               Sign in here

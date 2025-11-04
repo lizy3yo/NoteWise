@@ -219,25 +219,25 @@ export default function UploadFlashcardPage() {
         <div className="flex items-center mb-4">
           <button
             onClick={() => router.back()}
-            className="mr-4 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            className="mr-4 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <svg className="w-6 h-6 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Create Flashcard Set</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create Flashcard Set</h1>
         </div>
-        <p className="text-slate-600 dark:text-slate-400">Import from file or generate with AI</p>
+        <p className="text-gray-600 dark:text-gray-400">Import from file or generate with AI</p>
       </div>
 
       {/* Tab Selection */}
       <div className="mb-8">
-        <div className="flex space-x-1 bg-slate-200 dark:bg-slate-700 p-1 rounded-lg">
+        <div className="flex space-x-1 bg-gray-200 dark:bg-gray-700 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab('ai')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'ai'
-              ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
           >
             🤖 AI Generate
@@ -245,8 +245,8 @@ export default function UploadFlashcardPage() {
           <button
             onClick={() => setActiveTab('zapier-file')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'zapier-file'
-              ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
           >
             ⚡ AI File Generator
@@ -257,16 +257,16 @@ export default function UploadFlashcardPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* AI Analysis Tab */}
         {activeTab === 'ai' && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-6">AI Content Analyzer</h2>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">AI Content Analyzer</h2>
 
             {/* Analysis Type Selection */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Analysis Type:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Analysis Type:</label>
               <select
                 value={analysisType}
                 onChange={(e) => setAnalysisType(e.target.value)}
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value="flashcards">Generate Flashcards</option>
                 <option value="summary">Create Summary</option>
@@ -276,26 +276,26 @@ export default function UploadFlashcardPage() {
 
             {/* Text Input */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Paste Text:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Paste Text:</label>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Paste your content here (notes, articles, study materials)..."
                 rows={8}
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-vertical"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-vertical"
               />
             </div>
 
             {/* Flashcard Count Selection for AI Generate */}
             {analysisType === 'flashcards' && (
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Number of Flashcards to Generate:
                 </label>
                 <select
                   value={aiCardCount}
                   onChange={(e) => setAiCardCount(parseInt(e.target.value))}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 >
                   <option value={10}>10 flashcards</option>
                   <option value={15}>15 flashcards</option>
@@ -305,7 +305,7 @@ export default function UploadFlashcardPage() {
                   <option value={40}>40 flashcards</option>
                   <option value={50}>50 flashcards</option>
                 </select>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   More flashcards provide better coverage but take longer to generate
                 </p>
               </div>
@@ -362,15 +362,15 @@ export default function UploadFlashcardPage() {
 
         {/* Zapier AI File Upload Tab */}
         {activeTab === 'zapier-file' && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-6">AI-Powered File Generator</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">AI-Powered File Generator</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Upload files and let AI generate high-quality flashcards with advanced analysis
             </p>
 
             {/* File Upload */}
             <div className="mb-6">
-              <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center">
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,.txt,.csv,.ppt,.pptx"
@@ -380,13 +380,13 @@ export default function UploadFlashcardPage() {
                   disabled={zapierLoading}
                 />
                 <label htmlFor="zapier-file-upload" className="cursor-pointer">
-                  <svg className="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <p className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {zapierFile ? zapierFile.name : 'Choose a file for AI processing'}
                   </p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     PDF, Word, PowerPoint, Text files (max 10MB) - Processed with advanced AI
                   </p>
                 </label>
@@ -406,13 +406,13 @@ export default function UploadFlashcardPage() {
 
             {/* Flashcard Count Selection */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Number of Flashcards to Generate:
               </label>
               <select
                 value={zapierCardCount}
                 onChange={(e) => setZapierCardCount(parseInt(e.target.value))}
-                className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value={10}>10 flashcards</option>
                 <option value={15}>15 flashcards</option>
@@ -422,7 +422,7 @@ export default function UploadFlashcardPage() {
                 <option value={40}>40 flashcards</option>
                 <option value={50}>50 flashcards</option>
               </select>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 More flashcards may take longer to generate but provide more comprehensive coverage
               </p>
             </div>
@@ -469,19 +469,19 @@ export default function UploadFlashcardPage() {
 
         {/* Set Information - ensure it appears when preview exists too */}
         {(activeTab === 'ai' && (aiResult || preview.length > 0)) && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Set Information</h2>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Set Information</h2>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Title *
                 </label>
                 <input
                   type="text"
                   value={deckTitle}
                   onChange={(e) => setDeckTitle(e.target.value)}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="Enter a title for your flashcard set"
                   required
                 />
@@ -489,14 +489,14 @@ export default function UploadFlashcardPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Category (Optional)
                   </label>
                   <input
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="e.g., Science, History, Math..."
                   />
                 </div>
@@ -509,30 +509,30 @@ export default function UploadFlashcardPage() {
 
         {/* Editable Cards */}
         {cards.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-6">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
               Cards ({cards.length})
             </h2>
             <div className="space-y-4">
               {cards.map((card, index) => (
-                <div key={index} className="border border-slate-200 dark:border-slate-600 rounded-lg p-4">
+                <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Question</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Question</label>
                       <input
                         type="text"
                         value={card.question}
                         onChange={(e) => handleCardChange(index, 'question', e.target.value)}
-                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Answer</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Answer</label>
                       <input
                         type="text"
                         value={card.answer}
                         onChange={(e) => handleCardChange(index, 'answer', e.target.value)}
-                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                   </div>
@@ -552,7 +552,7 @@ export default function UploadFlashcardPage() {
               <button
                 type="button"
                 onClick={handleAddCard}
-                className="px-4 py-2 text-sm text-white bg-slate-700 hover:bg-slate-800 rounded"
+                className="px-4 py-2 text-sm text-white bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 rounded"
               >
                 + Add Card
               </button>
@@ -565,7 +565,7 @@ export default function UploadFlashcardPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </button>
@@ -574,7 +574,7 @@ export default function UploadFlashcardPage() {
             disabled={loading || !deckTitle.trim() ||
               (activeTab === 'ai' && cards.length === 0) ||
               (activeTab === 'zapier-file')}
-            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             style={{ display: (activeTab === 'zapier-file') ? 'none' : 'flex' }}
           >
             {loading ? (

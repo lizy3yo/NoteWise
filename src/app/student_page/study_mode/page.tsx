@@ -85,32 +85,32 @@ export default function StudyModePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <div className="max-w-5xl mx-auto px-6 py-10">
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                 Generate study notes
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Paste notes or upload files to create concise study notes and flashcards.
               </p>
             </div>
-            <div className="text-sm text-slate-400">{pasteText.length}/{MAX_CHARS} characters</div>
+            <div className="text-sm text-gray-400">{pasteText.length}/{MAX_CHARS} characters</div>
           </div>
         </div>
 
         <div className="mb-6">
-          <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 w-fit">
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-fit">
             {["paste", "upload"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t as any)}
                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                   tab === t
-                    ? "bg-white dark:bg-slate-700 text-[#1C2B1C] shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-[#1C2B1C] hover:bg-[#1C2B1C]/5"
+                    ? "bg-white dark:bg-gray-700 text-teal-600 shadow-sm"
+                    : "text-gray-600 dark:text-gray-400 hover:text-teal-600 hover:bg-teal-600/5"
                 }`}
               >
                 {t === "paste" ? "Paste text" : "Upload files"}
@@ -129,9 +129,9 @@ export default function StudyModePage() {
                 onDrop={handlePasteDrop}
                 onDragOver={handlePasteDragOver}
                 placeholder="Paste your notes here. We'll do the rest."
-                className="w-full min-h-[200px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-6 text-slate-900 dark:text-slate-100 resize-vertical text-sm"
+                className="w-full min-h-[200px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-gray-900 dark:text-white resize-vertical text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
-              <div className="absolute right-4 bottom-4 text-xs text-slate-500 dark:text-slate-400">
+              <div className="absolute right-4 bottom-4 text-xs text-gray-500 dark:text-gray-400">
                 {pasteText.length}/{MAX_CHARS} characters
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function StudyModePage() {
               <div
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
-                className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl py-12 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-slate-900 min-h-160"
+                className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-12 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-gray-800 min-h-160"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white">
@@ -151,20 +151,20 @@ export default function StudyModePage() {
                   <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white">
                     PDF
                   </div>
-                  <div className="w-10 h-10 bg-gradient-to-r from-[#1C2B1C] to-teal-500 rounded-md flex items-center justify-center text-white">
+                  <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-md flex items-center justify-center text-white">
                     PPT
                   </div>
                 </div>
-                <div className="text-slate-700 dark:text-slate-300 font-medium">
+                <div className="text-gray-700 dark:text-gray-300 font-medium">
                   Drag notes, slides, or readings here
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   Supported: .docx, .pdf, .pptx
                 </div>
                 <div className="mt-3">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm text-sm font-medium"
+                    className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   >
                     Browse files
                   </button>
@@ -183,16 +183,16 @@ export default function StudyModePage() {
                   {files.map((f, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 rounded-xl border bg-white dark:bg-slate-800"
+                      className="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                     >
-                      <div className="text-sm truncate">{f.name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white truncate">{f.name}</div>
                       <div className="flex items-center gap-3">
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-gray-400">
                           {(f.size / 1024).toFixed(0)} KB
                         </div>
                         <button
                           onClick={() => removeFileAt(i)}
-                          className="text-sm text-red-500"
+                          className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                         >
                           Remove
                         </button>
@@ -205,14 +205,14 @@ export default function StudyModePage() {
           )}
 
           <div className="mt-8 flex items-start gap-3">
-            <div className="w-8 h-8 bg-slate-800/10 dark:bg-slate-700 rounded-md flex items-center justify-center text-white">
-              F
+            <div className="w-8 h-8 bg-teal-600/10 dark:bg-teal-600/20 rounded-md flex items-center justify-center">
+              <span className="text-sm font-bold text-teal-600">F</span>
             </div>
             <div>
-              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
                 Flashcards
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Memorise your material — study notes will include optional flashcards.
               </div>
             </div>
@@ -222,7 +222,7 @@ export default function StudyModePage() {
         {/* Sticky generate area */}
         <div className="fixed right-6 bottom-6 z-50">
           <div className="bg-transparent flex items-center gap-4">
-            <div className="text-sm text-slate-400 hidden md:block">
+            <div className="text-sm text-gray-400 hidden md:block">
               {files.length > 0
                 ? files.length
                 : pasteText.trim().length > 0
@@ -235,8 +235,8 @@ export default function StudyModePage() {
               disabled={!allowGenerate}
               className={`px-6 py-3 rounded-xl font-semibold transition-shadow ${
                 !allowGenerate
-                  ? "bg-slate-600/30 text-slate-300 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#1C2B1C] to-teal-600 text-white shadow-lg hover:scale-[1.02]"
+                  ? "bg-gray-600/30 text-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:scale-[1.02]"
               }`}
             >
               Generate
@@ -244,7 +244,7 @@ export default function StudyModePage() {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto mt-8 text-xs text-slate-500 dark:text-slate-400">
+        <div className="max-w-2xl mx-auto mt-8 text-xs text-gray-500 dark:text-gray-400">
           This product is enhanced with AI and may provide incorrect or problematic content. Do not
           enter any personal data.
         </div>

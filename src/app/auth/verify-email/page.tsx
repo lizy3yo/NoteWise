@@ -42,7 +42,7 @@ function VerifyEmailForm() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (verificationCode.length !== 6) {
       showError("Please enter a 6-digit verification code", "Invalid Code");
       return;
@@ -131,7 +131,7 @@ function VerifyEmailForm() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
       <Alert
         type={alert.type}
         message={alert.message}
@@ -161,10 +161,10 @@ function VerifyEmailForm() {
             NoteWise
           </h1>
         </div>
-        <p className="text-gray-600 text-base sm:text-lg">Your AI-powered study companion</p>
+        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Your AI-powered study companion</p>
       </div>
 
-      <div className="relative z-10 w-full max-w-md sm:max-w-lg p-6 sm:p-8 lg:p-10 bg-white/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-200/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)]">
+      <div className="relative z-10 w-full max-w-md sm:max-w-lg p-6 sm:p-8 lg:p-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)] border border-teal-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)] dark:hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
         {/* Back Button - Inside Container - Hidden on mobile/tablet */}
         <button
           type="button"
@@ -186,16 +186,16 @@ function VerifyEmailForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 tracking-tight">Verify Your Email</h2>
-          <p className="text-sm sm:text-base text-gray-600 mb-2 leading-relaxed">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Verify Your Email</h2>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2 leading-relaxed">
             We've sent a 6-digit verification code to
           </p>
-          <p className="text-teal-600 font-semibold text-sm sm:text-base">{email}</p>
+          <p className="text-teal-600 dark:text-teal-400 font-semibold text-sm sm:text-base">{email}</p>
         </div>
 
         <form onSubmit={handleVerify} className="space-y-6">
           <div>
-            <label htmlFor="verificationCode" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="verificationCode" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Verification Code
             </label>
             <input
@@ -208,11 +208,11 @@ function VerifyEmailForm() {
               required
               value={verificationCode}
               onChange={handleInputChange}
-              className="w-full px-4 py-4 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-center text-xl sm:text-2xl font-mono tracking-widest"
+              className="w-full px-4 py-4 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-center text-xl sm:text-2xl font-mono tracking-widest placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="000000"
               disabled={isLoading}
             />
-            <p className="text-xs text-gray-500 mt-2 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
               Enter the 6-digit code sent to your email
             </p>
           </div>
@@ -233,12 +233,12 @@ function VerifyEmailForm() {
           </button>
         </form>
 
-        <div className="text-center pt-6 border-t border-gray-200">
-          <p className="text-gray-600 mb-3 text-sm sm:text-base">Didn't receive the code?</p>
+        <div className="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-gray-600 dark:text-gray-400 mb-3 text-sm sm:text-base">Didn't receive the code?</p>
           <button
             onClick={handleResendCode}
             disabled={countdown > 0 || isResending}
-            className="text-teal-600 hover:text-teal-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
             {isResending ? (
               <span className="flex items-center justify-center gap-2">

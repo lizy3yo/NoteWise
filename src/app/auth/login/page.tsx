@@ -255,7 +255,7 @@ export default function Login() {
 
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
       {/* Background decorations */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl opacity-60"></div>
       <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-cyan-200/30 rounded-full blur-2xl opacity-50"></div>
@@ -285,14 +285,14 @@ export default function Login() {
             NoteWise
           </h1>
         </div>
-        <p className="text-gray-600 text-base sm:text-lg">Your AI-powered study companion</p>
+        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Your AI-powered study companion</p>
       </div>
 
-      <div className="relative z-10 w-full max-w-md sm:max-w-lg p-6 sm:p-8 lg:p-10 bg-white/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-200/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)]">
+      <div className="relative z-10 w-full max-w-md sm:max-w-lg p-6 sm:p-8 lg:p-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)] border border-teal-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)] dark:hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
         {/* Back Button - Inside Container - Hidden on mobile/tablet */}
         <button
           type="button"
-          className="hidden lg:flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
+          className="hidden lg:flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
           onClick={() => router.push("/")}
           disabled={isLoading}
           aria-label="Go back to home"
@@ -313,10 +313,10 @@ export default function Login() {
           <span>Home</span>
         </button>
         <div className="mb-6 sm:mb-8 lg:mt-14 text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
             Welcome back, Student!
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
             Sign in to continue your learning journey
           </p>
         </div>
@@ -326,7 +326,7 @@ export default function Login() {
 
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Email Address
             </label>
             <input
@@ -337,7 +337,7 @@ export default function Login() {
               required
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+              className="w-full px-4 py-3 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="Enter your email address"
               disabled={isLoading}
             />
@@ -345,7 +345,7 @@ export default function Login() {
 
           {/* Password Field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
             <div className="relative">
@@ -357,7 +357,7 @@ export default function Login() {
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 pr-12 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
+                className="w-full px-4 py-3 pr-12 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-base placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Enter your password"
                 disabled={isLoading}
                 onCopy={(e) => {
@@ -394,7 +394,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
                 disabled={isLoading}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
@@ -415,12 +415,12 @@ export default function Login() {
 
           {/* Remember Me and Forgot Password */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-            <label className="inline-flex items-center cursor-pointer text-sm select-none">
+            <label className="inline-flex items-center cursor-pointer text-sm select-none text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={handleRememberMeChange}
-                className="mr-2 form-checkbox w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                className="mr-2 form-checkbox w-4 h-4 text-teal-600 dark:text-teal-400 rounded focus:ring-teal-500 dark:focus:ring-teal-400 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                 disabled={isLoading}
               />
               Remember me
@@ -428,7 +428,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => router.push("/auth/forgot-password")}
-              className="text-teal-600 hover:text-teal-700 text-sm font-medium transition-colors text-left sm:text-right"
+              className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 text-sm font-medium transition-colors text-left sm:text-right"
               disabled={isLoading}
             >
               Forgot password?
@@ -452,13 +452,13 @@ export default function Login() {
           </button>
 
           {/* Sign Up Link */}
-          <div className="text-center pt-6 border-t border-gray-200">
-            <p className="text-gray-600 text-sm sm:text-base">
+          <div className="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
               Don't have an account?{" "}
               <button
                 type="button"
                 onClick={() => router.push("/auth/signup")}
-                className="text-teal-600 hover:text-teal-700 font-semibold transition-colors"
+                className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold transition-colors"
                 disabled={isLoading}
               >
                 Sign up here
