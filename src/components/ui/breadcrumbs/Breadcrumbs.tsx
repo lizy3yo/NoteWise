@@ -16,7 +16,7 @@ const LABEL_MAP: Record<string, string> = {
   study_mode: "Study Notes",
   library: "Library",
 
-  student_profile: "Profile",
+  profile: "Profile",
   achievements: "Achievements",
   analytics: "Analytics",
   help: "Help",

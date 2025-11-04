@@ -33,6 +33,13 @@ interface CurrentUserResponse {
   user?: CurrentUserResponseUser;
 }
 
+// Extend Window interface for custom events
+declare global {
+  interface WindowEventMap {
+    profileUpdated: CustomEvent;
+  }
+}
+
 export default function StudentLayout({ children }: StudentLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -66,6 +73,46 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const bufferActiveRef = useRef(false);
   const COLLAPSE_BUFFER = 96; // px beyond sidebar edge before auto-collapse
 
+  // Function to refresh user data
+  const refreshUserData = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const res = await fetch(`/api/v1/users/current`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const json: CurrentUserResponse = await res.json().catch(() => ({}) as CurrentUserResponse);
+        const dbUser = json.user;
+        if (!dbUser) return;
+
+        const dbName =
+          (dbUser.firstName && dbUser.lastName && `${dbUser.firstName} ${dbUser.lastName}`) ||
+          dbUser.username ||
+          dbUser.name ||
+          null;
+        if (typeof dbName === "string") setUserName(dbName);
+        if (typeof dbUser.email === "string") setUserEmail(dbUser.email);
+
+        // Prioritize profileImage from database, then fallback to session image
+        if (typeof dbUser.profileImage === "string" && dbUser.profileImage) {
+          setUserImage(dbUser.profileImage);
+        } else if (typeof dbUser.image === "string") {
+          setUserImage(dbUser.image);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   // Try to populate display info from (in order): DB (if available), session, localStorage
   useEffect(() => {
     let mounted = true;
@@ -84,7 +131,13 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
           null;
         if (name) setUserName(name);
         if (parsed.email) setUserEmail(parsed.email);
-        if (parsed.image) setUserImage(parsed.image);
+
+        // Prioritize profileImage from localStorage, then fallback to session image
+        if (parsed.profileImage) {
+          setUserImage(parsed.profileImage);
+        } else if (parsed.image) {
+          setUserImage(parsed.image);
+        }
       } catch {
         // ignore parse errors
       }
@@ -136,7 +189,13 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
           null;
         if (typeof dbName === "string") setUserName(dbName);
         if (typeof dbUser.email === "string") setUserEmail(dbUser.email);
-        if (typeof dbUser.image === "string") setUserImage(dbUser.image);
+
+        // Prioritize profileImage from database, then fallback to session image
+        if (typeof dbUser.profileImage === "string" && dbUser.profileImage) {
+          setUserImage(dbUser.profileImage);
+        } else if (typeof dbUser.image === "string") {
+          setUserImage(dbUser.image);
+        }
       } catch {
         // silent fallback; keep session/local values
       }
@@ -146,6 +205,20 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       mounted = false;
     };
   }, [session]);
+
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      refreshUserData();
+    };
+
+    // Listen for custom profile update events
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, []);
 
   const stopBufferCollapse = () => {
     bufferActiveRef.current = false;
@@ -647,7 +720,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                       )}
                     </Link>
 
-                                        <Link
+                    <Link
                       href="/student_page/practice_tests"
                       className={`flex items-center ${!isExpanded
                         ? "justify-center w-full p-2.5 mx-0"
@@ -729,14 +802,24 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                 >
                   <div className="relative w-10 h-10 rounded-xl border-2 border-slate-200 dark:border-slate-700 transition-all duration-300 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 group-hover:border-teal-500 group-hover:shadow-[0_0_0_4px_rgba(20,184,166,0.1)] group-hover:bg-gradient-to-br group-hover:from-teal-500 group-hover:to-teal-600 flex-shrink-0 overflow-hidden">
                     {userImage ? (
-                      <Image
-                        src={userImage}
-                        alt="avatar"
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                        onError={() => setUserImage(null)}
-                      />
+                      // Check if it's a Cloudinary image (uploaded profile image) or OAuth provider image
+                      userImage.includes('res.cloudinary.com') ? (
+                        <img
+                          src={userImage}
+                          alt="avatar"
+                          className="w-full h-full object-cover"
+                          onError={() => setUserImage(null)}
+                        />
+                      ) : (
+                        <Image
+                          src={userImage}
+                          alt="avatar"
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                          onError={() => setUserImage(null)}
+                        />
+                      )
                     ) : (
                       <svg
                         className="text-slate-500 dark:text-slate-400 transition-colors duration-300 group-hover:text-white"
@@ -771,6 +854,28 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                     : "absolute bottom-[calc(100%+0.5rem)] left-[calc(100%+0.5rem)] w-64"
                     } bg-white dark:bg-slate-900 rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-800 z-[1000] overflow-hidden animate-in slide-in-from-bottom-2 duration-200`}>
                     <div className="py-2 border-b border-slate-100 dark:border-slate-800">
+                      <Link
+                        href="/student_page/profile"
+                        className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"
+                      >
+                        <svg
+                          className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                          width="18"
+                          height="18"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        <span>My Profile</span>
+                      </Link>
+
                       <Link
                         href="/student_page/achievements"
                         className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"

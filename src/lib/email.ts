@@ -394,3 +394,140 @@ This email was sent by NoteWise. If you have any questions, please contact our s
 © 2025 NoteWise. All rights reserved.
   `;
 }
+
+export async function sendVerificationEmail(email: string, verificationCode: string, firstName: string): Promise<boolean> {
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email Verification - NoteWise</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }
+            .container {
+                background: white;
+                border-radius: 16px;
+                padding: 40px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .logo-text {
+                font-size: 32px;
+                font-weight: 800;
+                background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .verification-code {
+                background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                margin: 30px 0;
+                font-size: 32px;
+                font-weight: bold;
+                letter-spacing: 8px;
+                font-family: 'Courier New', monospace;
+            }
+            .content {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .content h1 {
+                color: #1f2937;
+                margin-bottom: 16px;
+                font-size: 24px;
+            }
+            .content p {
+                color: #6b7280;
+                margin-bottom: 16px;
+                font-size: 16px;
+            }
+            .footer {
+                text-align: center;
+                padding-top: 30px;
+                border-top: 1px solid #e5e7eb;
+                color: #9ca3af;
+                font-size: 14px;
+            }
+            .warning {
+                background: #fef3c7;
+                border: 1px solid #f59e0b;
+                border-radius: 8px;
+                padding: 16px;
+                margin: 20px 0;
+                color: #92400e;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo-text">NoteWise</div>
+            </div>
+            
+            <div class="content">
+                <h1>Verify Your Email Address</h1>
+                <p>Hello ${firstName},</p>
+                <p>Please verify your email address to complete your profile update. Enter the verification code below:</p>
+                
+                <div class="verification-code">
+                    ${verificationCode}
+                </div>
+                
+                <p>Enter this code on the verification page to verify your email address.</p>
+                
+                <div class="warning">
+                    <strong>Important:</strong> This verification code will expire in 15 minutes. If you didn't request this verification, please ignore this email.
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>This email was sent by NoteWise. If you have any questions, please contact our support team.</p>
+                <p>&copy; 2025 NoteWise. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+
+  const textContent = `
+Verify Your Email Address - NoteWise
+
+Hello ${firstName},
+
+Please verify your email address to complete your profile update. Enter the verification code below:
+
+Verification Code: ${verificationCode}
+
+Enter this code on the verification page to verify your email address.
+
+Important: This verification code will expire in 15 minutes. If you didn't request this verification, please ignore this email.
+
+This email was sent by NoteWise. If you have any questions, please contact our support team.
+
+© 2025 NoteWise. All rights reserved.
+  `;
+
+  return await sendEmail({
+    to: email,
+    subject: 'Verify Your Email Address - NoteWise',
+    html: htmlContent,
+    text: textContent
+  });
+}

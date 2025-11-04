@@ -160,6 +160,8 @@ export async function PUT(request: NextRequest) {
             }
         }
 
+
+
         // Prepare update data
         const updateData: any = {};
         if (username) updateData.username = username;

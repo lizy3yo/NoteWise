@@ -48,6 +48,18 @@ export default function Login() {
   const { alert, showError, showSuccess, showInfo, hideAlert } = useAlert();
   const router = useRouter();
 
+  // Check for URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    
+    if (message) {
+      showSuccess(message, 'Success');
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [showSuccess]);
+
   // Simple encoding/decoding functions (not for real security, just obfuscation)
   const encodePassword = (password: string): string => {
     return btoa(password.split('').reverse().join(''));

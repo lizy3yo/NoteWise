@@ -31,6 +31,7 @@ export interface IUser{
     emailVerificationExpires?: Date;
     passwordResetToken?: string;
     passwordResetExpires?: Date;
+    profileImage?: string;
     socialLinks?: {
         website?: string;
         facebook?: string;
@@ -94,6 +95,10 @@ const userSchema = new Schema<IUser>({
     },
     passwordResetExpires: {
         type: Date
+    },
+    profileImage: {
+        type: String,
+        maxLength: [500, 'Profile image URL must be less than 500 characters long']
     },
     socialLinks: {
         website: { 
