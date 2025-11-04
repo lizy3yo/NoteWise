@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Alert from "@/components/ui/alert_template/Alert";
 import { useAlert } from "@/hooks/useAlert";
 
@@ -72,7 +73,7 @@ function ResetPasswordForm() {
       }
 
       showSuccess(data.message, "Password Reset Successful");
-      
+
       // Redirect to login page after a short delay
       setTimeout(() => {
         router.push("/auth/login");
@@ -90,11 +91,11 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif] bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 p-4 sm:p-6 lg:p-8">
       {/* Background decorations */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl opacity-60"></div>
-      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-indigo-200/30 rounded-full blur-2xl opacity-50"></div>
-      
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl opacity-60"></div>
+      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-cyan-200/30 rounded-full blur-2xl opacity-50"></div>
+
       <Alert
         type={alert.type}
         message={alert.message}
@@ -107,25 +108,27 @@ function ResetPasswordForm() {
       />
 
       {/* NoteWise Title */}
-      <div className="relative z-10 mb-8 max-md:mb-6">
+      <div className="relative z-10 mb-6 sm:mb-8 text-center">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <h1 className="text-5xl font-extrabold bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-600 bg-clip-text text-transparent tracking-tight max-md:text-4xl">
+          <Image
+            src="/notewise.png"
+            alt="NoteWise Logo"
+            width={40}
+            height={40}
+            className="object-contain sm:w-12 sm:h-12"
+          />
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-br from-teal-600 via-cyan-500 to-emerald-600 bg-clip-text text-transparent tracking-tight">
             NoteWise
           </h1>
         </div>
-        <p className="text-center text-gray-600 text-lg">Create your new password</p>
+        <p className="text-gray-600 text-base sm:text-lg">Create your new password</p>
       </div>
 
-      <div className="relative z-10 max-w-[500px] w-full p-12 bg-white/95 backdrop-blur-[20px] rounded-[32px] shadow-[0_32px_64px_-12px_rgba(139,92,246,0.15)] border border-purple-200/50 transform transition-all duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:translate-y-[-4px] hover:shadow-[0_48px_100px_-12px_rgba(139,92,246,0.2)] max-md:m-0 max-md:p-6 max-md:max-w-full max-md:w-full max-md:flex-1 max-md:rounded-none max-md:bg-white max-md:backdrop-blur-none max-md:shadow-none max-md:border-none max-md:flex max-md:flex-col max-md:justify-center max-md:overflow-y-auto max-md:transform-none max-md:hover:transform-none max-md:hover:shadow-none">
-        
+      <div className="relative z-10 w-full max-w-md sm:max-w-lg p-6 sm:p-8 lg:p-10 bg-white/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-200/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)]">
+
         <button
           type="button"
-          className="absolute top-6 left-6 flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-700 text-sm font-semibold cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] shadow-[0_4px_12px_rgba(0,0,0,0.05)] z-10 hover:translate-y-[-2px] hover:shadow-[0_8px_20px_rgba(139,92,246,0.15)] active:translate-y-[-1px] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none hover:[&>svg]:translate-x-[-2px] max-lg:hidden"
+          className="hidden lg:flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
           onClick={() => router.push("/auth/forgot-password")}
           disabled={isLoading}
           aria-label="Go back"
@@ -139,27 +142,23 @@ function ResetPasswordForm() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="transition-transform duration-300 ease"
           >
             <path d="m12 19-7-7 7-7" />
             <path d="M19 12H5" />
           </svg>
-          Back
+          <span>Back</span>
         </button>
 
-        <div className="mb-8 max-md:mb-6">
-          <h2 className="text-center text-2xl font-bold text-gray-900 m-0 mb-2 tracking-[-0.02em] max-md:text-xl max-md:font-bold max-md:text-gray-800 max-md:mb-3">
+        <div className="mb-6 sm:mb-8 lg:mt-14 text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 tracking-tight">
             Reset Your Password
           </h2>
-          <p className="text-center text-[0.95rem] text-gray-600 m-0 font-normal leading-6 max-md:text-sm max-md:text-gray-500 max-md:leading-tight">
+          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
             Enter the reset code from your email and create a new password
           </p>
         </div>
 
-        <form
-          className="flex flex-col gap-6 max-md:gap-5 max-md:w-full max-md:max-w-[320px] max-md:mx-auto max-md:flex-shrink-0"
-          onSubmit={handleSubmit}
-        >
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
               Email Address
@@ -172,7 +171,7 @@ function ResetPasswordForm() {
               required
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-purple-200 rounded-xl text-gray-900 bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200"
+              className="w-full px-4 py-3 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
               placeholder="Enter your email address"
               disabled={isLoading}
             />
@@ -189,7 +188,7 @@ function ResetPasswordForm() {
               required
               value={formData.resetCode}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-purple-200 rounded-xl text-gray-900 bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 text-center font-mono text-lg tracking-widest"
+              className="w-full px-4 py-3 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-center font-mono text-lg tracking-widest"
               placeholder="Enter 6-digit code"
               maxLength={6}
               disabled={isLoading}
@@ -209,7 +208,7 @@ function ResetPasswordForm() {
                 required
                 value={formData.newPassword}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 pr-12 border border-purple-200 rounded-xl text-gray-900 bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200"
+                className="w-full px-4 py-3 pr-12 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
                 placeholder="Enter your new secure password"
                 disabled={isLoading}
               />
@@ -257,7 +256,7 @@ function ResetPasswordForm() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 pr-12 border border-purple-200 rounded-xl text-gray-900 bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200"
+                className="w-full px-4 py-3 pr-12 border border-teal-200 rounded-xl text-gray-900 bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all duration-200 text-base"
                 placeholder="Confirm your new password"
                 disabled={isLoading}
               />
@@ -285,11 +284,11 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full px-6 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-indigo-700 focus:ring-4 focus:ring-purple-200 transition-all duration-200 disabled:opacity-50"
+            className="w-full px-6 py-3 sm:py-4 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-cyan-700 focus:ring-4 focus:ring-teal-200 transition-all duration-200 disabled:opacity-50 text-base"
           >
             {isLoading ? (
-              <div className="flex items-center justify-center gap-3 max-md:gap-2">
-                <span className="w-[18px] h-[18px] border-2 border-white/30 border-t-white rounded-full animate-spin max-md:w-4 max-md:h-4 max-md:border-2 max-md:border-white/30 max-md:border-t-white max-md:rounded-full max-md:animate-spin"></span>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 Resetting Password...
               </div>
             ) : (
@@ -297,13 +296,13 @@ function ResetPasswordForm() {
             )}
           </button>
 
-          <div className="text-center mt-6 pt-6 border-t border-gray-200">
-            <p className="text-gray-600">
+          <div className="text-center pt-6 border-t border-gray-200">
+            <p className="text-gray-600 text-sm sm:text-base">
               Remember your password?{" "}
               <button
                 type="button"
                 onClick={() => router.push("/auth/login")}
-                className="text-purple-600 hover:text-purple-700 font-semibold transition-colors"
+                className="text-teal-600 hover:text-teal-700 font-semibold transition-colors"
                 disabled={isLoading}
               >
                 Sign in here
@@ -319,9 +318,9 @@ function ResetPasswordForm() {
 export default function ResetPassword() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
           <span className="text-gray-600">Loading...</span>
         </div>
       </div>
