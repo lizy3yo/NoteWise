@@ -75,12 +75,12 @@ export default function StudyModePage() {
   const handleGenerate = () => {
     if (!allowGenerate) return;
     if (tab === "upload") {
-      sessionStorage.setItem("study_guide_upload_files", JSON.stringify(files.map((f) => f.name)));
+      sessionStorage.setItem("study_note_upload_files", JSON.stringify(files.map((f) => f.name)));
       router.push("/student_page/study_mode/generate?source=upload");
       return;
     }
     // paste
-    sessionStorage.setItem("study_guide_paste_text", pasteText);
+    sessionStorage.setItem("study_note_paste_text", pasteText);
     router.push("/student_page/study_mode/generate?source=paste");
   };
 
@@ -91,10 +91,10 @@ export default function StudyModePage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                Generate study guides
+                Generate study notes
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Paste notes or upload files to create concise study guides and flashcards.
+                Paste notes or upload files to create concise study notes and flashcards.
               </p>
             </div>
             <div className="text-sm text-slate-400">{pasteText.length}/{MAX_CHARS} characters</div>
@@ -213,7 +213,7 @@ export default function StudyModePage() {
                 Flashcards
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                Memorise your material — study guides will include optional flashcards.
+                Memorise your material — study notes will include optional flashcards.
               </div>
             </div>
           </div>

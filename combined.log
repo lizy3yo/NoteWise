@@ -228,3 +228,27 @@
 {"timestamp":"2025-11-04T08:56:46.225Z","level":"info","message":"User logged in successfully:","service":"gc-quest-api","meta":{"userId":"690839ab9eb7a822a2dd04ac","email":"dejesuskharl32@gmail.com","username":"user-kg57ftd2fli"}}
 {"timestamp":"2025-11-04T08:56:50.599Z","level":"info","message":"User refresh token deleted successfully","service":"gc-quest-api","meta":{"userId":"690839ab9eb7a822a2dd04ac","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTA4MzlhYjllYjdhODIyYTJkZDA0YWMiLCJpYXQiOjE3NjIyNDY2MDYsImV4cCI6MTc2Mjg1MTQwNiwic3ViIjoicmVmcmVzaEFwaSJ9.b-uSNYF9IlNFeG4gIgyNIcURrPubEi23NvlogL70uz4"}}
 {"timestamp":"2025-11-04T08:56:50.601Z","level":"info","message":"User logged out successfully","service":"gc-quest-api","meta":{"userId":"690839ab9eb7a822a2dd04ac"}}
+{"timestamp":"2025-11-04T09:58:12.168Z","level":"info","message":"Refresh token stored in database for user","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTA5Yzk3NDAwNTU4NGNiOTRiYjI5MjIiLCJpYXQiOjE3NjIyNTAyOTIsImV4cCI6MTc2Mjg1NTA5Miwic3ViIjoicmVmcmVzaEFwaSJ9.OZ2XCvWIryMS3Ew3YAgNlzxP-41CID25Br7eyPHcx2g"}}
+{"timestamp":"2025-11-04T09:58:12.172Z","level":"info","message":"User logged in successfully:","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","email":"dejesuskharl32@gmail.com","username":"user-e74db2c2nij"}}
+{"timestamp":"2025-11-04T09:58:17.090Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T09:58:21.598Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:04:48.926Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:05:32.034Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:05:50.393Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:05:58.883Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:26:42.001Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:26:50.074Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:26:53.458Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:27:29.703Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:27:56.365Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:27:59.944Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:28:03.411Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:28:04.514Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:28:16.182Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:30:09.931Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:32:49.467Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:32:51.896Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:32:53.479Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:33:03.425Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:34:05.203Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-04T10:34:07.344Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}

@@ -75,7 +75,7 @@ export default function ZapierDashboard() {
           aiProvider: 'gemini',
           cardsGenerated: 12,
           status: 'success',
-          title: 'Biology Study Guide'
+          title: 'Biology Study Notes'
         },
         {
           id: '2',

@@ -694,7 +694,7 @@ export default function Home() {
                 <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Help Center</a></li>
                 <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Contact Us</a></li>
                 <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Student Community</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Study Guides</a></li>
+                <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Study Notes</a></li>
                 <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Status</a></li>
               </ul>
             </div>

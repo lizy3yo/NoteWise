@@ -13,7 +13,7 @@ const LABEL_MAP: Record<string, string> = {
   create: "Create",
   upload: "Upload",
   practice_tests: "Practice Tests",
-  study_mode: "Study Mode",
+  study_mode: "Study Notes",
   library: "Library",
 
   student_profile: "Profile",

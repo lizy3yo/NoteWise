@@ -622,7 +622,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                           ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
                           : ""
                         }`}
-                      title={!isExpanded ? "Study Mode" : ""}
+                      title={!isExpanded ? "Study Notes" : ""}
                     >
                       <svg
                         className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${pathname === "/student_page/study_mode"
@@ -643,7 +643,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         />
                       </svg>
                       {isExpanded && (
-                        <span className="whitespace-nowrap">Study Mode</span>
+                        <span className="whitespace-nowrap">Study Notes</span>
                       )}
                     </Link>
 
@@ -872,6 +872,28 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                     </div>
 
                     <div className="py-2">
+                      <Link
+                        href="/student_page/about"
+                        className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"
+                      >
+                        <svg
+                          className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                          width="18"
+                          height="18"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span>About</span>
+                      </Link>
+
                       <Link
                         href="/student_page/privacy_policy"
                         className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"
