@@ -423,13 +423,13 @@ function PrivateLibraryContent() {
       </div>
 
       {/* Filter and Actions */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit">
             <button
               onClick={() => setViewMode('folders')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'folders'
+              className={`px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${viewMode === 'folders'
                 ? 'bg-teal-600 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
@@ -438,11 +438,11 @@ function PrivateLibraryContent() {
               <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
-              Folders
+              <span className="hidden sm:inline">Folders</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'list'
+              className={`px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${viewMode === 'list'
                 ? 'bg-teal-600 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
@@ -451,66 +451,74 @@ function PrivateLibraryContent() {
               <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              List
+              <span className="hidden sm:inline">List</span>
             </button>
           </div>
 
-          {viewMode === 'list' && (
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-center">
+            {viewMode === 'list' && (
+              <select
+                id="subject-filter"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
+              >
+                <option value="all">All Subjects</option>
+                {subjects.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
+              </select>
+            )}
+
             <select
-              id="subject-filter"
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
+              id="filter"
+              value={filter}
+              onChange={handleFilterChange}
               className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
             >
-              <option value="all">All Subjects</option>
-              {subjects.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
-                </option>
-              ))}
+              <option value="recent">Recent</option>
+              <option value="popular">Most Cards</option>
+              <option value="alphabetical">A-Z</option>
             </select>
-          )}
-
-          <select
-            id="filter"
-            value={filter}
-            onChange={handleFilterChange}
-            className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm"
-          >
-            <option value="recent">Recent</option>
-            <option value="popular">Most Cards</option>
-            <option value="alphabetical">A-Z</option>
-          </select>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {activeTab === 'flashcards' && (
-              viewMode === 'folders'
-                ? `${flashcardsBySubject.size} ${flashcardsBySubject.size === 1 ? 'class' : 'classes'}, ${flashcards.length} ${flashcards.length === 1 ? 'set' : 'sets'}`
-                : `${filteredFlashcards.length} ${filteredFlashcards.length === 1 ? 'set' : 'sets'}`
-            )}
-            {activeTab === 'practice_tests' && (
-              viewMode === 'folders'
-                ? `${practiceTestsBySubject.size} ${practiceTestsBySubject.size === 1 ? 'class' : 'classes'}, ${practiceTests.length} ${practiceTests.length === 1 ? 'test' : 'tests'}`
-                : `${filteredPracticeTests.length} ${filteredPracticeTests.length === 1 ? 'test' : 'tests'}`
-            )}
-            {activeTab === 'study_notes' && '0 notes'}
-          </span>
+            
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 order-first sm:order-none">
+              {activeTab === 'flashcards' && (
+                viewMode === 'folders'
+                  ? `${flashcardsBySubject.size} ${flashcardsBySubject.size === 1 ? 'class' : 'classes'}, ${flashcards.length} ${flashcards.length === 1 ? 'set' : 'sets'}`
+                  : `${filteredFlashcards.length} ${filteredFlashcards.length === 1 ? 'set' : 'sets'}`
+              )}
+              {activeTab === 'practice_tests' && (
+                viewMode === 'folders'
+                  ? `${practiceTestsBySubject.size} ${practiceTestsBySubject.size === 1 ? 'class' : 'classes'}, ${practiceTests.length} ${practiceTests.length === 1 ? 'test' : 'tests'}`
+                  : `${filteredPracticeTests.length} ${filteredPracticeTests.length === 1 ? 'test' : 'tests'}`
+              )}
+              {activeTab === 'study_notes' && '0 notes'}
+            </span>
+          </div>
         </div>
 
-        {activeTab === 'flashcards' && (
-          <PrimaryActionButton as="link" href="/student_page/flashcards/create" title="Create a new set">
-            + Create Set
-          </PrimaryActionButton>
-        )}
-        {activeTab === 'practice_tests' && (
-          <PrimaryActionButton as="link" href="/student_page/practice_tests" title="Create a practice test">
-            + Create Test
-          </PrimaryActionButton>
-        )}
-        {activeTab === 'study_notes' && (
-          <PrimaryActionButton as="button" onClick={() => alert('Coming soon!')} title="Create a study note">
-            + Create Note
-          </PrimaryActionButton>
-        )}
+        <div className="flex justify-end">
+          {activeTab === 'flashcards' && (
+            <PrimaryActionButton as="link" href="/student_page/flashcards/create" title="Create a new set">
+              <span className="hidden sm:inline">+ Create Set</span>
+              <span className="sm:hidden">+ Set</span>
+            </PrimaryActionButton>
+          )}
+          {activeTab === 'practice_tests' && (
+            <PrimaryActionButton as="link" href="/student_page/practice_tests" title="Create a practice test">
+              <span className="hidden sm:inline">+ Create Test</span>
+              <span className="sm:hidden">+ Test</span>
+            </PrimaryActionButton>
+          )}
+          {activeTab === 'study_notes' && (
+            <PrimaryActionButton as="button" onClick={() => alert('Coming soon!')} title="Create a study note">
+              <span className="hidden sm:inline">+ Create Note</span>
+              <span className="sm:hidden">+ Note</span>
+            </PrimaryActionButton>
+          )}
+        </div>
       </div>
 
       {/* Content Section */}
@@ -587,23 +595,23 @@ function PrivateLibraryContent() {
 
                     {/* Folder Contents */}
                     {expandedFolder === subject && (
-                      <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-900/30">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-visible">
+                      <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-4 bg-slate-50 dark:bg-slate-900/30">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-visible">
                           {items.map((item) => (
                             <div
                               key={item._id}
                               onClick={() => router.push(`/student_page/library/${item._id}`)}
-                              className={`bg-white dark:bg-slate-800 border rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 group relative ${highlightedCardId === item._id
+                              className={`bg-white dark:bg-slate-800 border rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 group relative ${highlightedCardId === item._id
                                 ? 'border-[#1C2B1C] border-2 shadow-lg ring-2 ring-[#1C2B1C]/20 animate-pulse'
                                 : 'border-slate-200 dark:border-slate-700'
                                 }`}
                             >
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-2">
+                              <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                   <div className="w-2 h-2 bg-[#1C2B1C] rounded-full"></div>
-                                  <span className="text-sm font-medium text-[#1C2B1C]">{item.cards?.length || 0} cards</span>
+                                  <span className="text-xs sm:text-sm font-medium text-[#1C2B1C]">{item.cards?.length || 0} cards</span>
                                   {highlightedCardId === item._id && (
-                                    <span className="px-2 py-0.5 text-xs font-semibold text-white bg-green-500 rounded-full">
+                                    <span className="px-1.5 sm:px-2 py-0.5 text-xs font-semibold text-white bg-green-500 rounded-full">
                                       NEW
                                     </span>
                                   )}
