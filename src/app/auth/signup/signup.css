@@ -1,0 +1,49 @@
+/* NoteWise Signup Styles */
+.signup-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Custom focus styles for form inputs */
+.signup-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+/* Progress indicator animations */
+.progress-step {
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  transform: scale(1.1);
+}
+
+/* Button hover effects */
+.signup-btn {
+  transition: all 0.2s ease;
+}
+
+.signup-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.25);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .signup-container {
+    padding: 1rem;
+  }
+  
+  .progress-step {
+    transform: none;
+  }
+  
+  .progress-step.active {
+    transform: none;
+  }
+  
+  .signup-btn:hover {
+    transform: none;
+  }
+}
