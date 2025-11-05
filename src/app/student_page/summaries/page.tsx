@@ -1,27 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface Summary {
+    _id: string;
+    title: string;
+    content: string;
+    subject: string;
+    createdAt: string;
+    wordCount: number;
+    status: string;
+    difficulty: string;
+    summaryType: string;
+    keyPoints: string[];
+    mainTopics: string[];
+    compressionRatio: number;
+    readingTime: number;
+    tags: string[];
+    confidence: number;
+}
+
 export default function SummariesPage() {
-    const [summaries] = useState([
-        {
-            id: 1,
-            title: "Biology Chapter 5 Summary",
-            subject: "Biology",
-            createdAt: "2024-11-01",
-            wordCount: 450,
-            status: "completed"
-        },
-        {
-            id: 2,
-            title: "Chemistry Reactions Overview",
-            subject: "Chemistry",
-            createdAt: "2024-10-28",
-            wordCount: 320,
-            status: "completed"
+    const [summaries, setSummaries] = useState<Summary[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
+
+    // Get userId and fetch summaries
+    useEffect(() => {
+        async function getUserIdAndFetchSummaries() {
+            let uid: string | null = null;
+            try {
+                const token = localStorage.getItem("accessToken");
+                if (token) {
+                    const currentRes = await fetch("/api/v1/users/current", {
+                        credentials: "include",
+                        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    });
+                    if (currentRes.ok) {
+                        const json = await currentRes.json().catch(() => ({} as unknown));
+                        uid = json?.user?._id;
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+            if (!uid) uid = localStorage.getItem('userId');
+            if (!uid) {
+                uid = `temp-user-${Date.now()}`;
+                localStorage.setItem('userId', uid);
+            }
+            setUserId(uid);
+            
+            // Fetch summaries
+            if (uid) {
+                await fetchSummaries(uid);
+            }
         }
-    ]);
+        getUserIdAndFetchSummaries();
+    }, []);
+
+    const fetchSummaries = async (uid: string) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/student_page/summary?userId=${uid}`);
+            const data = await response.json();
+
+            if (data.success) {
+                setSummaries(data.summaries || []);
+            } else {
+                setError(data.error || 'Failed to fetch summaries');
+            }
+        } catch (err) {
+            console.error('Error fetching summaries:', err);
+            setError('Failed to load summaries');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteSummary = async (summaryId: string) => {
+        if (!userId || !confirm('Are you sure you want to delete this summary?')) return;
+
+        try {
+            const response = await fetch(`/api/student_page/summary?userId=${userId}&summaryId=${summaryId}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                setSummaries(prev => prev.filter(s => s._id !== summaryId));
+            } else {
+                alert(data.error || 'Failed to delete summary');
+            }
+        } catch (err) {
+            console.error('Error deleting summary:', err);
+            alert('Failed to delete summary');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -39,34 +117,63 @@ export default function SummariesPage() {
                 {/* Action Buttons */}
                 <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <Link
-                        href="/student_page/summaries/create"
+                        href="/student_page/study_mode"
                         className="w-full sm:w-auto bg-teal-600 text-white px-4 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium text-center no-underline"
                     >
                         Generate New Summary
                     </Link>
-                    <Link
-                        href="/student_page/flashcards/upload"
-                        className="w-full sm:w-auto bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium text-center no-underline"
+                    <button
+                        onClick={() => userId && fetchSummaries(userId)}
+                        disabled={loading}
+                        className="w-full sm:w-auto bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                     >
-                        Upload Notes First
-                    </Link>
+                        {loading ? 'Loading...' : 'Refresh'}
+                    </button>
                 </div>
 
-                {/* Summaries Grid */}
-                {summaries.length > 0 ? (
+                {/* Loading State */}
+                {loading ? (
+                    <div className="text-center py-12">
+                        <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-gray-600 dark:text-gray-400">Loading summaries...</p>
+                    </div>
+                ) : error ? (
+                    <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <span className="text-2xl">⚠️</span>
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Summaries</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+                        <button
+                            onClick={() => userId && fetchSummaries(userId)}
+                            className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : summaries.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                         {summaries.map((summary) => (
                             <div
-                                key={summary.id}
+                                key={summary._id}
                                 className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                             >
                                 <div className="flex items-start justify-between mb-4">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 flex-1 mr-2">
                                         {summary.title}
                                     </h3>
-                                    <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full flex-shrink-0">
-                                        {summary.status}
-                                    </span>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full flex-shrink-0">
+                                            completed
+                                        </span>
+                                        <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
+                                            summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                            summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                        }`}>
+                                            {summary.difficulty}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2 mb-4">
@@ -74,20 +181,37 @@ export default function SummariesPage() {
                                         Subject: {summary.subject}
                                     </p>
                                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                        Words: {summary.wordCount}
+                                        Words: {summary.wordCount} • {summary.readingTime} min read
+                                    </p>
+                                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                        Type: {summary.summaryType.replace('-', ' ')}
                                     </p>
                                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                         Created: {new Date(summary.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                    <button className="flex-1 bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors">
+                                <div className="flex flex-col gap-2">
+                                    <button 
+                                        onClick={() => setSelectedSummary(summary)}
+                                        className="w-full bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+                                    >
                                         View Summary
                                     </button>
-                                    <button className="flex-1 bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                                        Generate Flashcards
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <Link
+                                            href="/student_page/study_mode"
+                                            className="flex-1 bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-center no-underline"
+                                        >
+                                            Create Flashcards
+                                        </Link>
+                                        <button
+                                            onClick={() => deleteSummary(summary._id)}
+                                            className="px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -106,11 +230,103 @@ export default function SummariesPage() {
                             Upload some notes to get started with AI-generated summaries.
                         </p>
                         <Link
-                            href="/student_page/flashcards/upload"
+                            href="/student_page/study_mode"
                             className="inline-block bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors no-underline font-medium"
                         >
-                            Upload Notes
+                            Create Your First Summary
                         </Link>
+                    </div>
+                )}
+
+                {/* Summary View Modal */}
+                {selectedSummary && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                            {selectedSummary.title}
+                                        </h2>
+                                        <div className="flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                            <span>Subject: {selectedSummary.subject}</span>
+                                            <span>•</span>
+                                            <span>{selectedSummary.wordCount} words</span>
+                                            <span>•</span>
+                                            <span>{selectedSummary.readingTime} min read</span>
+                                            <span>•</span>
+                                            <span className="capitalize">{selectedSummary.difficulty}</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedSummary(null)}
+                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    >
+                                        <span className="text-xl">×</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="p-6 space-y-6">
+                                {/* Summary Content */}
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Summary</h3>
+                                    <div className="prose dark:prose-invert max-w-none">
+                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                                            {selectedSummary.content || 'No content available'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Key Points */}
+                                {selectedSummary.keyPoints && selectedSummary.keyPoints.length > 0 && (
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Key Points</h3>
+                                        <ul className="space-y-2">
+                                            {selectedSummary.keyPoints.map((point, index) => (
+                                                <li key={index} className="flex items-start gap-2">
+                                                    <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 flex-shrink-0"></span>
+                                                    <span className="text-gray-700 dark:text-gray-300">{point}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Main Topics */}
+                                {selectedSummary.mainTopics && selectedSummary.mainTopics.length > 0 && (
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Main Topics</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedSummary.mainTopics.map((topic, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="px-3 py-1 bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 rounded-full text-sm"
+                                                >
+                                                    {topic}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Actions */}
+                                <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <Link
+                                        href="/student_page/study_mode"
+                                        className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-center no-underline font-medium"
+                                    >
+                                        Create Flashcards from This
+                                    </Link>
+                                    <button
+                                        onClick={() => setSelectedSummary(null)}
+                                        className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

@@ -1,0 +1,134 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface ISummary extends Document {
+  _id: string;
+  userId: string;
+  title: string;
+  content: string;
+  keyPoints: string[];
+  mainTopics: string[];
+  wordCount: number;
+  readingTime: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  subject: string;
+  summaryType: 'brief' | 'detailed' | 'bullet-points' | 'outline';
+  tags: string[];
+  confidence: number;
+  originalWordCount: number;
+  compressionRatio: number;
+  sourceType: 'text' | 'file';
+  sourceFileName?: string;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const SummarySchema = new Schema<ISummary>({
+  userId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 200
+  },
+  content: {
+    type: String,
+    required: true,
+    maxlength: 10000
+  },
+  keyPoints: [{
+    type: String,
+    maxlength: 500
+  }],
+  mainTopics: [{
+    type: String,
+    maxlength: 100
+  }],
+  wordCount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  readingTime: {
+    type: Number,
+    required: true,
+    min: 1
+  },
+  difficulty: {
+    type: String,
+    enum: ['easy', 'medium', 'hard'],
+    default: 'medium'
+  },
+  subject: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  summaryType: {
+    type: String,
+    enum: ['brief', 'detailed', 'bullet-points', 'outline'],
+    default: 'detailed'
+  },
+  tags: [{
+    type: String,
+    maxlength: 50
+  }],
+  confidence: {
+    type: Number,
+    min: 0,
+    max: 1,
+    default: 0.8
+  },
+  originalWordCount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  compressionRatio: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 100
+  },
+  sourceType: {
+    type: String,
+    enum: ['text', 'file'],
+    required: true
+  },
+  sourceFileName: {
+    type: String,
+    maxlength: 255
+  },
+  isPublic: {
+    type: Boolean,
+    default: false
+  }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Indexes for better query performance
+SummarySchema.index({ userId: 1, createdAt: -1 });
+SummarySchema.index({ userId: 1, subject: 1 });
+SummarySchema.index({ userId: 1, isPublic: 1 });
+SummarySchema.index({ tags: 1 });
+SummarySchema.index({ subject: 1, isPublic: 1 });
+
+// Virtual for formatted creation date
+SummarySchema.virtual('formattedCreatedAt').get(function() {
+  return this.createdAt.toLocaleDateString();
+});
+
+// Virtual for status
+SummarySchema.virtual('status').get(function() {
+  return 'completed';
+});
+
+export const Summary = mongoose.models.Summary || mongoose.model<ISummary>('Summary', SummarySchema);

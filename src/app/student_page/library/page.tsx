@@ -32,6 +32,24 @@ type PracticeTestItem = {
   updatedAt?: string;
 };
 
+type SummaryItem = {
+  _id: string;
+  title: string;
+  content: string;
+  subject: string;
+  difficulty: string;
+  summaryType: string;
+  wordCount: number;
+  readingTime: number;
+  keyPoints: string[];
+  mainTopics: string[];
+  compressionRatio: number;
+  confidence: number;
+  tags: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 function PrivateLibraryContent() {
   const [activeTab, setActiveTab] = useState('flashcards');
   const [filter, setFilter] = useState('recent');
@@ -42,6 +60,7 @@ function PrivateLibraryContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
   const [practiceTests, setPracticeTests] = useState<PracticeTestItem[]>([]);
+  const [summaries, setSummaries] = useState<SummaryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -189,6 +208,24 @@ function PrivateLibraryContent() {
         } else {
           console.warn('Failed to load practice tests');
         }
+
+        // Fetch summaries
+        const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store',
+        });
+
+        if (summariesRes.ok) {
+          const summariesData = await summariesRes.json();
+          if (isMounted && summariesData.success) {
+            console.log('📄 Loaded summaries:', summariesData.summaries);
+            setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
+          }
+        } else {
+          console.warn('Failed to load summaries');
+        }
       } catch (e: unknown) {
         if (!isMounted) return;
         setError(e instanceof Error ? e.message : 'Something went wrong loading your library.');
@@ -269,7 +306,7 @@ function PrivateLibraryContent() {
     }
   };
 
-  // Get unique subjects from both flashcards and practice tests based on active tab
+  // Get unique subjects from flashcards, practice tests, and summaries based on active tab
   const subjects = useMemo(() => {
     const subjectSet = new Set<string>();
     if (activeTab === 'flashcards') {
@@ -280,9 +317,13 @@ function PrivateLibraryContent() {
       practiceTests.forEach(t => {
         if (t.subject) subjectSet.add(t.subject);
       });
+    } else if (activeTab === 'study_notes') {
+      summaries.forEach(s => {
+        if (s.subject) subjectSet.add(s.subject);
+      });
     }
     return Array.from(subjectSet).sort();
-  }, [flashcards, practiceTests, activeTab]);
+  }, [flashcards, practiceTests, summaries, activeTab]);
 
   // Group flashcards by subject for folder view
   const flashcardsBySubject = useMemo(() => {
@@ -390,6 +431,41 @@ function PrivateLibraryContent() {
     return list;
   }, [practiceTests, filter, selectedSubject]);
 
+  const filteredSummaries = useMemo(() => {
+    let list = [...summaries];
+
+    // Filter by subject
+    if (selectedSubject !== 'all') {
+      list = list.filter(s => s.subject === selectedSubject);
+    }
+
+    // Sort
+    if (filter === 'recent') {
+      list.sort((a, b) => {
+        const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return bd - ad;
+      });
+    } else if (filter === 'popular') {
+      list.sort((a, b) => (b.wordCount || 0) - (a.wordCount || 0));
+    } else if (filter === 'alphabetical') {
+      list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    }
+    return list;
+  }, [summaries, filter, selectedSubject]);
+
+  const summariesBySubject = useMemo(() => {
+    const grouped = new Map<string, SummaryItem[]>();
+    filteredSummaries.forEach(summary => {
+      const subject = summary.subject || 'Other';
+      if (!grouped.has(subject)) {
+        grouped.set(subject, []);
+      }
+      grouped.get(subject)!.push(summary);
+    });
+    return grouped;
+  }, [filteredSummaries]);
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header Section */}
@@ -494,6 +570,11 @@ function PrivateLibraryContent() {
                   ? `${practiceTestsBySubject.size} ${practiceTestsBySubject.size === 1 ? 'class' : 'classes'}, ${practiceTests.length} ${practiceTests.length === 1 ? 'test' : 'tests'}`
                   : `${filteredPracticeTests.length} ${filteredPracticeTests.length === 1 ? 'test' : 'tests'}`
               )}
+              {activeTab === 'study_notes' && (
+                viewMode === 'folders'
+                  ? `${summariesBySubject.size} ${summariesBySubject.size === 1 ? 'class' : 'classes'}, ${summaries.length} ${summaries.length === 1 ? 'summary' : 'summaries'}`
+                  : `${filteredSummaries.length} ${filteredSummaries.length === 1 ? 'summary' : 'summaries'}`
+              )}
               {activeTab === 'study_notes' && '0 notes'}
             </span>
           </div>
@@ -513,9 +594,9 @@ function PrivateLibraryContent() {
             </PrimaryActionButton>
           )}
           {activeTab === 'study_notes' && (
-            <PrimaryActionButton as="button" onClick={() => alert('Coming soon!')} title="Create a study note">
-              <span className="hidden sm:inline">+ Create Note</span>
-              <span className="sm:hidden">+ Note</span>
+            <PrimaryActionButton as="link" href="/student_page/study_mode" title="Create a summary">
+              <span className="hidden sm:inline">+ Create Summary</span>
+              <span className="sm:hidden">+ Summary</span>
             </PrimaryActionButton>
           )}
         </div>
@@ -627,20 +708,20 @@ function PrivateLibraryContent() {
                                 </button>
                               </div>
 
-                              <div className="mb-3">
-                                <h4 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                              <div className="mb-2 sm:mb-3">
+                                <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
                                 {item.description && (
                                   <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
                                 )}
                               </div>
 
                               <div className="flex items-center justify-between text-xs text-gray-400 dark:text-slate-500">
-                                <span>Updated {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'recently'}</span>
+                                <span className="truncate">Updated {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'recently'}</span>
                               </div>
 
                               {/* Dropdown Menu */}
                               {openMenuId === item._id && (
-                                <div className="absolute top-12 right-4 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                <div className="absolute top-12 right-2 sm:right-4 w-44 sm:w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                   <button
                                     className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-[#1C2B1C]/10 hover:text-[#1C2B1C] rounded-t-xl ${openSubMenu === 'share' ? 'bg-[#1C2B1C]/10' : ''}`}
                                     onMouseEnter={() => setOpenSubMenu('share')}
@@ -701,17 +782,17 @@ function PrivateLibraryContent() {
 
             {/* List View - Original Grid */}
             {!isLoading && !error && viewMode === 'list' && filteredFlashcards.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {filteredFlashcards.map((item) => (
                   <div
                     key={item._id}
                     onClick={() => router.push(`/student_page/library/${item._id}`)}
-                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--dark-border,#2E2E2E)] rounded-2xl p-6 cursor-pointer hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 group relative h-full flex flex-col"
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--dark-border,#2E2E2E)] rounded-2xl p-4 sm:p-6 cursor-pointer hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 group relative h-full flex flex-col"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center gap-1 sm:gap-2">
                         <div className="w-2 h-2 bg-[#1C2B1C] rounded-full"></div>
-                        <span className="text-sm font-medium text-[#1C2B1C]">{item.cards?.length || 0} cards</span>
+                        <span className="text-xs sm:text-sm font-medium text-[#1C2B1C]">{item.cards?.length || 0} cards</span>
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
@@ -725,9 +806,9 @@ function PrivateLibraryContent() {
                     </div>
 
                     <div className="mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h3>
                       {item.description && (
-                        <p className="text-sm text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
                       )}
                     </div>
 
@@ -745,7 +826,7 @@ function PrivateLibraryContent() {
 
                     {/* Dropdown Menu */}
                     {openMenuId === item._id && (
-                      <div className="absolute top-12 right-4 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                      <div className="absolute top-12 right-2 sm:right-4 w-44 sm:w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
                         <button
                           className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-[#1C2B1C]/10 hover:text-[#1C2B1C] rounded-t-xl ${openSubMenu === 'share' ? 'bg-[#1C2B1C]/10' : ''}`}
                           onMouseEnter={() => setOpenSubMenu('share')}
@@ -777,7 +858,7 @@ function PrivateLibraryContent() {
                         </button>
 
                         {openSubMenu === 'share' && (
-                          <div className="absolute top-0 right-full mr-2 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg">
+                          <div className="absolute top-0 right-full mr-1 sm:mr-2 w-40 sm:w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg">
                             <button
                               className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-[#1C2B1C]/10 hover:text-[#1C2B1C] rounded-t-xl"
                               onClick={() => { setShareItem(item); setShowShareModal(true); setOpenMenuId(null); setOpenSubMenu(null); }}
@@ -896,19 +977,19 @@ function PrivateLibraryContent() {
 
                     {/* Folder Contents */}
                     {expandedFolder === subject && (
-                      <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-900/30">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-4 bg-slate-50 dark:bg-slate-900/30">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                           {tests.map((test) => (
                             <div
                               key={test._id}
-                              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 relative"
+                              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 sm:p-6 hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 relative"
                             >
-                              <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-start justify-between mb-2 sm:mb-3">
                                 <div
                                   className="flex-1 cursor-pointer"
                                   onClick={() => router.push(`/student_page/practice_tests/${test._id}`)}
                                 >
-                                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1 line-clamp-2">
+                                  <h3 className="text-sm sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1 line-clamp-2">
                                     {test.title}
                                   </h3>
                                 </div>
@@ -959,19 +1040,19 @@ function PrivateLibraryContent() {
                               </div>
 
                               {test.description && (
-                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
+                                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 sm:mb-4 line-clamp-2">
                                   {test.description}
                                 </p>
                               )}
 
-                              <div className="flex items-center gap-2 flex-wrap mb-3">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                              <div className="flex items-center gap-1 sm:gap-2 flex-wrap mb-2 sm:mb-3">
+                                <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                                   {test.difficulty}
                                 </span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                   ⏱️ {test.timeLimit} min
                                 </span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                   🎯 {test.totalPoints} pts
                                 </span>
                               </div>
@@ -998,16 +1079,16 @@ function PrivateLibraryContent() {
 
             {/* List View for Practice Tests */}
             {!isLoading && practiceTests.length > 0 && viewMode === 'list' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {filteredPracticeTests.map((test) => (
                   <div
                     key={test._id}
-                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 relative cursor-pointer"
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-6 hover:shadow-lg hover:border-[#1C2B1C]/20 dark:hover:border-[#1C2B1C]/40 transition-all duration-200 relative cursor-pointer"
                     onClick={() => router.push(`/student_page/practice_tests/${test._id}`)}
                   >
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between mb-2 sm:mb-3">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1 line-clamp-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1 line-clamp-2">
                           {test.title}
                         </h3>
                       </div>
@@ -1060,16 +1141,16 @@ function PrivateLibraryContent() {
                     </div>
 
                     {test.description && (
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 sm:mb-4 line-clamp-2">
                         {test.description}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap mb-2 sm:mb-3">
+                      <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                         {test.subject}
                       </span>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                      <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                         {test.difficulty}
                       </span>
                     </div>
@@ -1100,14 +1181,166 @@ function PrivateLibraryContent() {
           </div>
         )}
         {activeTab === 'study_notes' && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Study Notes</h3>
-            <p className="text-gray-500 dark:text-slate-400">Coming soon - Generate comprehensive study notes</p>
+          <div>
+            {isLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-2 border-[#1C2B1C] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-500 dark:text-slate-400">Loading your summaries...</p>
+                </div>
+              </div>
+            )}
+            {!isLoading && summaries.length === 0 && (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">No Summaries Yet</h3>
+                <p className="text-gray-500 dark:text-slate-400 mb-4">Create AI-generated summaries from your study materials</p>
+                <PrimaryActionButton as="link" href="/student_page/study_mode" title="Create your first summary">
+                  Create Your First Summary
+                </PrimaryActionButton>
+              </div>
+            )}
+            {!isLoading && summaries.length > 0 && viewMode === 'folders' && (
+              <div className="space-y-4">
+                {Array.from(summariesBySubject.entries()).map(([subject, summaryList]) => (
+                  <div
+                    key={subject}
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-visible"
+                  >
+                    {/* Folder Header */}
+                    <button
+                      onClick={() => setExpandedFolder(expandedFolder === subject ? null : subject)}
+                      className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${expandedFolder === subject
+                          ? 'bg-[#1C2B1C] text-white'
+                          : 'bg-[#1C2B1C]/10 text-[#1C2B1C]'
+                          }`}>
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{subject}</h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {summaryList.length} {summaryList.length === 1 ? 'summary' : 'summaries'}
+                          </p>
+                        </div>
+                      </div>
+                      <svg
+                        className={`w-5 h-5 text-slate-400 transition-transform ${expandedFolder === subject ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Folder Contents */}
+                    {expandedFolder === subject && (
+                      <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-4 bg-slate-50 dark:bg-slate-900/30">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                          {summaryList.map((summary) => (
+                            <div
+                              key={summary._id}
+                              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 flex-1 mr-2">
+                                  {summary.title}
+                                </h4>
+                                <div className="flex flex-col gap-1">
+                                  <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
+                                    summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                    summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                  }`}>
+                                    {summary.difficulty}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1 mb-3 text-xs text-slate-600 dark:text-slate-400">
+                                <p>Words: {summary.wordCount} • {summary.readingTime} min</p>
+                                <p>Type: {summary.summaryType.replace('-', ' ')}</p>
+                                <p>Created: {new Date(summary.createdAt || '').toLocaleDateString()}</p>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => window.open(`/student_page/summaries`, '_blank')}
+                                  className="flex-1 bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300 px-3 py-2 rounded-lg text-xs font-medium hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {!isLoading && summaries.length > 0 && viewMode === 'list' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {filteredSummaries.map((summary) => (
+                  <div
+                    key={summary._id}
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 flex-1 mr-2">
+                        {summary.title}
+                      </h3>
+                      <div className="flex flex-col gap-1">
+                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full flex-shrink-0">
+                          completed
+                        </span>
+                        <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
+                          summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                          summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                          'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        }`}>
+                          {summary.difficulty}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        Subject: {summary.subject}
+                      </p>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        Words: {summary.wordCount} • {summary.readingTime} min read
+                      </p>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        Type: {summary.summaryType.replace('-', ' ')}
+                      </p>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        Created: {new Date(summary.createdAt || '').toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => window.open(`/student_page/summaries`, '_blank')}
+                        className="w-full bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+                      >
+                        View Summary
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
