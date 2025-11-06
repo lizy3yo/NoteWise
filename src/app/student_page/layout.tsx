@@ -3,6 +3,8 @@
 import "./student.css";
 import { usePathname, useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/ui/breadcrumbs/Breadcrumbs";
+import Alert from "@/components/ui/alert_template/Alert";
+import { useAlert } from "@/hooks/useAlert";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -68,6 +70,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const [userEmail, setUserEmail] = useState<string | null>(null); // << new state
   const [userImage, setUserImage] = useState<string | null>(null); // << new state
   const [currentTime, setCurrentTime] = useState<string>("");
+  const { alert, showError, showSuccess, showWarning, showInfo, hideAlert } = useAlert();
   const sidebarRef = useRef<HTMLElement | null>(null);
   const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
   const bufferActiveRef = useRef(false);
@@ -375,6 +378,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
 
   const handleLogout = async () => {
     try {
+      // Clear any existing alerts
+      hideAlert && hideAlert();
       // Get the access token from localStorage
       const accessToken = localStorage.getItem("accessToken");
 
@@ -392,24 +397,32 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
 
-      // Check if logout was successful
+      // Show appropriate alert then redirect to login. Login page reads ?message to show success.
       if (response.ok) {
-        console.log("Logout successful");
+        showSuccess?.("You have been logged out successfully.", "Logged out");
+        // short delay to allow alert to appear briefly before redirect
+        setTimeout(() => {
+          window.location.href = "/auth/login?message=" + encodeURIComponent("Logged out successfully");
+        }, 700);
       } else {
-        console.warn(
-          "Logout request failed, but proceeding with frontend cleanup"
+        showError?.(
+          "Server logout failed — you were signed out locally. Please sign in again if needed.",
+          "Logout"
         );
+        setTimeout(() => {
+          window.location.href = "/auth/login?message=" + encodeURIComponent("Logout encountered an issue");
+        }, 900);
       }
-
-      window.location.href = "/auth/login";
     } catch (error) {
       console.error("Logout failed:", error);
-
       // Still clean up frontend even if backend call fails
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
 
-      window.location.href = "/auth/login";
+      showError?.("Network error during logout. You were signed out locally.", "Logout Error");
+      setTimeout(() => {
+        window.location.href = "/auth/login?message=" + encodeURIComponent("Logout failed");
+      }, 900);
     }
   };
 
@@ -418,6 +431,17 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      {/* Global alert (used by auth pages and layout actions like logout) */}
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        title={alert.title}
+        isVisible={alert.isVisible}
+        onClose={hideAlert}
+        autoClose={alert.type === "success"}
+        autoCloseDelay={3000}
+        position="bottom-right"
+      />
       {/* Mobile Top Navbar */}
       {isMobile && (
         <header className={`fixed top-0 left-0 right-0 h-14 z-[70] border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 backdrop-blur ${isMobileMenuOpen ? "bg-white dark:bg-slate-900" : "bg-white/70 dark:bg-slate-900/50"
