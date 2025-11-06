@@ -1,8 +1,8 @@
 "use client";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function StudyModePage() {
+function StudyModeContent() {
   const router = useRouter();
   const [tab, setTab] = useState<"paste" | "upload">("paste");
   // create type: summary | flashcards
@@ -573,5 +573,17 @@ export default function StudyModePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function StudyModePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      </div>
+    }>
+      <StudyModeContent />
+    </Suspense>
   );
 }
