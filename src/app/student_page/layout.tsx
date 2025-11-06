@@ -66,6 +66,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const [isTouchExpanded, setIsTouchExpanded] = useState(false);
   // Mobile off-canvas menu state (separate from collapsed logic used on desktop)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [userName, setUserName] = useState<string | null>(null); // << new state
   const [userEmail, setUserEmail] = useState<string | null>(null); // << new state
   const [userImage, setUserImage] = useState<string | null>(null); // << new state
@@ -335,6 +336,25 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isMobileMenuOpen]);
+
+  // Lock body scroll and close modal on Escape when logout confirmation is open
+  useEffect(() => {
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowLogoutConfirm(false);
+    };
+
+    if (showLogoutConfirm) {
+      document.body.classList.add("overflow-hidden");
+      window.addEventListener("keydown", escHandler);
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    return () => {
+      window.removeEventListener("keydown", escHandler);
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [showLogoutConfirm]);
 
   // Update current time and date
   useEffect(() => {
@@ -946,7 +966,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                     <div className="py-2 border-b border-slate-100 dark:border-slate-800">
                       <button
                         className="group flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600"
-                        onClick={handleLogout}
+                        onClick={() => setShowLogoutConfirm(true)}
                       >
                         <svg
                           className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
@@ -1048,6 +1068,50 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
             onClick={() => setIsMobileMenuOpen(false)}
             aria-hidden="true"
           />
+        )}
+
+        {/* Logout confirmation modal (minimal, local to this layout) */}
+        {showLogoutConfirm && (
+          <>
+            <div
+              className="fixed inset-0 z-[1200] bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => setShowLogoutConfirm(false)}
+              aria-hidden="true"
+            />
+            <div className="fixed inset-0 z-[1201] flex items-center justify-center p-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="logout-modal-title"
+                className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 id="logout-modal-title" className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
+                  Confirm log out
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                  Are you sure you want to log out? You will be redirected to the login page.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowLogoutConfirm(false)}
+                    className="px-4 py-2 rounded-lg bg-transparent border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowLogoutConfirm(false);
+                      handleLogout();
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Main Content Area */}
