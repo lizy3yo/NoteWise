@@ -2317,3 +2317,13 @@
 {"timestamp":"2025-11-06T11:55:30.720Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-06T11:55:30.720Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-06T11:55:31.361Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T13:13:51.887Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:13:51.890Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:13:51.890Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:13:51.891Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:13:52.866Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T13:32:37.065Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:32:37.066Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:32:37.066Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:32:37.067Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T13:32:37.704Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
