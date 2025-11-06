@@ -647,10 +647,10 @@ export default function FlashcardDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => router.push("/student_page/library")}
               className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-teal-600 transition-colors"
@@ -669,44 +669,44 @@ export default function FlashcardDetailPage() {
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-              <span className="font-medium">Library</span>
+              <span className="font-medium text-sm sm:text-base">Library</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setShowSharingModal(true)}
               aria-label="Share"
-              className="p-2 bg-teal-600 text-white rounded-xl hover:brightness-110 transition-all shadow-sm"
+              className="p-2 sm:p-2.5 bg-teal-600 text-white rounded-xl hover:brightness-110 transition-all shadow-sm"
             >
-              <Share2 size={18} />
+              <Share2 size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
             <button
               onClick={() => setIsEditing(true)}
               aria-label="Settings"
-              className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:border-teal-600/30 hover:text-teal-600 transition-all shadow-sm"
+              className="p-2 sm:p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:border-teal-600/30 hover:text-teal-600 transition-all shadow-sm"
             >
-              <Settings size={18} />
+              <Settings size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
           </div>
         </div>
 
         {/* Title and Description */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2 leading-tight">
             {flashcard.title}
           </h1>
           {flashcard.description && (
-            <p className="text-slate-600 dark:text-slate-400 text-lg">
+            <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed">
               {flashcard.description}
             </p>
           )}
         </div>
 
         {/* Study Mode Tabs */}
-        <nav className="mb-8">
+        <nav className="mb-6 sm:mb-8">
           <div className="flex items-end justify-between">
-            <div className="flex gap-6 overflow-x-auto">
+            <div className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-1">
               {(() => {
                 const base = `/student_page/library/${flashcardId}`;
                 const tabs = [
@@ -729,7 +729,7 @@ export default function FlashcardDetailPage() {
                     <button
                       key={label}
                       onClick={() => router.push(href)}
-                      className={`relative pb-3 text-sm md:text-base whitespace-nowrap inline-flex items-center gap-2 transition-colors ${
+                      className={`relative pb-3 px-1 text-sm sm:text-base whitespace-nowrap inline-flex items-center gap-2 transition-colors min-w-fit ${
                         isActive
                           ? "text-slate-900 dark:text-slate-100 font-semibold"
                           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
@@ -737,12 +737,12 @@ export default function FlashcardDetailPage() {
                       aria-current={isActive ? "page" : undefined}
                     >
                       <Icon
-                        className={`w-4 h-4 ${tabIconColor(label, !!isActive)}`}
+                        className={`w-4 h-4 flex-shrink-0 ${tabIconColor(label, !!isActive)}`}
                       />
-                      <span>{label}</span>
+                      <span className="flex-shrink-0">{label}</span>
                       {label === "Flashcards" && (
                         <span
-                          className={`ml-2 rounded-full px-2 py-0.5 text-[10px] leading-none ${
+                          className={`ml-1 sm:ml-2 rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs leading-none flex-shrink-0 ${
                             isActive
                               ? "bg-violet-600 text-white"
                               : "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
@@ -764,16 +764,16 @@ export default function FlashcardDetailPage() {
         </nav>
 
         {/* Main Content Grid */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {/* Set Preview Section */}
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
                   Set Preview
                 </h2>
                 {flashcard.difficulty && (
-                  <Chip variant="badge" className="capitalize">
+                  <Chip variant="badge" className="capitalize w-fit">
                     {flashcard.difficulty}
                   </Chip>
                 )}
@@ -797,12 +797,12 @@ export default function FlashcardDetailPage() {
             </div>
 
             {/* Preview Card */}
-            <div className="relative mb-6">
+            <div className="relative mb-4 sm:mb-6">
               <button
                 type="button"
                 onClick={() => setIsShowingAnswer((s) => !s)}
                 aria-label={isShowingAnswer ? "Show question" : "Show answer"}
-                className="w-full h-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-600 dark:focus:ring-[#8B9D8B] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                className="w-full h-64 sm:h-72 lg:h-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-600 dark:focus:ring-[#8B9D8B] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               >
                 <div className="relative h-full overflow-hidden rounded-2xl">
                   {/* Star control inside card at top right - use a non-button element to avoid nested button inside the large clickable card button */}
@@ -843,29 +843,29 @@ export default function FlashcardDetailPage() {
                   </div>
 
                   <div
-                    className={`absolute inset-0 flex items-center justify-center p-8 transition-opacity duration-300 ${
+                    className={`absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8 transition-opacity duration-300 ${
                       isShowingAnswer ? "opacity-0" : "opacity-100"
                     }`}
                   >
-                    <div className="text-center">
-                      <div className="text-3xl font-medium text-slate-900 dark:text-slate-100 mb-4 leading-relaxed">
+                    <div className="text-center max-w-full">
+                      <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-medium text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 leading-relaxed break-words">
                         {currentCard?.question || "No question"}
                       </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                      <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                         Click to reveal answer
                       </div>
                     </div>
                   </div>
                   <div
-                    className={`absolute inset-0 flex items-center justify-center p-8 transition-opacity duration-300 ${
+                    className={`absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8 transition-opacity duration-300 ${
                       isShowingAnswer ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    <div className="text-center">
-                      <div className="text-3xl font-medium text-slate-900 dark:text-slate-100 mb-4 leading-relaxed">
+                    <div className="text-center max-w-full">
+                      <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-medium text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 leading-relaxed break-words">
                         {currentCard?.answer || "No answer"}
                       </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                      <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                         Click to show question
                       </div>
                     </div>
@@ -875,68 +875,76 @@ export default function FlashcardDetailPage() {
             </div>
 
             {/* Navigation Controls - Centered */}
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={goPrev}
-                className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-teal-600/30 dark:hover:border-[#8B9D8B]/30 hover:bg-teal-600/5 dark:hover:bg-[#8B9D8B]/10 transition-all shadow-sm"
-              >
-                <svg
-                  className="w-5 h-5 text-slate-600 dark:text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <button
+                  onClick={goPrev}
+                  disabled={viewerIndex === 0}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-teal-600/30 dark:hover:border-[#8B9D8B]/30 hover:bg-teal-600/5 dark:hover:bg-[#8B9D8B]/10 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={goNext}
+                  disabled={viewerIndex >= flashcard.cards.length - 1}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-[#1C2B1C]/30 dark:hover:border-[#8B9D8B]/30 hover:bg-[#1C2B1C]/5 dark:hover:bg-[#8B9D8B]/10 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
               <PrimaryActionButton
                 onClick={() => setIsShowingAnswer((s) => !s)}
+                className="w-full sm:w-auto px-6 py-2.5 text-sm sm:text-base"
               >
                 {isShowingAnswer ? "Show Question" : "Show Answer"}
               </PrimaryActionButton>
-              <button
-                onClick={goNext}
-                className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-[#1C2B1C]/30 dark:hover:border-[#8B9D8B]/30 hover:bg-[#1C2B1C]/5 dark:hover:bg-[#8B9D8B]/10 transition-all shadow-sm"
-              >
-                <svg
-                  className="w-5 h-5 text-slate-600 dark:text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
             </div>
           </div>
         </div>
 
         {/* Cards Section */}
-        <div className="mt-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+        <div className="mt-8 sm:mt-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
               Cards
             </h2>
-            <PrimaryActionButton onClick={startAddingCard}>
+            <PrimaryActionButton 
+              onClick={startAddingCard}
+              className="w-full sm:w-auto text-sm sm:text-base"
+            >
               + Add Card
             </PrimaryActionButton>
           </div>
 
           {flashcard.cards.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="text-center py-8 sm:py-12 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-8 h-8 text-gray-400 dark:text-slate-500"
+                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 dark:text-slate-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -949,58 +957,65 @@ export default function FlashcardDetailPage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
                 No cards yet
               </h3>
-              <p className="text-gray-500 dark:text-slate-400 mb-4">
+              <p className="text-sm sm:text-base text-gray-500 dark:text-slate-400 mb-4 px-4">
                 Add your first card to get started
               </p>
-              <PrimaryActionButton onClick={startAddingCard}>
+              <PrimaryActionButton 
+                onClick={startAddingCard}
+                className="w-full sm:w-auto mx-4 sm:mx-0"
+              >
                 Add Your First Card
               </PrimaryActionButton>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {flashcard.cards.map((card, index) => (
                 <div
                   key={card._id}
-                  className="relative group bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-teal-600/30 dark:hover:border-[#04C40A]/30 hover:shadow-lg transition-all"
+                  className="relative group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 hover:border-teal-600/30 dark:hover:border-[#04C40A]/30 hover:shadow-lg transition-all"
                 >
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="flex items-center justify-center">
+                  <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div className="flex items-center justify-center flex-shrink-0">
                       <Chip
                         variant="badge"
-                        className="w-8 h-8 flex items-center justify-center flex-shrink-0"
+                        className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm"
                       >
                         {index + 1}
                       </Chip>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-gray-900 dark:text-slate-100 font-medium mb-2 line-clamp-2">
-                        {card.question}
+                      <div className="text-gray-900 dark:text-slate-100 font-medium mb-2 text-sm sm:text-base leading-snug break-words">
+                        <div className="line-clamp-3 sm:line-clamp-2">
+                          {card.question}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-slate-400 line-clamp-2">
-                        {card.answer}
+                      <div className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 leading-relaxed break-words">
+                        <div className="line-clamp-2">
+                          {card.answer}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="absolute top-4 right-4" data-menu-container>
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4" data-menu-container>
                     <button
                       onClick={() =>
                         setOpenMenuCardId(
                           openMenuCardId === card._id ? null : card._id
                         )
                       }
-                      className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
+                      className="p-1.5 sm:p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
                       aria-label="Card options"
                     >
-                      <MoreHorizontal size={16} />
+                      <MoreHorizontal size={14} className="sm:w-4 sm:h-4" />
                     </button>
 
                     {openMenuCardId === card._id && (
                       <div
-                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-10 overflow-hidden"
+                        className="absolute right-0 mt-2 w-44 sm:w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 overflow-hidden"
                         data-menu-container
                       >
                         <button
@@ -1008,15 +1023,15 @@ export default function FlashcardDetailPage() {
                             toggleStar(card._id);
                             setOpenMenuCardId(null);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                           <Star
-                            size={16}
-                            className={
+                            size={14}
+                            className={`sm:w-4 sm:h-4 ${
                               starredIds.has(card._id)
                                 ? "fill-yellow-400 text-yellow-400"
                                 : ""
-                            }
+                            }`}
                           />
                           <span>
                             {starredIds.has(card._id)
@@ -1029,9 +1044,9 @@ export default function FlashcardDetailPage() {
                             startEditingCard(card);
                             setOpenMenuCardId(null);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
-                          <Edit2 size={16} />
+                          <Edit2 size={14} className="sm:w-4 sm:h-4" />
                           <span>Edit</span>
                         </button>
                         <button
@@ -1039,9 +1054,9 @@ export default function FlashcardDetailPage() {
                             handleDeleteCard(card._id);
                             setOpenMenuCardId(null);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={14} className="sm:w-4 sm:h-4" />
                           <span>Delete</span>
                         </button>
                       </div>
@@ -1057,21 +1072,23 @@ export default function FlashcardDetailPage() {
       {/* Card Edit Drawer (modern, right-side) */}
       {(isAddingCard || editingCardId) && (
         <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1" onClick={cancelCardEdit} />
-          <div className="w-full sm:w-[520px] bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <div className="flex-1 bg-black/20 sm:bg-black/40" onClick={cancelCardEdit} />
+          <div className="w-full sm:w-[480px] lg:w-[520px] bg-white dark:bg-slate-900 shadow-2xl p-4 sm:p-6 overflow-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {isAddingCard ? "Add Card" : "Edit Card"}
               </h3>
               <button
                 onClick={cancelCardEdit}
-                className="text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                className="text-slate-500 hover:text-slate-900 dark:hover:text-white p-1"
               >
-                Close
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-6">
               <label className="block">
                 <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                   Question
@@ -1084,8 +1101,8 @@ export default function FlashcardDetailPage() {
                       question: e.target.value,
                     }))
                   }
-                  rows={4}
-                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  rows={3}
+                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
                   placeholder="Enter question (can be long, supports formatting)"
                 ></textarea>
               </label>
@@ -1099,8 +1116,8 @@ export default function FlashcardDetailPage() {
                   onChange={(e) =>
                     setCardForm((prev) => ({ ...prev, answer: e.target.value }))
                   }
-                  rows={4}
-                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  rows={3}
+                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
                   placeholder="Enter answer"
                 ></textarea>
               </label>
@@ -1109,7 +1126,7 @@ export default function FlashcardDetailPage() {
                 <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                   Image URL (optional)
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <input
                     type="url"
                     value={cardForm.image}
@@ -1120,28 +1137,30 @@ export default function FlashcardDetailPage() {
                       }))
                     }
                     placeholder="https://example.com/image.jpg"
-                    className="flex-1 p-2 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    className="flex-1 p-2.5 sm:p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm sm:text-base"
                   />
                   {cardForm.image && (
-                    <Image
-                      src={cardForm.image}
-                      alt="preview"
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 object-cover rounded-md border border-slate-200 dark:border-slate-700"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display =
-                          "none";
-                      }}
-                    />
+                    <div className="flex justify-center sm:justify-start">
+                      <Image
+                        src={cardForm.image}
+                        alt="preview"
+                        width={80}
+                        height={80}
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display =
+                            "none";
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               </label>
 
-              <div className="flex justify-end gap-3 mt-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <button
                   onClick={cancelCardEdit}
-                  className="px-4 py-2 rounded-md bg-slate-100 dark:bg-slate-800"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm sm:text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -1149,7 +1168,7 @@ export default function FlashcardDetailPage() {
                   <button
                     onClick={handleAddCard}
                     disabled={!cardForm.question || !cardForm.answer}
-                    className="px-4 py-2 rounded-md bg-teal-600 text-white disabled:opacity-50"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-teal-600 text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium hover:bg-teal-700 transition-colors"
                   >
                     Add Card
                   </button>
@@ -1159,9 +1178,9 @@ export default function FlashcardDetailPage() {
                       editingCardId && handleEditCard(editingCardId)
                     }
                     disabled={!cardForm.question || !cardForm.answer}
-                    className="px-4 py-2 rounded-md bg-blue-600 text-white disabled:opacity-50"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors"
                   >
-                    Save
+                    Save Changes
                   </button>
                 )}
               </div>
@@ -1172,26 +1191,28 @@ export default function FlashcardDetailPage() {
 
       {/* Edit Set Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={cancelEditSet}
           />
-          <div className="relative z-50 max-w-3xl w-full mx-4 bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+          <div className="relative z-50 max-w-3xl w-full bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
                   Flashcard Set Settings
                 </h2>
                 <button
                   onClick={cancelEditSet}
-                  className="text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                  className="text-slate-500 hover:text-slate-800 dark:hover:text-white p-1"
                 >
-                  Close
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 <label className="block">
                   <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                     Title
@@ -1204,7 +1225,7 @@ export default function FlashcardDetailPage() {
                         title: e.target.value,
                       }))
                     }
-                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                   />
                 </label>
 
@@ -1221,7 +1242,7 @@ export default function FlashcardDetailPage() {
                       }))
                     }
                     rows={3}
-                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
                   />
                 </label>
 
@@ -1232,13 +1253,13 @@ export default function FlashcardDetailPage() {
                   <input
                     value={editForm.tags.join(", ")}
                     onChange={(e) => handleTagChange(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                   />
                 </label>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-1 dark:text-slate-100">
+                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
                       Difficulty
                     </label>
                     <select
@@ -1252,7 +1273,7 @@ export default function FlashcardDetailPage() {
                             | "hard",
                         }))
                       }
-                      className="w-full p-2 rounded-md bg-slate-50 dark:text-slate-100 dark:bg-slate-800"
+                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                     >
                       <option value="easy">Easy</option>
                       <option value="medium">Medium</option>
@@ -1261,7 +1282,7 @@ export default function FlashcardDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm mb-1 dark:text-slate-100">
+                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
                       Access
                     </label>
                     <select
@@ -1272,7 +1293,7 @@ export default function FlashcardDetailPage() {
                           accessType: e.target.value as "private" | "public",
                         }))
                       }
-                      className="w-full p-2 rounded-md dark:text-slate-100 bg-slate-50 dark:bg-slate-800"
+                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                     >
                       <option value="private">Private</option>
                       <option value="public">Public</option>
@@ -1280,7 +1301,7 @@ export default function FlashcardDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm mb-1 dark:text-slate-100">
+                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
                       Sharing Mode
                     </label>
                     <select
@@ -1295,7 +1316,7 @@ export default function FlashcardDetailPage() {
                             | undefined,
                         }));
                       }}
-                      className="w-full p-2 rounded-md bg-slate-50 dark:bg-slate-800 dark:text-slate-100"
+                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                     >
                       <option value="">None</option>
                       <option value="restricted">Restricted</option>
@@ -1304,10 +1325,11 @@ export default function FlashcardDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm mb-1 dark:text-slate-100">
+                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
                       Password (optional)
                     </label>
                     <input
+                      type="password"
                       value={editForm.password}
                       onChange={(e) =>
                         setEditForm((prev) => ({
@@ -1315,7 +1337,7 @@ export default function FlashcardDetailPage() {
                           password: e.target.value,
                         }))
                       }
-                      className="w-full p-2 rounded-md bg-slate-50 dark:bg-slate-800 dark:text-slate-100"
+                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                     />
                   </div>
                 </div>
@@ -1364,18 +1386,18 @@ export default function FlashcardDetailPage() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <button
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors text-sm sm:text-base font-medium"
                   >
                     {isDeleting ? "Deleting..." : "Delete Flashcard Set"}
                   </button>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={cancelEditSet}
-                      className="px-4 py-2 rounded-md bg-slate-100 dark:bg-slate-800 dark:text-slate-100"
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm sm:text-base font-medium"
                     >
                       Cancel
                     </button>
@@ -1384,7 +1406,7 @@ export default function FlashcardDetailPage() {
                         await handleEdit();
                       }}
                       disabled={!editForm.title.trim()}
-                      className="px-4 py-2 rounded-md bg-indigo-600 text-white disabled:opacity-50"
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors text-sm sm:text-base font-medium"
                     >
                       Save Changes
                     </button>
@@ -1398,29 +1420,31 @@ export default function FlashcardDetailPage() {
 
       {/* Sharing Modal (kept but styled) */}
       {showSharingModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setShowSharingModal(false)}
           />
-          <div className="relative z-50 max-w-3xl w-full mx-4 bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+          <div className="relative z-50 max-w-2xl w-full bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100 pr-4">
                   Share &quot;{flashcard.title}&quot;
                 </h2>
                 <button
                   onClick={() => setShowSharingModal(false)}
-                  className="text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                  className="text-slate-500 hover:text-slate-800 dark:hover:text-white p-1 flex-shrink-0"
                 >
-                  Close
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
               {/* (Re-using existing share UI with modern spacing) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-sm mb-1">Access</label>
+                  <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">Access</label>
                   <select
                     value={editForm.accessType}
                     onChange={(e) =>
@@ -1429,7 +1453,7 @@ export default function FlashcardDetailPage() {
                         accessType: e.target.value as "private" | "public",
                       }))
                     }
-                    className="w-full p-2 rounded-md bg-slate-50 dark:bg-slate-800"
+                    className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                   >
                     <option value="private">Private</option>
                     <option value="public">Public</option>
@@ -1437,7 +1461,7 @@ export default function FlashcardDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-1">Sharing Mode</label>
+                  <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">Sharing Mode</label>
                   <select
                     value={editForm.sharingMode || ""}
                     onChange={(e) =>
@@ -1449,7 +1473,7 @@ export default function FlashcardDetailPage() {
                           | undefined,
                       }))
                     }
-                    className="w-full p-2 rounded-md bg-slate-50 dark:bg-slate-800"
+                    className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                   >
                     <option value="">None</option>
                     <option value="restricted">Restricted</option>
@@ -1461,8 +1485,11 @@ export default function FlashcardDetailPage() {
               {/* Link option */}
               {editForm.accessType === "public" &&
                 editForm.sharingMode === "anyone_with_link" && (
-                  <div className="mt-4">
-                    <div className="flex gap-2">
+                  <div className="mt-4 sm:mt-6">
+                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
+                      Shareable Link
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <input
                         readOnly
                         value={
@@ -1470,7 +1497,7 @@ export default function FlashcardDetailPage() {
                             ? `${window.location.origin}/student_page/library/${flashcardId}?token=${flashcard.shareableLink}`
                             : "No link generated"
                         }
-                        className="flex-1 p-2 rounded-md bg-slate-50 dark:bg-slate-800"
+                        className="flex-1 p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
                       />
                       <button
                         onClick={() => {
@@ -1480,18 +1507,18 @@ export default function FlashcardDetailPage() {
                             );
                           else generateShareableLink();
                         }}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-md"
+                        className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base font-medium"
                       >
-                        {flashcard?.shareableLink ? "Copy" : "Generate"}
+                        {flashcard?.shareableLink ? "Copy Link" : "Generate Link"}
                       </button>
                     </div>
                   </div>
                 )}
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   onClick={() => setShowSharingModal(false)}
-                  className="px-4 py-2 rounded-md bg-slate-100 dark:bg-slate-800"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm sm:text-base font-medium"
                 >
                   Cancel
                 </button>
@@ -1500,9 +1527,9 @@ export default function FlashcardDetailPage() {
                     await handleEdit();
                     setShowSharingModal(false);
                   }}
-                  className="px-4 py-2 rounded-md bg-indigo-600 text-white"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm sm:text-base font-medium"
                 >
-                  Save
+                  Save Changes
                 </button>
               </div>
             </div>

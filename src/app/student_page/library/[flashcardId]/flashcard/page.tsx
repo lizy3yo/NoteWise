@@ -81,7 +81,7 @@ export default function FlashcardOnlyPage() {
         );
         if (!response.ok) {
           let maybe: unknown = null;
-          try { maybe = await response.json(); } catch {}
+          try { maybe = await response.json(); } catch { }
           const msg = (maybe && typeof (maybe as { message?: unknown }).message === "string")
             ? (maybe as { message?: string }).message!
             : `Failed to load flashcard (${response.status})`;
@@ -122,7 +122,7 @@ export default function FlashcardOnlyPage() {
     setViewerPos(0);
     setIsShowingAnswer(false);
     // keep starredIds as-is (separate feature)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flashcard, studyStarredOnly, shuffle, starredIdsKey, progressLoaded]);
 
   const currentCard = flashcard?.cards?.[sessionQueue[viewerPos]];
@@ -145,7 +145,7 @@ export default function FlashcardOnlyPage() {
     setViewerPos(randomPos);
     setIsShowingAnswer(false);
   }, [sessionQueue.length]);
-  
+
   const toggleStar = (id?: string) => {
     if (!id) return;
     setStarredIds(prev => {
@@ -181,7 +181,7 @@ export default function FlashcardOnlyPage() {
   const [hardIds, setHardIds] = useState<Set<string>>(new Set());
   const [easyIds, setEasyIds] = useState<Set<string>>(new Set());
   const [showCompletion, setShowCompletion] = useState(false);
-  
+
   // Updated rateCard function to include visual feedback and instant progression
   const rateCard = (rating: "again" | "hard" | "good" | "easy") => {
     if (isRatingInProgress) return;
@@ -347,7 +347,7 @@ export default function FlashcardOnlyPage() {
       saveTimer.current = null;
     }, 700);
     return () => { if (saveTimer.current) window.clearTimeout(saveTimer.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackProgress, shuffle, studyStarredOnly, sidePreference, showBothSides, uid]);
 
   // Removed debounced persistence for sessionQueue/viewerPos as they are saved immediately in rateCard and other functions
@@ -371,9 +371,9 @@ export default function FlashcardOnlyPage() {
     }
     const color =
       rating === "again" ? "bg-red-500" :
-      rating === "hard" ? "bg-amber-500" :
-  rating === "good" ? "bg-teal-600" :
-  "bg-teal-600";
+        rating === "hard" ? "bg-amber-500" :
+          rating === "good" ? "bg-teal-600" :
+            "bg-teal-600";
     return `${color} text-white`;
   };
 
@@ -388,7 +388,7 @@ export default function FlashcardOnlyPage() {
   const restartDeck = async () => {
     if (!flashcard) return;
     const total = flashcard.cards.length;
-  const indices = Array.from({ length: total }, (_, i) => i);
+    const indices = Array.from({ length: total }, (_, i) => i);
     setSessionQueue(indices);
     setViewerPos(0);
     setIsShowingAnswer(false);
@@ -426,55 +426,58 @@ export default function FlashcardOnlyPage() {
   const uniqueStillLearning = Math.max(0, (flashcard.cards?.length || 0) - uniqueMastered);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto px-4">
-        <header className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] items-center gap-4 mb-2">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-3 sm:p-4 lg:p-6 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4">
+        <header className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] items-start lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => router.back()}
               aria-label="Back"
-              className="w-10 h-10 rounded-full bg-slate-700/60 hover:bg-slate-700/80 flex items-center justify-center text-slate-100 transition"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-700/60 hover:bg-slate-700/80 flex items-center justify-center text-slate-100 transition flex-shrink-0"
             >
-              <ChevronLeft size={16} className="text-slate-100" />
+              <ChevronLeft size={14} className="sm:w-4 sm:h-4 text-slate-100" />
             </button>
 
-            <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-semibold text-slate-900 dark:text-slate-100 truncate">{flashcard.title}</h1>
-              <div className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Flashcards · <span className="font-medium text-slate-900 dark:text-slate-100">{flashcard.cards.length}</span></div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base sm:text-lg lg:text-2xl font-semibold text-slate-900 dark:text-slate-100 truncate leading-tight">{flashcard.title}</h1>
+              <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Flashcards · <span className="font-medium text-slate-900 dark:text-slate-100">{flashcard.cards.length}</span></div>
             </div>
           </div>
 
-          <div className="justify-self-center w-11/12 md:w-96">
-            <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div className="w-full lg:justify-self-center lg:max-w-4xl px-1 sm:px-2">
+            <div className="w-full h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-teal-600 to-teal-600 transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
 
-            <div className="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-              <div>Progress <span className="font-semibold text-slate-900 dark:text-slate-100 ml-2">{progress}%</span></div>
+            <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-slate-500 dark:text-slate-400 gap-2 sm:gap-3">
+              <div className="flex items-center">
+                <span>Progress</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 ml-1 sm:ml-2">{progress}%</span>
+              </div>
 
-              <div className="flex items-center gap-3">
-                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <div className="inline-flex items-center gap-1 sm:gap-2 px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 text-xs sm:text-sm">
                   <span className="font-semibold">Still learning</span>
-                  <span className="ml-1 inline-block w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{remaining}</span>
+                  <span className="inline-block w-5 sm:w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{remaining}</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-teal-600/10 text-teal-600 dark:bg-teal-600/20">
+                <div className="inline-flex items-center gap-1 sm:gap-2 px-2 py-1 rounded-full bg-teal-600/10 text-teal-600 dark:bg-teal-600/20 text-xs sm:text-sm">
                   <span className="font-semibold">Know</span>
-                  <span className="ml-1 inline-block w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{learnedCount}</span>
+                  <span className="inline-block w-5 sm:w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{learnedCount}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 lg:justify-self-end">
             <button
               onClick={() => setShowOptions(true)}
               aria-label="Options"
-              className="px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:shadow inline-flex items-center"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:shadow inline-flex items-center text-sm sm:text-base"
             >
-              <Settings size={18} />
+              <Settings size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
           </div>
         </header>
@@ -494,7 +497,7 @@ export default function FlashcardOnlyPage() {
           ) : (
             <>
               {/* replaced compact "Card X / Y" line with a neat status row matching the progress bar */}
-              <div className="mb-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+              <div className="mb-3 sm:mb-4 flex items-center justify-between text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                 <div>Card <span className="font-medium text-slate-700 dark:text-slate-100">{Math.min(viewerPos + 1, Math.max(remaining, 1))}</span> / <span className="font-medium">{Math.max(remaining, 1)}</span></div>
               </div>
 
@@ -502,31 +505,30 @@ export default function FlashcardOnlyPage() {
                 {/* make the card much larger using viewport height.
                     When "Show both sides" is enabled render two stacked cards.
                 */}
-                <div className="h-[60vh] md:h-[55vh] lg:h-[62vh]">
+                <div className="h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-[55vh] xl:h-[60vh]">
                   {showBothSides ? (
-                    <div className="h-full flex flex-col gap-6">
+                    <div className="h-full flex flex-col gap-3 sm:gap-4 lg:gap-6">
                       {/* Front / top */}
-                      <div className={`w-full flex-1 rounded-2xl flex items-center justify-center p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(true, null)}`}>
-                        <div className="absolute top-3 right-3 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Front</div>
-                        <div className="max-w-[95%] text-3xl md:text-4xl leading-snug">{currentCard?.question ?? "No question"}</div>
+                      <div className={`w-full flex-1 rounded-xl sm:rounded-2xl flex items-center justify-center p-4 sm:p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(true, null)}`}>
+                        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Front</div>
+                        <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words">{currentCard?.question ?? "No question"}</div>
                       </div>
 
                       {/* Back / bottom (rating overlay will attach here) */}
-                      <div className={`relative w-full flex-1 rounded-2xl flex items-center justify-center p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(false, null)}`}>
-                        <div className="absolute top-3 right-3 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Back</div>
-                        <div className="max-w-[95%] text-3xl md:text-4xl leading-snug">{currentCard?.answer ?? "No answer"}</div>
+                      <div className={`relative w-full flex-1 rounded-xl sm:rounded-2xl flex items-center justify-center p-4 sm:p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(false, null)}`}>
+                        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Back</div>
+                        <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words">{currentCard?.answer ?? "No answer"}</div>
                         {/* Rating overlay attaches to the back card in "both sides" mode */}
                         {selectedRating && (
                           <div
-                            className={`absolute inset-0 rounded-2xl flex items-center justify-center text-2xl font-bold z-10 ${
-                              selectedRating === "again"
+                            className={`absolute inset-0 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl lg:text-2xl font-bold z-10 ${selectedRating === "again"
                                 ? "bg-red-700/100 text-white"
                                 : selectedRating === "hard"
-                                ? "bg-amber-500/100 text-white"
-                                : selectedRating === "good"
-                                ? "bg-teal-600 text-white"
-                                : "bg-teal-600 text-white"
-                            }`}
+                                  ? "bg-amber-500/100 text-white"
+                                  : selectedRating === "good"
+                                    ? "bg-teal-600 text-white"
+                                    : "bg-teal-600 text-white"
+                              }`}
                             style={{
                               transformOrigin: "center bottom",
                               transform: overlayPop ? "scale(1)" : "scale(0.85)",
@@ -546,92 +548,91 @@ export default function FlashcardOnlyPage() {
                         type="button"
                         onClick={() => setIsShowingAnswer(s => !s)}
                         aria-label={isShowingAnswer ? "Show question" : "Show answer"}
-                        className="relative w-full h-full rounded-2xl focus:outline-none [transform-style:preserve-3d] shadow-lg hover:shadow-2xl border border-slate-100 dark:border-transparent"
+                        className="relative w-full h-full rounded-xl sm:rounded-2xl focus:outline-none [transform-style:preserve-3d] shadow-lg hover:shadow-2xl border border-slate-100 dark:border-transparent"
                         style={{
                           transform: isShowingAnswer ? "rotateY(180deg)" : "rotateY(0deg)",
                           transition: disableFlipTransition ? "none" : "transform 700ms",
                         }}
                       >
                         {/* Front (question) */}
-                        <div className={`absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center select-none [backface-visibility:hidden] ${getBgClass(true, null)}`}>
+                        <div className={`absolute inset-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none [backface-visibility:hidden] ${getBgClass(true, null)}`}>
                           <div className="absolute top-2 right-2 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Front</div>
                           <div className="w-full flex flex-col items-center">
-                            <div className="max-w-[95%] text-4xl md:text-5xl leading-snug">{currentCard?.question ?? "No question"}</div>
-                            <div className="mt-4 text-xs text-slate-500 dark:text-slate-400">Press <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Space</span> or click to flip</div>
+                            <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-snug break-words">{currentCard?.question ?? "No question"}</div>
+                            <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Press <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Space</span> or click to flip</div>
                           </div>
                         </div>
 
                         {/* Back (answer) */}
-                         <div className={`absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center select-none [backface-visibility:hidden] [transform:rotateY(180deg)] ${getBgClass(false, null)}`}>
+                        <div className={`absolute inset-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none [backface-visibility:hidden] [transform:rotateY(180deg)] ${getBgClass(false, null)}`}>
                           <div className="absolute top-2 right-2 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Back</div>
                           <div className="w-full flex flex-col items-center">
-                            <div className="max-w-[95%] text-4xl md:text-5xl leading-snug">{currentCard?.answer ?? "No answer"}</div>
-                            <div className="mt-4 text-xs text-slate-500 dark:text-slate-400">Flip back with Space or click</div>
+                            <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-snug break-words">{currentCard?.answer ?? "No answer"}</div>
+                            <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Flip back with Space or click</div>
                           </div>
                         </div>
                       </button>
                     </div>
                   )}
                 </div>
- 
+
                 {/* Hint / image small overlay */}
                 {currentCard?.image && (
-                  <div className="absolute top-4 right-6 bg-white/80 dark:bg-black/40 rounded-md p-1 shadow">
+                  <div className="absolute top-3 sm:top-4 right-4 sm:right-6 bg-white/80 dark:bg-black/40 rounded-md p-1 shadow">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={currentCard.image} alt="card image" className="w-24 h-24 object-cover rounded" />
+                    <img src={currentCard.image} alt="card image" className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-cover rounded" />
                   </div>
                 )}
               </div>
 
               {/* Rating buttons: Disable during animation */}
-              <div className="mt-4 flex items-center justify-center gap-3">
+              <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
                 <button
                   onClick={() => rateCard("again")}
                   disabled={isRatingInProgress}
-                  className={`px-3 py-2 rounded-full bg-red-100 text-red-700 ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`min-w-[60px] sm:min-w-[72px] px-2 sm:px-3 py-1.5 sm:py-2 rounded-full bg-red-100 text-red-700 text-sm sm:text-base font-medium hover:bg-red-200 transition-colors ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Again
                 </button>
                 <button
                   onClick={() => rateCard("hard")}
                   disabled={isRatingInProgress}
-                  className={`px-3 py-2 rounded-full bg-amber-100 text-amber-800 ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`min-w-[60px] sm:min-w-[72px] px-2 sm:px-3 py-1.5 sm:py-2 rounded-full bg-amber-100 text-amber-800 text-sm sm:text-base font-medium hover:bg-amber-200 transition-colors ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Hard
                 </button>
                 <button
                   onClick={() => rateCard("good")}
                   disabled={isRatingInProgress}
-                  className={`px-3 py-2 rounded-full bg-teal-600/10 text-teal-600 ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`min-w-[60px] sm:min-w-[72px] px-2 sm:px-3 py-1.5 sm:py-2 rounded-full bg-teal-600/10 text-teal-600 text-sm sm:text-base font-medium hover:bg-teal-600/20 transition-colors ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Good
                 </button>
                 <button
                   onClick={() => rateCard("easy")}
                   disabled={isRatingInProgress}
-                  className={`px-3 py-2 rounded-full bg-teal-600 text-white ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`min-w-[60px] sm:min-w-[72px] px-2 sm:px-3 py-1.5 sm:py-2 rounded-full bg-teal-600 text-white text-sm sm:text-base font-medium hover:bg-teal-700 transition-colors ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Easy
                 </button>
               </div>
 
-              <div className="mt-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <button
                     onClick={() => toggleStar(currentCard?._id)}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-full font-medium transition ${
-                      starredIds.has(currentCard?._id || "") ? "bg-yellow-500 text-white shadow-md" : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                    }`}
+                    className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full font-medium transition text-sm sm:text-base ${starredIds.has(currentCard?._id || "") ? "bg-yellow-500 text-white shadow-md" : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                      }`}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill={starredIds.has(currentCard?._id || "") ? "white" : "none"} stroke={starredIds.has(currentCard?._id || "") ? "none" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block">
+                    <svg width="14" height="14" className="sm:w-4 sm:h-4 inline-block" viewBox="0 0 24 24" fill={starredIds.has(currentCard?._id || "") ? "white" : "none"} stroke={starredIds.has(currentCard?._id || "") ? "none" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 17.3 7.4 20l1-5.3L4 11.5l5.4-.5L12 6l2.6 5 5.4.5-4.4 3.2 1 5.3z" />
                     </svg>
-                    {starredIds.has(currentCard?._id || "") ? "Starred" : "Star"}
+                    <span className="hidden sm:inline">{starredIds.has(currentCard?._id || "") ? "Starred" : "Star"}</span>
                   </button>
 
                   {/* Only render the header "Track progress" pill when the option is enabled in Options */}
                   {trackProgress && (
-                    <div className="hidden sm:flex items-center gap-2 text-sm">
+                    <div className="hidden md:flex items-center gap-2 text-sm">
                       <span className="px-2 py-1 rounded font-medium transition bg-gradient-to-br from-teal-600 to-teal-600 text-white shadow-sm">
                         Track progress
                       </span>
@@ -639,20 +640,30 @@ export default function FlashcardOnlyPage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <button onClick={goPrev} aria-label="Previous" className="px-3 py-2 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:scale-105 transition">
-                    <ChevronLeft size={18} />
+                <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-end">
+                  <button
+                    onClick={goPrev}
+                    aria-label="Previous"
+                    disabled={viewerPos === 0}
+                    className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
                   </button>
                   <button
                     onClick={goNext}
                     aria-label="Next"
-                    className="px-3 py-2 rounded-full bg-gradient-to-br from-teal-600 to-teal-600 text-white shadow-sm hover:brightness-105 transition"
+                    disabled={viewerPos >= sessionQueue.length - 1}
+                    className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-gradient-to-br from-teal-600 to-teal-600 text-white shadow-sm hover:brightness-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]" />
                   </button>
                   {shuffle && (
-                    <button onClick={goRandom} className="px-3 py-2 rounded-full bg-sky-500 text-white hover:scale-105 transition" title="Shuffle to random card">
-                      <svg width="16" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <button
+                      onClick={goRandom}
+                      className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-sky-500 text-white hover:scale-105 transition"
+                      title="Shuffle to random card"
+                    >
+                      <svg width="14" height="14" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M3 4l17 17" />
                       </svg>
                     </button>
@@ -665,22 +676,26 @@ export default function FlashcardOnlyPage() {
 
         {/* Options / Settings modal (UI only) */}
         {showOptions && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 lg:p-6">
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowOptions(false)} />
 
             {/* center modal, allow scrolling when viewport is small */}
-            <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl overflow-auto grid grid-cols-1 md:grid-cols-[1fr_320px]">
-               {/* Left: settings */}
-               <div className="p-6 space-y-6">
-                 <div className="flex items-start justify-between">
-                   <div>
-                     <h2 className="text-xl font-semibold">Options</h2>
-                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Session settings and UI preferences</p>
-                   </div>
-                   <button onClick={() => setShowOptions(false)} className="ml-4 text-slate-400 hover:text-teal-600">✕</button>
-                 </div>
+            <div className="relative w-full max-w-5xl max-h-[95vh] bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl overflow-auto grid grid-cols-1 lg:grid-cols-[1fr_300px]">
+              {/* Left: settings */}
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg sm:text-xl font-semibold">Options</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Session settings and UI preferences</p>
+                  </div>
+                  <button onClick={() => setShowOptions(false)} className="ml-3 sm:ml-4 text-slate-400 hover:text-teal-600 p-1 flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                   <SettingRow
                     title="Track progress"
                     desc="Sort cards to track what you know"
@@ -711,7 +726,7 @@ export default function FlashcardOnlyPage() {
                         return next;
                       });
                     }}
-                     accent="amber"
+                    accent="amber"
                   />
                 </div>
 
@@ -771,7 +786,7 @@ export default function FlashcardOnlyPage() {
                         setProgressLoaded(true);
                       }
                     }}
-                     className="px-4 py-2 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                    className="px-4 py-2 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
                   >
                     Restart Flashcards
                   </button>
@@ -824,7 +839,7 @@ export default function FlashcardOnlyPage() {
         )}
       </div>
     </div>
-    );
+  );
 
   // small helper to produce a shuffled copy of indices
   function shuffleArray<T>(arr: T[]) {
@@ -904,7 +919,7 @@ function CompletionSummary({ totalReviewed, counts, mastered, stillLearning, onR
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Session complete 🎉</h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Here’s your review summary.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mt-4 sm:mt-6">
           <SummaryTile label="Total reviewed" value={totalReviewed} className="bg-slate-50 dark:bg-slate-800" />
           <SummaryTile label="Easy" value={counts.easy} className="bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20" />
           <SummaryTile label="Good" value={counts.good} className="bg-sky-50 text-sky-700 dark:bg-sky-900/20" />
@@ -930,9 +945,9 @@ function CompletionSummary({ totalReviewed, counts, mastered, stillLearning, onR
 
 function SummaryTile({ label, value, className }: { label: string; value: number; className?: string }) {
   return (
-    <div className={`rounded-xl p-4 border border-slate-100 dark:border-slate-700 ${className || ''}`}>
+    <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 ${className || ''}`}>
       <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">{value}</div>
+      <div className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">{value}</div>
     </div>
   );
 }
