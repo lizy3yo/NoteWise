@@ -2350,3 +2350,43 @@
 {"timestamp":"2025-11-06T14:06:40.640Z","level":"info","message":"User registered successfully:","service":"gc-quest-api","meta":{"username":"user-pfbhjmw6uxl","email":"asheera@gmail.com","role":"student","emailSent":true}}
 {"timestamp":"2025-11-06T14:06:48.004Z","level":"info","message":"Refresh token stored in database for user","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTA5Yzk3NDAwNTU4NGNiOTRiYjI5MjIiLCJpYXQiOjE3NjI0MzgwMDcsImV4cCI6MTc2MzA0MjgwNywic3ViIjoicmVmcmVzaEFwaSJ9.JwoWC0OBi7zBoE-IrB2Wae5Gq4_5rGCf8J0QJq57Mk8"}}
 {"timestamp":"2025-11-06T14:06:48.020Z","level":"info","message":"User logged in successfully:","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","email":"dejesuskharl32@gmail.com","username":"user-e74db2c2nij"}}
+{"timestamp":"2025-11-06T14:09:24.165Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:24.165Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:24.166Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:24.166Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:24.971Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T14:09:47.911Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:47.911Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:47.912Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:47.912Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:09:48.558Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T14:10:04.591Z","level":"info","message":"Single summary fetched successfully","service":"gc-quest-api","meta":{"summaryId":"690b6092f835d6afbe2d800b","userId":"6909c974005584cb94bb2922","title":"Computers: A Quick Study Guid"}}
+{"timestamp":"2025-11-06T14:10:04.931Z","level":"info","message":"Single summary fetched successfully","service":"gc-quest-api","meta":{"summaryId":"690b6092f835d6afbe2d800b","userId":"6909c974005584cb94bb2922","title":"Computers: A Quick Study Guid"}}
+{"timestamp":"2025-11-06T14:10:08.822Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:10:08.822Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:10:08.823Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:10:08.823Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:10:09.477Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T14:11:36.538Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:11:36.539Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:11:36.540Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:11:36.540Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:11:37.206Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T14:12:00.770Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:00.770Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:00.771Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:00.772Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:01.088Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T14:12:04.311Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:04.312Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:04.312Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:04.313Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:12:04.945Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-06T14:14:48.433Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.434Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.435Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.435Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.825Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.826Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.826Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-06T14:14:48.827Z","level":"info","message":"  Flashcard 3: \"Flashcards from notes\" - Subject: \"MISSING\"","service":"gc-quest-api"}

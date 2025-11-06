@@ -25,6 +25,8 @@ export default function UserDashboard() {
     studyProgress: 0,
     recentActivity: "No recent activity"
   });
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   // Resolve first name from several sources
   const fromAuth =
@@ -61,21 +63,127 @@ export default function UserDashboard() {
 
   const firstName = fromAuth || fromSession || fromLocal || "Student";
 
-  // Mock data for now - you'll replace this with actual API calls
   useEffect(() => {
-    // Simulate loading stats
-    const loadStats = () => {
-      setStats({
-        totalUploads: 12,
-        totalFlashcards: 48,
-        studyStreak: 7,
-        studyProgress: 75,
-        recentActivity: "Studied Biology flashcards"
-      });
-    };
+    // Load dashboard stats from available endpoints when user is present.
+    // If endpoints are unavailable or the request fails, fall back to hardcoded/localStorage values.
+    let mounted = true;
+
+    async function loadStats() {
+      setLoadingStats(true);
+      setStatsError(null);
+
+      // local fallback values
+      const fallback: DashboardStats = {
+        totalUploads: 5,
+        totalFlashcards: 10,
+        studyStreak: 0,
+        studyProgress: 0,
+        recentActivity: 'No recent activity'
+      };
+
+      try {
+        // If we have a logged-in user, try to fetch real data in parallel
+        if (user && user._id) {
+          const userId = encodeURIComponent(user._id as string);
+
+          const flashcardsPromise = fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' });
+          const foldersPromise = fetch(`/api/student_page/folder?userId=${userId}`, { credentials: 'include' });
+          const testsPromise = fetch(`/api/student_page/practice-test?userId=${userId}`, { credentials: 'include' });
+
+          const [flashcardsRes, foldersRes, testsRes] = await Promise.allSettled([
+            flashcardsPromise,
+            foldersPromise,
+            testsPromise,
+          ]);
+
+          let totalFlashcards = 0;
+          let totalFolders = 0;
+          let totalTests = 0;
+          let recentActivity = fallback.recentActivity;
+
+          if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.ok) {
+            const data = await flashcardsRes.value.json().catch(() => null);
+            const flashcards = (data && data.flashcards) || [];
+            totalFlashcards = Array.isArray(flashcards) ? flashcards.length : 0;
+            if (flashcards && flashcards[0]) {
+              recentActivity = `Last: ${flashcards[0].title || 'Updated a flashcard'}`;
+            }
+          }
+
+          if (foldersRes.status === 'fulfilled' && foldersRes.value.ok) {
+            const data = await foldersRes.value.json().catch(() => null);
+            const folders = (data && (data.folders || data.folders)) || data?.folders || [];
+            totalFolders = Array.isArray(folders) ? folders.length : 0;
+          }
+
+          if (testsRes.status === 'fulfilled' && testsRes.value.ok) {
+            const data = await testsRes.value.json().catch(() => null);
+            const tests = (data && data.practiceTests) || [];
+            totalTests = Array.isArray(tests) ? tests.length : 0;
+            if (tests && tests[0]) {
+              recentActivity = `Saved test: ${tests[0].title}`;
+            }
+          }
+
+          // totalUploads: best-effort aggregated metric (flashcards + practice tests)
+          const totalUploads = totalFlashcards + totalTests;
+
+          // Try reading lightweight progress info from localStorage as a fallback
+          let studyStreak = 0;
+          let studyProgress = 0;
+          try {
+            if (typeof window !== 'undefined') {
+              const s = localStorage.getItem('studyStreak');
+              const p = localStorage.getItem('studyProgress');
+              if (s) studyStreak = Number(s) || 0;
+              if (p) studyProgress = Number(p) || 0;
+            }
+          } catch {}
+
+          if (mounted) {
+            setStats({
+              totalUploads: totalUploads || fallback.totalUploads,
+              totalFlashcards: totalFlashcards || fallback.totalFlashcards,
+              studyStreak,
+              studyProgress,
+              recentActivity: recentActivity || fallback.recentActivity,
+            });
+          }
+        } else {
+          // Not signed in: try localStorage or show fallback
+          let fromLocal: any = null;
+          try {
+            if (typeof window !== 'undefined') {
+              const raw = localStorage.getItem('user');
+              if (raw) fromLocal = JSON.parse(raw);
+            }
+          } catch {}
+
+          if (mounted) {
+            setStats({
+              totalUploads: fallback.totalUploads,
+              totalFlashcards: fallback.totalFlashcards,
+              studyStreak: 0,
+              studyProgress: 0,
+              recentActivity: fromLocal?.recentActivity || fallback.recentActivity,
+            });
+          }
+        }
+      } catch (err: any) {
+        // Non-fatal: keep fallback values but surface error state
+        console.warn('Failed to fetch dashboard stats:', err);
+        setStatsError(err?.message || 'Failed to load dashboard data');
+      } finally {
+        setLoadingStats(false);
+      }
+    }
 
     loadStats();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   if (authLoading) {
     return <LoadingTemplate2 title="Loading dashboard..." />;
