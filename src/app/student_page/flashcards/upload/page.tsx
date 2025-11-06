@@ -28,7 +28,7 @@ export default function UploadFlashcardPage() {
   // AI analysis states
   const [activeTab, setActiveTab] = useState<'ai' | 'zapier-file'>('ai');
   const [text, setText] = useState('');
-  const [analysisType, setAnalysisType] = useState('flashcards');
+
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AnalysisResult | null>(null);
 
@@ -94,7 +94,7 @@ export default function UploadFlashcardPage() {
     try {
       const formData = new FormData();
       if (text) formData.append('text', text);
-      formData.append('analysisType', analysisType);
+      formData.append('analysisType', 'flashcards');
 
       const response = await fetch(`/api/student_page/flashcard/analyze?userId=${userId}`, {
         method: 'POST',
@@ -260,19 +260,7 @@ export default function UploadFlashcardPage() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">AI Content Analyzer</h2>
 
-            {/* Analysis Type Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Analysis Type:</label>
-              <select
-                value={analysisType}
-                onChange={(e) => setAnalysisType(e.target.value)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              >
-                <option value="flashcards">Generate Flashcards</option>
-                <option value="summary">Create Summary</option>
-                <option value="quiz">Generate Quiz</option>
-              </select>
-            </div>
+
 
             {/* Text Input */}
             <div className="mb-6">
@@ -286,30 +274,28 @@ export default function UploadFlashcardPage() {
               />
             </div>
 
-            {/* Flashcard Count Selection for AI Generate */}
-            {analysisType === 'flashcards' && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Number of Flashcards to Generate:
-                </label>
-                <select
-                  value={aiCardCount}
-                  onChange={(e) => setAiCardCount(parseInt(e.target.value))}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value={10}>10 flashcards</option>
-                  <option value={15}>15 flashcards</option>
-                  <option value={20}>20 flashcards</option>
-                  <option value={25}>25 flashcards</option>
-                  <option value={30}>30 flashcards</option>
-                  <option value={40}>40 flashcards</option>
-                  <option value={50}>50 flashcards</option>
-                </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  More flashcards provide better coverage but take longer to generate
-                </p>
-              </div>
-            )}
+            {/* Flashcard Count Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Number of Flashcards to Generate:
+              </label>
+              <select
+                value={aiCardCount}
+                onChange={(e) => setAiCardCount(parseInt(e.target.value))}
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              >
+                <option value={10}>10 flashcards</option>
+                <option value={15}>15 flashcards</option>
+                <option value={20}>20 flashcards</option>
+                <option value={25}>25 flashcards</option>
+                <option value={30}>30 flashcards</option>
+                <option value={40}>40 flashcards</option>
+                <option value={50}>50 flashcards</option>
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                More flashcards provide better coverage but take longer to generate
+              </p>
+            </div>
 
             {/* Analyze Button */}
             <button
@@ -336,22 +322,13 @@ export default function UploadFlashcardPage() {
               <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-3">✅ Analysis Complete!</h3>
 
-                {analysisType === 'flashcards' && aiResult.cards && (
+                {aiResult.cards && (
                   <div>
                     <p className="text-sm text-green-800 dark:text-green-200 mb-2">
                       Generated {aiResult.cards.length} flashcards from your content
                     </p>
                     <p className="text-xs text-green-700 dark:text-green-300">
                       Preview will show below. You can edit the title and settings before creating.
-                    </p>
-                  </div>
-                )}
-
-                {analysisType === 'summary' && (
-                  <div className="max-h-40 overflow-y-auto">
-                    <h4 className="font-medium mb-2">Summary:</h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                      {aiResult.summary || aiResult.content}
                     </p>
                   </div>
                 )}

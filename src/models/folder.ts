@@ -26,6 +26,7 @@ export interface IFolder {
     password?: string;
     allowedUsers?: Types.ObjectId[];
     coverImage?: string;
+    isFavorite?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -56,7 +57,11 @@ const folderSchema = new Schema<IFolder>({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
-    coverImage: { type: String }
+    coverImage: { type: String },
+    isFavorite: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });

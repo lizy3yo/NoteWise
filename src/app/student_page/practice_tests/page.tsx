@@ -14,10 +14,26 @@ type FlashcardItem = {
   createdAt?: string;
 };
 
+type SummaryItem = {
+  _id: string;
+  title: string;
+  content: string;
+  subject: string;
+  difficulty: string;
+  summaryType: string;
+  wordCount: number;
+  readingTime: number;
+  keyPoints: string[];
+  mainTopics: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export default function PracticeTestsPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<"sets" | "upload" | "paste" | "drive">("sets");
+  const [tab, setTab] = useState<"sets" | "notes" | "upload" | "paste" | "drive">("sets");
   const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
+  const [summaries, setSummaries] = useState<SummaryItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +60,20 @@ export default function PracticeTestsPage() {
     });
   }, [flashcards, query]);
 
+  const visibleSummaries = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return summaries;
+    return summaries.filter((s) => {
+      const title = (s.title || "").toLowerCase();
+      const content = (s.content || "").toLowerCase();
+      return title.includes(q) || content.includes(q);
+    });
+  }, [summaries, query]);
+
   // Group flashcards by subject
   const flashcardsBySubject = useMemo(() => {
     const grouped = new Map<string, FlashcardItem[]>();
-    
+
     visibleFlashcards.forEach((flashcard) => {
       const subject = flashcard.subject || 'Uncategorized';
       if (!grouped.has(subject)) {
@@ -63,6 +89,26 @@ export default function PracticeTestsPage() {
 
     return grouped;
   }, [visibleFlashcards]);
+
+  // Group summaries by subject
+  const summariesBySubject = useMemo(() => {
+    const grouped = new Map<string, SummaryItem[]>();
+
+    visibleSummaries.forEach((summary) => {
+      const subject = summary.subject || 'Uncategorized';
+      if (!grouped.has(subject)) {
+        grouped.set(subject, []);
+      }
+      grouped.get(subject)!.push(summary);
+    });
+
+    // Sort alphabetically within each subject
+    grouped.forEach((summaries) => {
+      summaries.sort((a, b) => a.title.localeCompare(b.title));
+    });
+
+    return grouped;
+  }, [visibleSummaries]);
 
   useEffect(() => {
     let mounted = true;
@@ -94,14 +140,24 @@ export default function PracticeTestsPage() {
         if (!mounted) return;
         setUserId(uid);
 
+        // Fetch flashcards
         const res = await fetch(`/api/student_page/flashcard?userId=${uid}`, { cache: "no-store" });
         if (!res.ok) {
           const maybe = await res.json().catch(() => ({} as unknown));
-          throw new Error(maybe?.message || `Failed to load (${res.status})`);
+          throw new Error(maybe?.message || `Failed to load flashcards (${res.status})`);
         }
         const data = (await res.json()) as { flashcards?: FlashcardItem[] };
         if (!mounted) return;
         setFlashcards(Array.isArray(data?.flashcards) ? data.flashcards : []);
+
+        // Fetch summaries
+        const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, { cache: "no-store" });
+        if (summariesRes.ok) {
+          const summariesData = await summariesRes.json();
+          if (mounted && summariesData.success) {
+            setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
+          }
+        }
       } catch (e: unknown) {
         if (!mounted) return;
         setError((e as any)?.message || "Failed to load flashcards.");
@@ -119,7 +175,7 @@ export default function PracticeTestsPage() {
   const selectedCount = Object.values(selectedIds).filter(Boolean).length;
 
   const selectAllVisible = () => {
-    const visibleIds = visibleFlashcards.map((f) => f._id);
+    const visibleIds = tab === 'sets' ? visibleFlashcards.map((f) => f._id) : visibleSummaries.map((s) => s._id);
     const allSelected = visibleIds.every((id) => !!selectedIds[id]);
     if (allSelected) {
       // deselect visible
@@ -197,15 +253,15 @@ export default function PracticeTestsPage() {
 
   const handleGenerate = () => {
     if (!allowGenerate) return;
-    
+
     if (tab === "upload") {
       if (files.length === 0) {
         console.warn('No files selected');
         return;
       }
-      
+
       console.log('Processing files for upload:', files.length);
-      
+
       // Store file data as base64 in sessionStorage
       const filePromises = files.map(file => {
         return new Promise<{ name: string; type: string; data: string }>((resolve, reject) => {
@@ -225,7 +281,7 @@ export default function PracticeTestsPage() {
           reader.readAsDataURL(file);
         });
       });
-      
+
       Promise.all(filePromises)
         .then(fileData => {
           console.log('All files processed, storing in sessionStorage');
@@ -238,13 +294,13 @@ export default function PracticeTestsPage() {
         });
       return;
     }
-    
+
     if (tab === "paste") {
       sessionStorage.setItem("practice_test_paste_text", pasteText);
       router.push(`/student_page/practice_tests/generate?source=paste`);
       return;
     }
-    
+
     const ids = Object.keys(selectedIds).filter((k) => selectedIds[k]);
     router.push(`/student_page/practice_tests/generate?sets=${encodeURIComponent(ids.join(","))}`);
   };
@@ -252,34 +308,33 @@ export default function PracticeTestsPage() {
   return (
     <>
       <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Generate a practice test</h1>
-        <p className="text-gray-600 dark:text-gray-400">Choose sets or upload materials to create tailored practice questions.</p>
-      </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Generate a practice test</h1>
+          <p className="text-gray-600 dark:text-gray-400">Choose sets or upload materials to create tailored practice questions.</p>
+        </div>
 
-      <div className="mb-8 bg-transparent">
-        <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
-          {['sets','upload','paste'].map((t) => {
-            const label = t === 'sets' ? 'Flashcard sets' : t === 'upload' ? 'Upload files' : 'Paste text';
-            return (
-              <button
-                key={t}
-                onClick={() => setTab(t as any)}
-                className={`py-3 text-sm font-medium transition-colors ${
-                  tab === t
+        <div className="mb-8 bg-transparent">
+          <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
+            {['sets', 'notes', 'upload', 'paste'].map((t) => {
+              const label = t === 'sets' ? 'Flashcard sets' : t === 'notes' ? 'Study notes sets' : t === 'upload' ? 'Upload files' : 'Paste text';
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTab(t as any)}
+                  className={`py-3 text-sm font-medium transition-colors ${tab === t
                     ? 'text-gray-900 dark:text-white border-b-2 border-teal-500 -mb-[2px]'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
+                    }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-6">
-          {tab === "sets" && (
+        <div className="space-y-6">
+          {(tab === "sets" || tab === "notes") && (
             <>
               {/* search + select all + generate in one row */}
               <div className="flex items-center gap-3 mb-6">
@@ -295,17 +350,17 @@ export default function PracticeTestsPage() {
                 <button
                   onClick={selectAllVisible}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  aria-pressed={visibleFlashcards.length > 0 && visibleFlashcards.every(f => !!selectedIds[f._id])}
+                  aria-pressed={tab === 'sets' ? (visibleFlashcards.length > 0 && visibleFlashcards.every(f => !!selectedIds[f._id])) : (visibleSummaries.length > 0 && visibleSummaries.every(s => !!selectedIds[s._id]))}
                 >
-                  <CheckCircle 
-                    size={16} 
-                    className={visibleFlashcards.length > 0 && visibleFlashcards.every(f => !!selectedIds[f._id]) ? 'fill-current' : ''}
+                  <CheckCircle
+                    size={16}
+                    className={tab === 'sets' ? (visibleFlashcards.length > 0 && visibleFlashcards.every(f => !!selectedIds[f._id]) ? 'fill-current' : '') : (visibleSummaries.length > 0 && visibleSummaries.every(s => !!selectedIds[s._id]) ? 'fill-current' : '')}
                   />
-                  <span>{visibleFlashcards.length > 0 && visibleFlashcards.every(f => !!selectedIds[f._id]) ? 'Deselect all' : 'Select all'}</span>
+                  <span>{tab === 'sets' ? (visibleFlashcards.length > 0 && visibleFlashcards.every(f => !!selectedIds[f._id]) ? 'Deselect all' : 'Select all') : (visibleSummaries.length > 0 && visibleSummaries.every(s => !!selectedIds[s._id]) ? 'Deselect all' : 'Select all')}</span>
                 </button>
 
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {visibleFlashcards.length} {visibleFlashcards.length === 1 ? 'set' : 'sets'}
+                  {tab === 'sets' ? `${visibleFlashcards.length} ${visibleFlashcards.length === 1 ? 'set' : 'sets'}` : `${visibleSummaries.length} ${visibleSummaries.length === 1 ? 'summary' : 'summaries'}`}
                 </div>
 
                 <button
@@ -332,7 +387,7 @@ export default function PracticeTestsPage() {
                 </div>
               )}
 
-              {!loading && !error && visibleFlashcards.length === 0 && (
+              {!loading && !error && tab === 'sets' && visibleFlashcards.length === 0 && (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,9 +400,22 @@ export default function PracticeTestsPage() {
                 </div>
               )}
 
+              {!loading && !error && tab === 'notes' && visibleSummaries.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No summaries match your search</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Try a different search or create a new summary.</p>
+                  <button onClick={() => router.push('/student_page/study_mode')} className="px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors">Create a summary</button>
+                </div>
+              )}
+
               <div className="space-y-4">
-                {!loading && !error && Array.from(flashcardsBySubject.entries()).map(([subject, items]) => (
-                  <div 
+                {!loading && !error && tab === 'sets' && Array.from(flashcardsBySubject.entries()).map(([subject, items]) => (
+                  <div
                     key={subject}
                     className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-visible"
                   >
@@ -357,11 +425,10 @@ export default function PracticeTestsPage() {
                       className="w-full flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                          expandedFolder === subject 
-                            ? 'bg-teal-600 text-white' 
-                            : 'bg-teal-600/10 text-teal-600'
-                        }`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${expandedFolder === subject
+                          ? 'bg-teal-600 text-white'
+                          : 'bg-teal-600/10 text-teal-600'
+                          }`}>
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                           </svg>
@@ -373,10 +440,10 @@ export default function PracticeTestsPage() {
                           </p>
                         </div>
                       </div>
-                      <svg 
+                      <svg
                         className={`w-5 h-5 text-gray-400 transition-transform ${expandedFolder === subject ? 'rotate-180' : ''}`}
-                        fill="none" 
-                        stroke="currentColor" 
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -412,6 +479,99 @@ export default function PracticeTestsPage() {
                                 <div className="mb-3">
                                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">{item.title}</h3>
                                   {item.description && <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>}
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-teal-600/10 rounded-full flex items-center justify-center">
+                                      <span className="text-xs font-medium text-teal-600">Y</span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">You</span>
+                                  </div>
+                                  <span className="text-xs text-gray-400 dark:text-gray-500">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Recently'}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {!loading && !error && tab === 'notes' && Array.from(summariesBySubject.entries()).map(([subject, items]) => (
+                  <div
+                    key={subject}
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-visible"
+                  >
+                    {/* Folder Header */}
+                    <button
+                      onClick={() => setExpandedFolder(expandedFolder === subject ? null : subject)}
+                      className="w-full flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${expandedFolder === subject
+                          ? 'bg-teal-600 text-white'
+                          : 'bg-teal-600/10 text-teal-600'
+                          }`}>
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{subject}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {items.length} {items.length === 1 ? 'summary' : 'summaries'}
+                          </p>
+                        </div>
+                      </div>
+                      <svg
+                        className={`w-5 h-5 text-gray-400 transition-transform ${expandedFolder === subject ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Folder Contents */}
+                    {expandedFolder === subject && (
+                      <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/30">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {items.map((item) => {
+                            const selected = !!selectedIds[item._id];
+                            return (
+                              <div
+                                key={item._id}
+                                className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all relative`}
+                              >
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
+                                    <span className="text-sm font-medium text-teal-600">{item.wordCount} words</span>
+                                  </div>
+
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); toggleSelect(item._id); }}
+                                    className={`px-3 py-1 rounded-lg text-sm font-medium ${selected ? 'bg-teal-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                                    aria-pressed={selected}
+                                  >
+                                    {selected ? 'Selected' : 'Select'}
+                                  </button>
+                                </div>
+
+                                <div className="mb-3">
+                                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">{item.title}</h3>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className={`px-2 py-1 text-xs rounded-full ${item.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                      item.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                      }`}>
+                                      {item.difficulty}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">{item.readingTime} min read</span>
+                                  </div>
                                 </div>
 
                                 <div className="flex items-center justify-between">
@@ -470,13 +630,13 @@ export default function PracticeTestsPage() {
                     >
                       Browse files
                     </button>
-                    <input 
-                      ref={fileInputRef} 
-                      onChange={handleFileInput} 
-                      type="file" 
+                    <input
+                      ref={fileInputRef}
+                      onChange={handleFileInput}
+                      type="file"
                       accept=".pdf,.docx,.doc,.txt"
-                      className="hidden" 
-                      multiple 
+                      className="hidden"
+                      multiple
                     />
                   </div>
                 </div>
@@ -495,8 +655,8 @@ export default function PracticeTestsPage() {
                           <div className="text-xs text-gray-500 dark:text-gray-400">{(f.size / 1024).toFixed(1)} KB</div>
                         </div>
                       </div>
-                      <button 
-                        onClick={() => removeFileAt(i)} 
+                      <button
+                        onClick={() => removeFileAt(i)}
                         className="ml-3 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium"
                       >
                         Remove

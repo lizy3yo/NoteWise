@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const title = formData.get('title') as string;
     const subject = formData.get('subject') as string;
     const summaryType = (formData.get('summaryType') as string) || 'detailed';
-    const maxLength = parseInt((formData.get('maxLength') as string) || '500');
+    const maxLength = parseInt((formData.get('maxLength') as string) || '300');
 
     if (!file) {
       return NextResponse.json({ 

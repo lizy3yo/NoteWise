@@ -1,11 +1,13 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function StudyModePage() {
   const router = useRouter();
   const [tab, setTab] = useState<"paste" | "upload">("paste");
-  const [outputType, setOutputType] = useState<"summary" | "flashcards" | "practice_test">("summary");
+  // create type: summary | flashcards
+  const [createType, setCreateType] = useState<'summary' | 'flashcards'>('summary');
+
 
   // paste state
   const [pasteText, setPasteText] = useState("");
@@ -22,10 +24,11 @@ export default function StudyModePage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   // summary options
-  const [summaryType, setSummaryType] = useState<'brief' | 'detailed' | 'bullet-points' | 'outline'>('detailed');
-  const [maxLength, setMaxLength] = useState(500);
+  const [summaryType, setSummaryType] = useState<'brief' | 'detailed' | 'bullet-points' | 'outline'>('outline');
+  const [summaryLength, setSummaryLength] = useState<'short' | 'medium' | 'long'>('medium');
   const [customTitle, setCustomTitle] = useState('');
-  const [subject, setSubject] = useState('');
+  // flashcard options
+  const [maxCards, setMaxCards] = useState<number>(20);
 
   // Get userId on component mount
   useEffect(() => {
@@ -55,6 +58,21 @@ export default function StudyModePage() {
     }
     getUserId();
   }, []);
+
+  // support preselect via query param: ?create=flashcards|summary
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    try {
+      const createParam = searchParams?.get?.('create') || '';
+      if (createParam) {
+        const v = createParam.toLowerCase();
+        if (v === 'flashcards' || v === 'flashcard') setCreateType('flashcards');
+        else if (v === 'summary' || v === 'summaries') setCreateType('summary');
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [searchParams]);
 
   const handlePasteInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const v = e.target.value;
@@ -95,13 +113,31 @@ export default function StudyModePage() {
   const handlePasteDragOver = (e: React.DragEvent<HTMLTextAreaElement>) => e.preventDefault();
 
   const handleFilesAdd = (newFiles: FileList | null) => {
-    if (!newFiles) return;
-    setFiles((prev) => [...prev, ...Array.from(newFiles)].slice(0, 20));
+    if (!newFiles || newFiles.length === 0) {
+      console.log('No files to add');
+      return;
+    }
+    console.log('Adding files:', Array.from(newFiles).map(f => ({ name: f.name, size: f.size, type: f.type })));
+    const fileArray = Array.from(newFiles);
+    setFiles((prev) => {
+      const updated = [...prev, ...fileArray].slice(0, 20);
+      console.log('Files state updated:', updated.length, 'files');
+      return updated;
+    });
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFilesAdd(e.target.files);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    console.log('File input changed:', e.target.files);
+    const selectedFiles = e.target.files;
+    if (selectedFiles && selectedFiles.length > 0) {
+      handleFilesAdd(selectedFiles);
+      // Clear input after processing to allow selecting the same file again
+      setTimeout(() => {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }, 100);
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -115,77 +151,104 @@ export default function StudyModePage() {
 
   const handleGenerate = async () => {
     if (!allowGenerate || !userId) return;
-
-    if (outputType === "summary") {
-      await generateSummary();
-    } else if (outputType === "flashcards") {
-      // Redirect to flashcard generation
-      if (tab === "upload") {
-        sessionStorage.setItem("flashcard_upload_files", JSON.stringify(files.map((f) => f.name)));
-        router.push("/student_page/flashcards/create/cards?source=upload");
-      } else {
-        sessionStorage.setItem("flashcard_paste_text", pasteText);
-        router.push("/student_page/flashcards/create/cards?source=paste");
-      }
-    } else if (outputType === "practice_test") {
-      // Redirect to practice test generation
-      if (tab === "upload") {
-        sessionStorage.setItem("practice_test_upload_files", JSON.stringify(files.map((f) => f.name)));
-        router.push("/student_page/practice_tests/generate?source=upload");
-      } else {
-        sessionStorage.setItem("practice_test_paste_text", pasteText);
-        router.push("/student_page/practice_tests/generate?source=paste");
-      }
-    }
+    await generateSummary();
   };
 
   const generateSummary = async () => {
     setIsGenerating(true);
     setGenerationError(null);
 
+    console.log('🚀 Starting generation:', {
+      createType,
+      tab,
+      filesCount: files.length,
+      pasteTextLength: pasteText.length,
+      userId
+    });
+
     try {
-      let response: Response;
+      // Convert summary length to word count
+      const getMaxLength = (length: 'short' | 'medium' | 'long') => {
+        switch (length) {
+          case 'short': return 200;
+          case 'medium': return 350;
+          case 'long': return 500;
+          default: return 350;
+        }
+      };
 
-      if (tab === "upload" && files.length > 0) {
-        // Generate summary from file
-        const formData = new FormData();
-        formData.append('file', files[0]); // Use first file
-        formData.append('title', customTitle || files[0].name);
-        formData.append('subject', subject || 'General');
-        formData.append('summaryType', summaryType);
-        formData.append('maxLength', maxLength.toString());
+      const maxLength = getMaxLength(summaryLength);
 
-        response = await fetch(`/api/student_page/summary/generate-from-file?userId=${userId}`, {
-          method: 'POST',
-          body: formData
-        });
-      } else {
-        // Generate summary from text
-        const requestBody = {
-          content: pasteText,
-          title: customTitle || 'Study Notes Summary',
-          subject: subject || 'General',
-          summaryType,
-          maxLength
-        };
+      // choose endpoint and payload based on createType
+      let response: Response | undefined;
 
-        response = await fetch(`/api/student_page/summary/generate-from-text?userId=${userId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestBody)
-        });
+      if (createType === 'summary') {
+        if (tab === "upload" && files.length > 0) {
+          const formData = new FormData();
+          formData.append('file', files[0]);
+          formData.append('title', customTitle || files[0].name);
+          formData.append('summaryType', summaryType);
+          formData.append('maxLength', maxLength.toString());
+
+          response = await fetch(`/api/student_page/summary/generate-from-file?userId=${userId}`, {
+            method: 'POST',
+            body: formData
+          });
+        } else {
+          const requestBody = {
+            content: pasteText,
+            title: customTitle || 'Study Notes Summary',
+            summaryType,
+            maxLength
+          };
+
+          response = await fetch(`/api/student_page/summary/generate-from-text?userId=${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+          });
+        }
+
+      } else if (createType === 'flashcards') {
+        // generate flashcards
+        if (tab === "upload" && files.length > 0) {
+          const formData = new FormData();
+          formData.append('file', files[0]);
+          formData.append('title', customTitle || files[0].name);
+          formData.append('maxCards', String(maxCards));
+
+          response = await fetch(`/api/student_page/flashcard/generate-from-file?userId=${userId}`, {
+            method: 'POST',
+            body: formData
+          });
+        } else {
+          const requestBody = {
+            content: pasteText,
+            title: customTitle || 'Flashcards from notes',
+            maxCards
+          };
+
+          response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+          });
+        }
+
+      }
+
+      if (!response) {
+        throw new Error('Invalid create type selected');
       }
 
       const data = await response.json();
-
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate summary');
+        throw new Error(data.error || 'Failed to generate');
       }
 
-      // Success - redirect to summaries page
-      router.push('/student_page/summaries');
+      // Success - redirect to the appropriate library tab
+      if (createType === 'summary') router.push('/student_page/library?tab=study_notes');
+      else if (createType === 'flashcards') router.push('/student_page/library?tab=flashcards');
 
     } catch (error) {
       console.error('Summary generation failed:', error);
@@ -205,7 +268,7 @@ export default function StudyModePage() {
                 Generate study notes
               </h1>
               <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-1 sm:mt-2">
-                Paste notes or upload files to create concise study notes and flashcards.
+                Paste notes or upload files to create AI-powered summaries of your study material.
               </p>
             </div>
             <div className="text-sm text-gray-400 sm:text-right">
@@ -223,11 +286,10 @@ export default function StudyModePage() {
               <button
                 key={t}
                 onClick={() => setTab(t as any)}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  tab === t
-                    ? "bg-white dark:bg-gray-700 text-teal-600 shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-teal-600 hover:bg-teal-600/5"
-                }`}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-sm transition-all ${tab === t
+                  ? "bg-white dark:bg-gray-700 text-teal-600 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-teal-600 hover:bg-teal-600/5"
+                  }`}
               >
                 {t === "paste" ? "Paste text" : "Upload files"}
               </button>
@@ -235,96 +297,115 @@ export default function StudyModePage() {
           </div>
         </div>
 
-        {/* Output Type Selection */}
+        {/* Create Type Selection */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-            What would you like to create?
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { type: "summary", icon: "📄", title: "Summary", desc: "AI-generated study summary" },
-              { type: "flashcards", icon: "🃏", title: "Flashcards", desc: "Interactive study cards" },
-              { type: "practice_test", icon: "📝", title: "Practice Test", desc: "Quiz questions" }
-            ].map((option) => (
-              <button
-                key={option.type}
-                onClick={() => setOutputType(option.type as any)}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
-                  outputType === option.type
-                    ? "border-teal-500 bg-teal-50 dark:bg-teal-900/20"
-                    : "border-gray-200 dark:border-gray-700 hover:border-teal-300 hover:bg-teal-50/50 dark:hover:bg-teal-900/10"
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{option.icon}</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{option.title}</span>
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">What would you like to create?</div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setCreateType('summary')}
+              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'summary' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white/0 dark:bg-transparent'} transition-colors`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-5 h-5 text-teal-600">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                  </svg>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{option.desc}</p>
-              </button>
-            ))}
+                <div className="font-semibold text-gray-900 dark:text-white">Summary</div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">AI-generated study summary</div>
+            </button>
+            <button
+              onClick={() => setCreateType('flashcards')}
+              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'flashcards' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white/0 dark:bg-transparent'} transition-colors`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-5 h-5 text-orange-600">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z" />
+                  </svg>
+                </div>
+                <div className="font-semibold text-gray-900 dark:text-white">Flashcards</div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Interactive study cards</div>
+            </button>
           </div>
         </div>
 
-        {/* Summary Options - Only show when summary is selected */}
-        {outputType === "summary" && (
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Summary Options</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Summary Type
-                </label>
-                <select
-                  value={summaryType}
-                  onChange={(e) => setSummaryType(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="detailed">Detailed Summary</option>
-                  <option value="brief">Brief Overview</option>
-                  <option value="bullet-points">Bullet Points</option>
-                  <option value="outline">Outline Format</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Max Length (words)
-                </label>
-                <input
-                  type="number"
-                  value={maxLength}
-                  onChange={(e) => setMaxLength(parseInt(e.target.value) || 500)}
-                  min="100"
-                  max="1000"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Title (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={customTitle}
-                  onChange={(e) => setCustomTitle(e.target.value)}
-                  placeholder="Auto-generated if empty"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="e.g., Biology, History"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+        {/* Options */}
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-4">{createType === 'summary' ? 'Summary Options' : 'Flashcard Options'}</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {createType === 'summary' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Summary Type</label>
+                  <select
+                    value={summaryType}
+                    onChange={(e) => setSummaryType(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="outline">Outline Format</option>
+                    <option value="detailed">Detailed Summary</option>
+                    <option value="brief">Brief Overview</option>
+                    <option value="bullet-points">Bullet Points</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Length</label>
+                  <select
+                    value={summaryLength}
+                    onChange={(e) => setSummaryLength(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="short">Short</option>
+                    <option value="medium">Medium</option>
+                    <option value="long">Long</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={customTitle} 
+                    onChange={(e) => setCustomTitle(e.target.value)} 
+                    placeholder="Auto-generated if empty" 
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                  />
+                </div>
+              </>
+            )}
+
+            {createType === 'flashcards' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of Flashcards to Generate</label>
+                  <select
+                    value={maxCards}
+                    onChange={(e) => setMaxCards(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value={10}>10 flashcards</option>
+                    <option value={15}>15 flashcards</option>
+                    <option value={20}>20 flashcards</option>
+                    <option value={25}>25 flashcards</option>
+                    <option value={30}>30 flashcards</option>
+                    <option value={40}>40 flashcards</option>
+                    <option value={50}>50 flashcards</option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    More flashcards provide better coverage but take longer to generate
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title (Optional)</label>
+                  <input type="text" value={customTitle} onChange={(e)=>setCustomTitle(e.target.value)} placeholder="Auto-generated if empty" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
+                </div>
+              </>
+            )}
+            
           </div>
-        )}
+        </div>
 
         <div className="mb-20 sm:mb-24">
           {tab === "paste" && (
@@ -335,7 +416,7 @@ export default function StudyModePage() {
                 onChange={handlePasteInput}
                 onDrop={handlePasteDrop}
                 onDragOver={handlePasteDragOver}
-                placeholder="Paste your notes here. We'll do the rest."
+                placeholder={createType === 'flashcards' ? "Paste your content here (notes, articles, study materials)..." : "Paste your notes here. We'll do the rest."}
                 className="w-full min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6 text-gray-900 dark:text-white resize-vertical text-sm sm:text-base focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               />
               <div className="absolute right-3 sm:right-4 bottom-3 sm:bottom-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">
@@ -346,68 +427,70 @@ export default function StudyModePage() {
 
           {tab === "upload" && (
             <div>
-              <div
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-8 sm:py-12 lg:py-16 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-gray-800 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]"
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">
-                    DOC
+              {/* show drop/browse area only when no files selected */}
+              {files.length === 0 ? (
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-8 sm:py-12 lg:py-16 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-gray-800 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]"
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">DOC</div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PDF</div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PPT</div>
                   </div>
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">
-                    PDF
+                  <div className="text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">
+                    {createType === 'flashcards' ? 'Upload files for AI processing' : 'Drag notes, slides, or readings here'}
                   </div>
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">
-                    PPT
+                  <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    {createType === 'flashcards' ? 'PDF, Word, PowerPoint, Text files (max 10MB) - Processed with advanced AI' : 'Supported: .docx, .pdf, .pptx'}
                   </div>
-                </div>
-                <div className="text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">
-                  Drag notes, slides, or readings here
-                </div>
-                <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                  Supported: .docx, .pdf, .pptx
-                </div>
-                <div className="mt-3">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    Browse files
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    onChange={handleFileInput}
-                    type="file"
-                    className="hidden"
-                    multiple
-                  />
-                </div>
-              </div>
-
-              {files.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {files.map((f, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 gap-2 sm:gap-3"
+                  <div className="mt-3">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
-                      <div className="text-sm sm:text-base text-gray-900 dark:text-white truncate flex-1 min-w-0">
-                        {f.name}
-                      </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-3">
-                        <div className="text-xs sm:text-sm text-gray-400">
-                          {(f.size / 1024).toFixed(0)} KB
+                      Browse files
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      onChange={handleFileInput}
+                      type="file"
+                      accept=".pdf,.docx,.pptx,.txt,.md,.doc"
+                      className="hidden"
+                      multiple
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {files.map((f, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
                         </div>
-                        <button
-                          onClick={() => removeFileAt(i)}
-                          className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{(f.size / 1024).toFixed(1)} KB</div>
+                        </div>
                       </div>
+                      <button
+                        onClick={() => removeFileAt(i)}
+                        className="ml-3 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium"
+                      >
+                        Remove
+                      </button>
                     </div>
                   ))}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  >
+                    + Add more files
+                  </button>
                 </div>
               )}
             </div>
@@ -416,21 +499,24 @@ export default function StudyModePage() {
           {/* Info Card */}
           <div className="mt-6 sm:mt-8 flex items-start gap-3 p-4 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
             <div className="w-8 h-8 bg-teal-600/10 dark:bg-teal-600/20 rounded-md flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-teal-600">
-                {outputType === "summary" ? "📄" : outputType === "flashcards" ? "🃏" : "📝"}
-              </span>
+              <div className="w-5 h-5 text-teal-600">
+                {createType === 'summary' ? (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z" />
+                  </svg>
+                )}
+              </div>
             </div>
             <div>
               <div className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
-                {outputType === "summary" ? "AI Summary" : outputType === "flashcards" ? "Flashcards" : "Practice Test"}
+                {createType === 'summary' ? 'AI Summary' : 'Flashcards'}
               </div>
               <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                {outputType === "summary" 
-                  ? "Generate concise AI-powered summaries of your study material"
-                  : outputType === "flashcards"
-                  ? "Create interactive flashcards for memorization"
-                  : "Generate practice questions to test your knowledge"
-                }
+                {createType === 'summary' ? 'Generate concise AI-powered summaries of your study material' : 'Create interactive flashcards from your notes'}
               </div>
             </div>
           </div>
@@ -454,33 +540,29 @@ export default function StudyModePage() {
               {files.length > 0
                 ? `${files.length} file${files.length > 1 ? 's' : ''}`
                 : pasteText.trim().length > 0
-                ? "Text ready"
-                : "No content"}{" "}
+                  ? "Text ready"
+                  : "No content"}{" "}
             </div>
             <div className="hidden sm:block text-sm text-gray-400 mr-4">
               {files.length > 0
                 ? files.length
                 : pasteText.trim().length > 0
-                ? 1
-                : 0}{" "}
+                  ? 1
+                  : 0}{" "}
               selected
             </div>
             <button
               onClick={handleGenerate}
               disabled={!allowGenerate || isGenerating}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
-                !allowGenerate || isGenerating
-                  ? "bg-gray-600/30 text-gray-300 cursor-not-allowed"
-                  : "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:scale-[1.02] hover:shadow-xl"
-              } w-full sm:w-auto`}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${!allowGenerate || isGenerating
+                ? "bg-gray-600/30 text-gray-300 cursor-not-allowed"
+                : "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:scale-[1.02] hover:shadow-xl"
+                } w-full sm:w-auto`}
             >
               {isGenerating && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              )}
-              {isGenerating 
-                ? `Generating ${outputType === "summary" ? "Summary" : outputType === "flashcards" ? "Flashcards" : "Test"}...`
-                : `Generate ${outputType === "summary" ? "Summary" : outputType === "flashcards" ? "Flashcards" : "Test"}`
-              }
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {isGenerating ? `Generating ${createType === 'summary' ? 'Summary' : 'Flashcards'}...` : `Generate ${createType === 'summary' ? 'Summary' : 'Flashcards'}`}
             </button>
           </div>
         </div>

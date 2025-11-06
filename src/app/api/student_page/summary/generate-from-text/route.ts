@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       title: title?.trim() || 'Text Summary',
       subject: subject?.trim(),
       summaryType: summaryType as any,
-      maxLength: maxLength || 500
+      maxLength: maxLength || 300  // Reduced default for more concise summaries
     });
 
     // Save to database

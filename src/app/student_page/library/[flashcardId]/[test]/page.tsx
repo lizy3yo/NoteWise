@@ -679,7 +679,7 @@ export default function TestPage() {
             {/* Left section - Title and info */}
             <div className="flex items-start gap-4 min-w-0 flex-1">
               <div className="flex-shrink-0">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#1C2B1C] to-teal-600 flex items-center justify-center shadow-lg">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-teal-600 to-teal-600 flex items-center justify-center shadow-lg">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
                     <path d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z" stroke="currentColor" strokeWidth="2" />
                     <path d="M17 7h-2a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" strokeWidth="2" />
@@ -692,7 +692,7 @@ export default function TestPage() {
                   <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 truncate">
                     {flashcard.title}
                   </h1>
-                  <div className="flex-shrink-0 px-2 py-1 bg-[#1C2B1C]/10 dark:bg-[#1C2B1C]/20 text-[#1C2B1C] text-xs font-medium rounded-full">
+                  <div className="flex-shrink-0 px-2 py-1 bg-teal-600/10 dark:bg-teal-600/20 text-teal-600 text-xs font-medium rounded-full">
                     Test
                   </div>
                 </div>
@@ -703,7 +703,7 @@ export default function TestPage() {
                     <span>{questions.length} questions</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 bg-[#1C2B1C] rounded-full"></div>
+                    <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
                     <span>{done ? score : (feedbackMode === 'immediate' ? currentScore : 0)} correct</span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -720,7 +720,7 @@ export default function TestPage() {
                 <button
                   onClick={() => setShowSettings(!showSettings)}
                   aria-label="Settings"
-                  className="px-3 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-[#1C2B1C]/20 hover:text-[#1C2B1C] rounded-xl transition-all duration-200 hover:scale-105 flex items-center"
+                  className="px-3 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-teal-600/20 hover:text-teal-600 rounded-xl transition-all duration-200 hover:scale-105 flex items-center"
                 >
                   <Settings size={18} />
                 </button>

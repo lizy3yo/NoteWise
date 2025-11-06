@@ -47,6 +47,7 @@ export interface IFlashcard {
     repetitionCount?: number;
     correctCount?: number;
     incorrectCount?: number;
+    isFavorite?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
     accessType: 'private' | 'public';
@@ -97,6 +98,10 @@ const flashcardSchema = new Schema<IFlashcard>({
     repetitionCount: { type: Number, default: 0 },
     correctCount: { type: Number, default: 0 },
     incorrectCount: { type: Number, default: 0 },
+    isFavorite: {
+        type: Boolean,
+        default: false
+    },
     accessType: {
         type: String,
         enum: ['private', 'public'],

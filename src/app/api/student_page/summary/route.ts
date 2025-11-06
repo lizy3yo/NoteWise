@@ -3,13 +3,14 @@ import { connectToDatabase } from '@/lib/mongoose';
 import { Summary } from '@/models/summary';
 import { logger } from '@/lib/winston';
 
-// GET - Fetch summaries for a user
+// GET - Fetch summaries for a user or a specific summary by ID
 export async function GET(request: NextRequest) {
   try {
     await connectToDatabase();
     
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const summaryId = searchParams.get('summaryId');
     const subject = searchParams.get('subject');
     const isPublic = searchParams.get('isPublic');
     
@@ -20,6 +21,33 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // If summaryId is provided, fetch a specific summary
+    if (summaryId) {
+      const summary = await Summary.findOne({
+        _id: summaryId,
+        userId
+      });
+
+      if (!summary) {
+        return NextResponse.json({
+          success: false,
+          error: 'Summary not found'
+        }, { status: 404 });
+      }
+
+      logger.info('Single summary fetched successfully', {
+        summaryId,
+        userId,
+        title: summary.title
+      });
+
+      return NextResponse.json({
+        success: true,
+        summary
+      });
+    }
+
+    // Otherwise, fetch all summaries for the user
     // Build query
     const query: any = { userId };
     
@@ -128,7 +156,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subject, tags, isPublic } = body;
+    const { title, subject, tags, isPublic, folder, isFavorite } = body;
 
     // Build update object
     const updateData: any = {};
@@ -136,6 +164,8 @@ export async function PATCH(request: NextRequest) {
     if (subject !== undefined) updateData.subject = subject.trim();
     if (tags !== undefined) updateData.tags = tags;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
+    if (folder !== undefined) updateData.folder = folder;
+    if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
 
     // Update the summary (only if it belongs to the user)
     const updatedSummary = await Summary.findOneAndUpdate(

@@ -51,7 +51,7 @@ export class InternalSummaryGenerator {
 
   async generateSummary(options: InternalSummaryOptions): Promise<SummaryGenerationResult> {
     const startTime = Date.now();
-    const { content, title, subject, summaryType = 'detailed', maxLength = 500 } = options;
+    const { content, title, subject, summaryType = 'detailed', maxLength = 300 } = options;
 
     if (!content || content.trim().length < 100) {
       throw new Error('Content must be at least 100 characters long');
@@ -137,7 +137,7 @@ export class InternalSummaryGenerator {
     summaryType?: string,
     maxLength?: number
   ): string {
-    return `You are an expert academic summarizer specializing in creating high-quality, comprehensive summaries. Analyze the content and generate a well-structured summary with supporting metadata.
+    return `You are an expert at creating concise, easy-to-understand summaries for students. Your goal is to distill complex content into clear, digestible summaries that capture the main concepts without getting lost in specific details.
 
 INPUT:
 - CONTENT: ${content}
@@ -146,68 +146,56 @@ INPUT:
 - SUMMARY TYPE: ${summaryType}
 - MAX LENGTH: ${maxLength} words
 
+SUMMARY APPROACH:
+Focus on creating a SHORT, CONCISE summary that:
+- Explains the main concepts in simple terms
+- Avoids excessive detail and specific examples
+- Uses clear, straightforward language
+- Helps students understand the big picture
+- Is easy to read and remember
+
 SUMMARY TYPES:
-- brief: Concise overview (100-200 words)
-- detailed: Comprehensive summary (300-600 words)
-- bullet-points: Key points in bullet format
-- outline: Hierarchical structure with main topics and subtopics
+- brief: Very concise overview (100-200 words) - focus on core concepts only
+- detailed: Balanced summary (300-500 words) - main concepts with some context
+- bullet-points: Key concepts as clear bullet points
+- outline: Main topics with brief explanations
 
-PROCESS:
-1. CONTENT ANALYSIS
-   - Identify main themes, concepts, and arguments
-   - Determine subject area and difficulty level
-   - Extract key terminology and important details
+WRITING STYLE:
+- Use simple, clear language that students can easily understand
+- Focus on WHAT the topic is about, not specific details
+- Explain concepts in a way that makes sense to someone learning
+- Avoid jargon unless necessary (and explain it if used)
+- Make it conversational but informative
 
-2. SUMMARY GENERATION
-   - Create summary matching the requested type and length
-   - Maintain academic tone and clarity
-   - Preserve essential information and context
-   - Include relevant examples where appropriate
+EXAMPLE TRANSFORMATION:
+Instead of: "The lecture began by differentiating UI and UX. User Experience (UX) encompasses the overall experience a user has with a website or application, focusing on the flow and layout to ensure ease of understanding and navigation..."
 
-3. METADATA EXTRACTION
-   - Generate key points (5-8 main takeaways)
-   - Identify main topics covered
-   - Determine appropriate tags
-   - Assess difficulty and confidence levels
-
-OUTPUT REQUIREMENTS:
-- Return ONLY a JSON object
-- Summary should be well-structured and academically sound
-- Key points should be actionable and specific
-- Tags should be relevant and searchable
+Write: "This covers the basics of UI and UX design. UI (User Interface) is about how things look and what users click on. UX (User Experience) is about making websites and apps easy and enjoyable to use..."
 
 JSON SCHEMA:
 {
   "summary": {
-    "title": "Auto-generated or provided title",
-    "content": "The main summary content matching the requested type and length",
-    "keyPoints": ["Key point 1", "Key point 2", "Key point 3", "Key point 4", "Key point 5"],
-    "mainTopics": ["Topic 1", "Topic 2", "Topic 3"],
+    "title": "Clear, descriptive title",
+    "content": "Concise, easy-to-understand summary focusing on main concepts",
+    "keyPoints": ["Simple key point 1", "Simple key point 2", "Simple key point 3", "Simple key point 4", "Simple key point 5"],
+    "mainTopics": ["Main Topic 1", "Main Topic 2", "Main Topic 3"],
     "wordCount": ${maxLength},
-    "readingTime": 3,
+    "readingTime": 2,
     "difficulty": "easy|medium|hard",
     "subject": "${subject || 'General'}",
     "summaryType": "${summaryType}",
-    "tags": ["tag1", "tag2", "tag3", "tag4"],
+    "tags": ["relevant", "searchable", "tags"],
     "confidence": 0.9
   }
 }
 
 QUALITY REQUIREMENTS:
-1. Summary must be coherent and well-structured
-2. Key points must be specific and actionable
-3. Main topics should cover the breadth of content
-4. Word count should be close to target (±10%)
-5. Reading time should be realistic (250 words per minute)
-6. Confidence should reflect summary quality (0.7-1.0)
-7. Tags should be relevant and searchable
-
-FORMATTING RULES:
-- Use clear, academic language
-- Maintain logical flow and structure
-- Include transitions between ideas
-- Preserve important terminology
-- Ensure summary stands alone without original content
+1. Summary must be CONCISE and focused on main concepts
+2. Use SIMPLE language that students can easily understand
+3. Avoid unnecessary details and specific examples
+4. Make it feel like a helpful study guide, not lecture notes
+5. Key points should be clear and memorable
+6. Focus on understanding, not memorization
 
 Return ONLY the JSON object. No markdown, no code blocks, no additional text.
 

@@ -53,7 +53,7 @@ export default function SummariesPage() {
                 localStorage.setItem('userId', uid);
             }
             setUserId(uid);
-            
+
             // Fetch summaries
             if (uid) {
                 await fetchSummaries(uid);
@@ -166,11 +166,10 @@ export default function SummariesPage() {
                                         <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full flex-shrink-0">
                                             completed
                                         </span>
-                                        <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
-                                            summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                            summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                        }`}>
+                                        <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                                summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                            }`}>
                                             {summary.difficulty}
                                         </span>
                                     </div>
@@ -192,7 +191,7 @@ export default function SummariesPage() {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedSummary(summary)}
                                         className="w-full bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
                                     >
@@ -266,7 +265,7 @@ export default function SummariesPage() {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div className="p-6 space-y-6">
                                 {/* Summary Content */}
                                 <div>

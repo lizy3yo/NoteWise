@@ -653,7 +653,7 @@ export default function FlashcardDetailPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push("/student_page/library")}
-              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#1C2B1C] transition-colors"
+              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-teal-600 transition-colors"
               aria-label="Back to Library"
             >
               <svg
@@ -677,14 +677,14 @@ export default function FlashcardDetailPage() {
             <button
               onClick={() => setShowSharingModal(true)}
               aria-label="Share"
-              className="p-2 bg-[#1C2B1C] text-white rounded-xl hover:brightness-110 transition-all shadow-sm"
+              className="p-2 bg-teal-600 text-white rounded-xl hover:brightness-110 transition-all shadow-sm"
             >
               <Share2 size={18} />
             </button>
             <button
               onClick={() => setIsEditing(true)}
               aria-label="Settings"
-              className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:border-[#1C2B1C]/30 hover:text-[#1C2B1C] transition-all shadow-sm"
+              className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:border-teal-600/30 hover:text-teal-600 transition-all shadow-sm"
             >
               <Settings size={18} />
             </button>
@@ -788,7 +788,7 @@ export default function FlashcardDetailPage() {
                     setViewerIndex(0);
                     setIsShowingAnswer(false);
                   }}
-                  className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:border-[#1C2B1C]/30 dark:hover:border-[#8B9D8B]/30 hover:text-[#1C2B1C] dark:hover:text-[#8B9D8B] transition-all"
+                  className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:border-teal-600/30 dark:hover:border-[#8B9D8B]/30 hover:text-teal-600 dark:hover:text-[#8B9D8B] transition-all"
                   aria-label="Reset Viewer"
                 >
                   <RotateCcw size={16} />
@@ -802,7 +802,7 @@ export default function FlashcardDetailPage() {
                 type="button"
                 onClick={() => setIsShowingAnswer((s) => !s)}
                 aria-label={isShowingAnswer ? "Show question" : "Show answer"}
-                className="w-full h-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1C2B1C] dark:focus:ring-[#8B9D8B] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                className="w-full h-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-600 dark:focus:ring-[#8B9D8B] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               >
                 <div className="relative h-full overflow-hidden rounded-2xl">
                   {/* Star control inside card at top right - use a non-button element to avoid nested button inside the large clickable card button */}
@@ -878,7 +878,7 @@ export default function FlashcardDetailPage() {
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={goPrev}
-                className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-[#1C2B1C]/30 dark:hover:border-[#8B9D8B]/30 hover:bg-[#1C2B1C]/5 dark:hover:bg-[#8B9D8B]/10 transition-all shadow-sm"
+                className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-teal-600/30 dark:hover:border-[#8B9D8B]/30 hover:bg-teal-600/5 dark:hover:bg-[#8B9D8B]/10 transition-all shadow-sm"
               >
                 <svg
                   className="w-5 h-5 text-slate-600 dark:text-slate-400"
@@ -964,7 +964,7 @@ export default function FlashcardDetailPage() {
               {flashcard.cards.map((card, index) => (
                 <div
                   key={card._id}
-                  className="relative group bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-[#1C2B1C]/30 dark:hover:border-[#04C40A]/30 hover:shadow-lg transition-all"
+                  className="relative group bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-teal-600/30 dark:hover:border-[#04C40A]/30 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-start gap-4 mb-4">
                     <div className="flex items-center justify-center">
@@ -1149,7 +1149,7 @@ export default function FlashcardDetailPage() {
                   <button
                     onClick={handleAddCard}
                     disabled={!cardForm.question || !cardForm.answer}
-                    className="px-4 py-2 rounded-md bg-[#1C2B1C] text-white disabled:opacity-50"
+                    className="px-4 py-2 rounded-md bg-teal-600 text-white disabled:opacity-50"
                   >
                     Add Card
                   </button>
@@ -1325,7 +1325,7 @@ export default function FlashcardDetailPage() {
                     type="checkbox"
                     checked={trackProgress}
                     onChange={() => setTrackProgress((v) => !v)}
-                    className="w-4 h-4 text-[#1C2B1C] bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600 rounded focus:ring-[#1C2B1C] focus:ring-2"
+                    className="w-4 h-4 text-teal-600 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600 rounded focus:ring-teal-600 focus:ring-2"
                   />
                   <span className="text-sm text-slate-700 dark:text-slate-200">
                     Enable progress tracking

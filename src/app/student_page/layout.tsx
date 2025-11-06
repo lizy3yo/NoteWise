@@ -649,40 +649,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                       </div>
                     )}
 
-                    <Link
-                      href="/student_page/flashcards"
-                      className={`flex items-center ${!isExpanded
-                        ? "justify-center w-full p-2.5 mx-0"
-                        : "gap-4 px-5 py-2.5 mx-4"
-                        } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
-                        } ${pathname === "/student_page/flashcards"
-                          ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
-                          : ""
-                        }`}
-                      title={!isExpanded ? "Flashcards" : ""}
-                    >
-                      <svg
-                        className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${pathname === "/student_page/flashcards"
-                          ? "text-teal-600 dark:text-slate-200"
-                          : ""
-                          }`}
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                        />
-                      </svg>
-                      {isExpanded && (
-                        <span className="whitespace-nowrap">Flashcards</span>
-                      )}
-                    </Link>
+                    {/* Flashcards quick-access removed per request */}
 
 
                     <Link

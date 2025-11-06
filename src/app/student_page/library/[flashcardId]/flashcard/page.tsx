@@ -372,8 +372,8 @@ export default function FlashcardOnlyPage() {
     const color =
       rating === "again" ? "bg-red-500" :
       rating === "hard" ? "bg-amber-500" :
-      rating === "good" ? "bg-[#1C2B1C]" :
-      "bg-[#1C2B1C]";
+  rating === "good" ? "bg-teal-600" :
+  "bg-teal-600";
     return `${color} text-white`;
   };
 
@@ -447,7 +447,7 @@ export default function FlashcardOnlyPage() {
           <div className="justify-self-center w-11/12 md:w-96">
             <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#1C2B1C] to-[#1C2B1C] transition-all"
+                className="h-full bg-gradient-to-r from-teal-600 to-teal-600 transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -460,7 +460,7 @@ export default function FlashcardOnlyPage() {
                   <span className="font-semibold">Still learning</span>
                   <span className="ml-1 inline-block w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{remaining}</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-[#1C2B1C]/10 text-[#1C2B1C] dark:bg-[#1C2B1C]/20">
+                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-teal-600/10 text-teal-600 dark:bg-teal-600/20">
                   <span className="font-semibold">Know</span>
                   <span className="ml-1 inline-block w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{learnedCount}</span>
                 </div>
@@ -524,8 +524,8 @@ export default function FlashcardOnlyPage() {
                                 : selectedRating === "hard"
                                 ? "bg-amber-500/100 text-white"
                                 : selectedRating === "good"
-                                ? "bg-[#1C2B1C] text-white"
-                                : "bg-[#1C2B1C] text-white"
+                                ? "bg-teal-600 text-white"
+                                : "bg-teal-600 text-white"
                             }`}
                             style={{
                               transformOrigin: "center bottom",
@@ -602,14 +602,14 @@ export default function FlashcardOnlyPage() {
                 <button
                   onClick={() => rateCard("good")}
                   disabled={isRatingInProgress}
-                  className={`px-3 py-2 rounded-full bg-[#1C2B1C]/10 text-[#1C2B1C] ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`px-3 py-2 rounded-full bg-teal-600/10 text-teal-600 ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Good
                 </button>
                 <button
                   onClick={() => rateCard("easy")}
                   disabled={isRatingInProgress}
-                  className={`px-3 py-2 rounded-full bg-[#1C2B1C] text-white ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`px-3 py-2 rounded-full bg-teal-600 text-white ${isRatingInProgress ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Easy
                 </button>
@@ -632,7 +632,7 @@ export default function FlashcardOnlyPage() {
                   {/* Only render the header "Track progress" pill when the option is enabled in Options */}
                   {trackProgress && (
                     <div className="hidden sm:flex items-center gap-2 text-sm">
-                      <span className="px-2 py-1 rounded font-medium transition bg-gradient-to-br from-[#1C2B1C] to-[#1C2B1C] text-white shadow-sm">
+                      <span className="px-2 py-1 rounded font-medium transition bg-gradient-to-br from-teal-600 to-teal-600 text-white shadow-sm">
                         Track progress
                       </span>
                     </div>
@@ -646,7 +646,7 @@ export default function FlashcardOnlyPage() {
                   <button
                     onClick={goNext}
                     aria-label="Next"
-                    className="px-3 py-2 rounded-full bg-gradient-to-br from-[#1C2B1C] to-[#1C2B1C] text-white shadow-sm hover:brightness-105 transition"
+                    className="px-3 py-2 rounded-full bg-gradient-to-br from-teal-600 to-teal-600 text-white shadow-sm hover:brightness-105 transition"
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -677,7 +677,7 @@ export default function FlashcardOnlyPage() {
                      <h2 className="text-xl font-semibold">Options</h2>
                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Session settings and UI preferences</p>
                    </div>
-                   <button onClick={() => setShowOptions(false)} className="ml-4 text-slate-400 hover:text-[#1C2B1C]">✕</button>
+                   <button onClick={() => setShowOptions(false)} className="ml-4 text-slate-400 hover:text-teal-600">✕</button>
                  </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -913,14 +913,14 @@ function CompletionSummary({ totalReviewed, counts, mastered, stillLearning, onR
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-          <SummaryTile label="Topics mastered" value={mastered} className="bg-[#1C2B1C]/10 text-[#1C2B1C] dark:bg-[#1C2B1C]/20" />
+          <SummaryTile label="Topics mastered" value={mastered} className="bg-teal-600/10 text-teal-600 dark:bg-teal-600/20" />
           <SummaryTile label="Still learning" value={stillLearning} className="bg-amber-50 text-amber-700 dark:bg-amber-900/20" />
         </div>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
           <button onClick={onRestart} className="w-full px-4 py-3 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:brightness-105">Restart deck</button>
           <button onClick={onReviewHardAgain} className="w-full px-4 py-3 rounded-md bg-amber-500 text-white hover:brightness-110">Review only Hard/Again</button>
-          <button onClick={onNextDeck} className="w-full px-4 py-3 rounded-md bg-[#1C2B1C] text-white hover:brightness-110">Go to next deck</button>
+          <button onClick={onNextDeck} className="w-full px-4 py-3 rounded-md bg-teal-600 text-white hover:brightness-110">Go to next deck</button>
           <button onClick={onExplore} className="w-full px-4 py-3 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100 hover:brightness-110">Explore related topics</button>
         </div>
       </div>

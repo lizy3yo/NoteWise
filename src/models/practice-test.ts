@@ -41,6 +41,8 @@ export interface IPracticeTest extends Document {
   instructions: string;
   sourceType: 'flashcards' | 'upload' | 'paste' | 'mixed';
   sourceIds?: string[]; // flashcard set IDs if from flashcards
+  folder?: string; // folder ID if organized in a folder
+  isFavorite?: boolean;
   createdAt: Date;
   updatedAt: Date;
   isPublic: boolean;
@@ -91,6 +93,8 @@ const PracticeTestSchema = new Schema<IPracticeTest>(
     instructions: { type: String, default: 'Answer all questions to the best of your ability.' },
     sourceType: { type: String, enum: ['flashcards', 'upload', 'paste', 'mixed'], required: true },
     sourceIds: { type: [String], default: [] },
+    folder: { type: String, ref: 'Folder' },
+    isFavorite: { type: Boolean, default: false },
     isPublic: { type: Boolean, default: false },
     attempts: { type: Number, default: 0 },
     averageScore: { type: Number, min: 0, max: 100 },

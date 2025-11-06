@@ -178,7 +178,8 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             linkRole,
             publicRole,
             sharedUsers,
-            shareableLink
+            shareableLink,
+            isFavorite
         } = body;
 
         const { searchParams } = new URL(request.url);
@@ -269,7 +270,8 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             password: password ? await bcrypt.hash(password, 10) : undefined,
             linkRole: linkRole || 'viewer',
             publicRole: publicRole || 'viewer',
-            shareableLink: shareableLink || undefined
+            shareableLink: shareableLink || undefined,
+            isFavorite
         };
 
         // Handle shared users based on sharing mode

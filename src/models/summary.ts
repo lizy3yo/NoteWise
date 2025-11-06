@@ -18,6 +18,8 @@ export interface ISummary extends Document {
   compressionRatio: number;
   sourceType: 'text' | 'file';
   sourceFileName?: string;
+  folder?: string; // folder ID if organized in a folder
+  isFavorite?: boolean;
   isPublic: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -103,6 +105,14 @@ const SummarySchema = new Schema<ISummary>({
   sourceFileName: {
     type: String,
     maxlength: 255
+  },
+  folder: {
+    type: String,
+    ref: 'Folder'
+  },
+  isFavorite: {
+    type: Boolean,
+    default: false
   },
   isPublic: {
     type: Boolean,
