@@ -112,9 +112,11 @@ export async function GET(req: NextRequest) {
       query.isPublic = isPublicParam === 'true';
     }
 
+    // Include isFavorite and folder so the frontend has correct state for
+    // favorites and folder-based filtering/moving. Also include _id explicitly.
     const practiceTests = await PracticeTest.find(query)
       .sort({ createdAt: -1 })
-      .select('title description subject difficulty timeLimit totalPoints topics attempts averageScore isPublic createdAt updatedAt')
+      .select('_id title description subject difficulty timeLimit totalPoints topics attempts averageScore isPublic isFavorite folder createdAt updatedAt')
       .lean();
 
     return NextResponse.json({

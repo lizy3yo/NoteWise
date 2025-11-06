@@ -59,7 +59,7 @@ type SummaryItem = {
 };
 
 function PrivateLibraryContent() {
-  const [activeTab, setActiveTab] = useState<'flashcards' | 'study_notes' | 'practice_tests' | 'folders'>('flashcards');
+  const [activeTab, setActiveTab] = useState<'flashcards' | 'study_notes' | 'practice_tests' | 'folders' | 'favorites'>('flashcards');
   const [filter, setFilter] = useState('recent');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'by_folders' | 'by_list'>('by_folders'); // New state for view mode
@@ -195,7 +195,7 @@ function PrivateLibraryContent() {
     // Check for tab parameter (only accept allowed values)
     const tabParam = searchParams.get('tab');
     if (tabParam && !isLoading) {
-      const allowed = ['flashcards', 'study_notes', 'practice_tests', 'folders'] as const;
+      const allowed = ['flashcards', 'study_notes', 'practice_tests', 'folders', 'favorites'] as const;
       // Only switch tabs if the URL parameter is valid
       if ((allowed as readonly string[]).includes(tabParam)) {
         setActiveTab(tabParam as any);
@@ -1186,7 +1186,7 @@ function PrivateLibraryContent() {
       {/* Navigation Tabs - matching Student Class page style */}
       <div className="mb-8 bg-transparent">
         <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
-          {(['flashcards', 'study_notes', 'practice_tests', 'folders'] as const).map((tab) => {
+          {(['favorites', 'flashcards', 'study_notes', 'practice_tests', 'folders'] as const).map((tab) => {
             const label = tab
               .split('_')
               .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
@@ -1201,7 +1201,14 @@ function PrivateLibraryContent() {
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
               >
-                {label}
+                {tab === 'favorites' ? (
+                  <span className="flex items-center gap-2">
+                    <svg className={`w-4 h-4 ${activeTab === 'favorites' ? 'text-yellow-400' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span>{label}</span>
+                  </span>
+                ) : label}
               </button>
             );
           })}
@@ -1290,6 +1297,14 @@ function PrivateLibraryContent() {
                   : `${filteredSummaries.length} ${filteredSummaries.length === 1 ? 'summary' : 'summaries'}`
               )}
               {activeTab === 'folders' && `${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}`}
+              {activeTab === 'favorites' && (() => {
+                const favoriteFolders = folders.filter(f => f.isFavorite);
+                const favoriteFlashcards = flashcards.filter(f => f.isFavorite);
+                const favoritePracticeTests = practiceTests.filter(t => t.isFavorite);
+                const favoriteSummaries = summaries.filter(s => s.isFavorite);
+                const favItemsCount = favoriteFlashcards.length + favoritePracticeTests.length + favoriteSummaries.length;
+                return `${favoriteFolders.length} ${favoriteFolders.length === 1 ? 'folder' : 'folders'}, ${favItemsCount} ${favItemsCount === 1 ? 'item' : 'items'}`;
+              })()}
             </span>
           </div>
         </div>
@@ -1672,22 +1687,28 @@ function PrivateLibraryContent() {
                                     <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl"
+                                        onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
+                                      >
+                                        {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                      </button>
+                                      <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                      <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}
                                       >
                                         View
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
+                                        onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}
                                       >
-                                        {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                        Rename
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={async () => {
                                           if (!userId) return;
                                           setOpenMenuId(null);
-
                                           try {
                                             const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
                                               method: 'POST',
@@ -1725,9 +1746,7 @@ function PrivateLibraryContent() {
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                        onClick={async () => {
-                                          handleDeleteSummary(summary._id);
-                                        }}
+                                        onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}
                                       >
                                         Delete
                                       </button>
@@ -2014,22 +2033,28 @@ function PrivateLibraryContent() {
                                     <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl"
+                                        onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
+                                      >
+                                        {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                      </button>
+                                      <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                      <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}
                                       >
                                         View
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
+                                        onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}
                                       >
-                                        {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                        Rename
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={async () => {
                                           if (!userId) return;
                                           setOpenMenuId(null);
-
                                           try {
                                             const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
                                               method: 'POST',
@@ -2042,13 +2067,10 @@ function PrivateLibraryContent() {
                                                 maxCards: 15
                                               })
                                             });
-
                                             const data = await response.json();
-
                                             if (!response.ok || !data.success) {
                                               throw new Error(data.error || 'Failed to generate flashcards');
                                             }
-
                                             router.push('/student_page/library?tab=flashcards');
                                           } catch (error) {
                                             console.error('Flashcard generation failed:', error);
@@ -2067,9 +2089,7 @@ function PrivateLibraryContent() {
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                        onClick={async () => {
-                                          handleDeleteSummary(summary._id);
-                                        }}
+                                        onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}
                                       >
                                         Delete
                                       </button>
@@ -2208,6 +2228,631 @@ function PrivateLibraryContent() {
               </div>
             )}
 
+          </div>
+        )}
+        {activeTab === 'favorites' && (
+          <div id="favorites">
+            {isLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-500 dark:text-slate-400">Loading your favorites...</p>
+                </div>
+              </div>
+            )}
+
+            {!isLoading && (() => {
+              const favoriteFolders = folders.filter(f => f.isFavorite);
+              const favoriteFlashcards = flashcards.filter(f => f.isFavorite);
+              const favoritePracticeTests = practiceTests.filter(t => t.isFavorite);
+              const favoriteSummaries = summaries.filter(s => s.isFavorite);
+              const totalFavorites = favoriteFolders.length + favoriteFlashcards.length + favoritePracticeTests.length + favoriteSummaries.length;
+
+              if (totalFavorites === 0) {
+                return (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">No favorites yet</h3>
+                    <p className="text-gray-500 dark:text-slate-400 mb-4">Mark folders or items with the star to add them to favorites.</p>
+                  </div>
+                );
+              }
+
+              // Folder view
+              if (viewMode === 'by_folders') {
+                return (
+                  <div className="space-y-4">
+                    {/* Favorite folders */}
+                    {[...favoriteFolders].map((folder) => {
+                      const folderFlashcards = flashcards.filter(f => f.folder === folder._id && f.isFavorite);
+                      const folderPracticeTests = practiceTests.filter(t => t.folder === folder._id && t.isFavorite);
+                      const folderSummaries = summaries.filter(s => s.folder === folder._id && s.isFavorite);
+                      const displayedCount = folderFlashcards.length + folderPracticeTests.length + folderSummaries.length;
+
+                      return (
+                        <div
+                          key={folder._id}
+                          id={`folder-${folder.title.replace(/[^a-zA-Z0-9]/g, '-')}`}
+                          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-visible relative group"
+                        >
+                          <div
+                            onClick={() => setExpandedFolder(expandedFolder === folder._id ? null : folder._id)}
+                            className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors relative ${expandedFolder === folder._id
+                                ? 'bg-teal-600 text-white'
+                                : 'bg-teal-600/10 text-teal-600'
+                                }`}>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                                {folder.isFavorite && (
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
+                                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-left">
+                                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                  {folder.title}
+                                  {folder.isFavorite && <span className="text-yellow-500 text-sm">★</span>}
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                  {displayedCount} {displayedCount === 1 ? 'item' : 'items'}
+                                  {folderFlashcards.length > 0 && ` • ${folderFlashcards.length} flashcard${folderFlashcards.length === 1 ? '' : 's'}`}
+                                  {folderPracticeTests.length > 0 && ` • ${folderPracticeTests.length} test${folderPracticeTests.length === 1 ? '' : 's'}`}
+                                  {folderSummaries.length > 0 && ` • ${folderSummaries.length} summar${folderSummaries.length === 1 ? 'y' : 'ies'}`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {/* Folder Actions */}
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleFavorite(folder._id, 'folder', folder.isFavorite || false); }}
+                                  className={`p-1.5 rounded-lg transition-colors ${folder.isFavorite
+                                    ? 'text-yellow-500 hover:text-yellow-600'
+                                    : 'text-gray-400 hover:text-yellow-500'
+                                    }`}
+                                  title={folder.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                >
+                                  <svg className="w-4 h-4" fill={folder.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); renameFolder(folder._id, folder.title); }}
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 transition-colors"
+                                  title="Rename folder"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); deleteFolder(folder._id, folder.title); }}
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                  title="Delete folder"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                              <svg
+                                className={`w-5 h-5 text-slate-400 transition-transform ${expandedFolder === folder._id ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* Folder Contents (favorite-only) - collapsible and full cards */}
+                          {expandedFolder === folder._id && (
+                            <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-4 bg-slate-50 dark:bg-slate-900/30">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-visible">
+                                {folderFlashcards.map((item) => (
+                                  <div
+                                    key={`fav-flash-${item._id}`}
+                                    onClick={() => router.push(`/student_page/library/${item._id}`)}
+                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                  >
+                                    {/* Favorite + actions (inside folder) */}
+                                    <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); toggleFavorite(item._id, 'flashcard', item.isFavorite || false); }}
+                                        className={`p-1 rounded-lg transition-colors ${item.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
+                                        title={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                      >
+                                        <svg className="w-4 h-4" fill={item.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                      </button>
+
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
+                                        className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
+                                        aria-label="Open actions"
+                                      >
+                                        <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                          <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                      </button>
+
+                                      {openMenuId === item._id && (
+                                        <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
+                                          >
+                                            {item.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                          </button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { handleRename(item); setOpenMenuId(null); }}
+                                          >
+                                            Rename
+                                          </button>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { router.push(`/student_page/library/${item._id}`); setOpenMenuId(null); }}
+                                          >
+                                            Edit
+                                          </button>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { openFolderModal(item._id, 'flashcard', item.title); setOpenMenuId(null); }}
+                                          >
+                                            Move to Folder
+                                          </button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+                                            onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
+                                      </div>
+                                    </div>
+                                    <div className="mb-2 sm:mb-3">
+                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                      {item.description && (
+                                        <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+
+                                {folderPracticeTests.map((test) => (
+                                  <div
+                                    key={`fav-test-${test._id}`}
+                                    onClick={() => router.push(`/student_page/practice_tests/${test._id}`)}
+                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                  >
+                                    <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); toggleFavorite(test._id, 'practice_test', test.isFavorite || false); }}
+                                        className={`p-1 rounded-lg transition-colors ${test.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
+                                        title={test.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                      >
+                                        <svg className="w-4 h-4" fill={test.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                      </button>
+
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === test._id ? null : test._id); }}
+                                        className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
+                                        aria-label="Open actions"
+                                      >
+                                        <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                        </svg>
+                                      </button>
+
+                                      {openMenuId === test._id && (
+                                        <div className="absolute right-0 top-10 w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); toggleFavorite(test._id, 'practice_test', test.isFavorite || false); setOpenMenuId(null); }}>{test.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); router.push(`/student_page/practice_tests/${test._id}`); setOpenMenuId(null); }}>View</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); handleRenamePracticeTest(test); setOpenMenuId(null); }}>Rename</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); openFolderModal(test._id, 'practice_test', test.title); setOpenMenuId(null); }}>Move to Folder</button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button onClick={async (e) => { e.stopPropagation(); handleDeletePracticeTest(test._id); }} className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl transition-colors">Delete</button>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <span className="text-xs sm:text-sm font-medium text-green-500">Practice Test • {test.totalPoints} pts</span>
+                                      </div>
+                                    </div>
+                                    <div className="mb-2 sm:mb-3">
+                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{test.title}</h4>
+                                      {test.description && (
+                                        <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{test.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+
+                                {folderSummaries.map((summary) => (
+                                  <div
+                                    key={`fav-sum-${summary._id}`}
+                                    onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
+                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                  >
+                                    <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                                      <button onClick={(e) => { e.stopPropagation(); toggleFavorite(summary._id, 'summary', summary.isFavorite || false); }} className={`p-1 rounded-lg transition-colors ${summary.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`} title={summary.isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
+                                        <svg className="w-4 h-4" fill={summary.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                      </button>
+
+                                      <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }} className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all" aria-label="Open actions">
+                                        <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                      </button>
+
+                                      {openMenuId === summary._id && (
+                                        <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}>{summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}>View</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}>Rename</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={async () => { if (!userId) return; setOpenMenuId(null); try { const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: summary.content, title: `${summary.title} - Flashcards`, subject: summary.subject, difficulty: summary.difficulty, maxCards: 15 }) }); const data = await response.json(); if (!response.ok || !data.success) throw new Error(data.error || 'Failed to generate flashcards'); router.push('/student_page/library?tab=flashcards'); } catch (error) { console.error('Flashcard generation failed:', error); showError(error instanceof Error ? error.message : 'Failed to generate flashcards'); } }}>Create Flashcards</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(summary._id, 'summary', summary.title); setOpenMenuId(null); }}>Move to Folder</button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}>Delete</button>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                        <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                      </div>
+                                    </div>
+                                    <div className="mb-2 sm:mb-3">
+                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* Uncategorized favorites */}
+                    {(() => {
+                      const uncategorizedFlashcards = favoriteFlashcards.filter(f => !f.folder);
+                      const uncategorizedPracticeTests = favoritePracticeTests.filter(t => !t.folder);
+                      const uncategorizedSummaries = favoriteSummaries.filter(s => !s.folder);
+                      const uncategorizedTotal = uncategorizedFlashcards.length + uncategorizedPracticeTests.length + uncategorizedSummaries.length;
+                      if (uncategorizedTotal === 0) return null;
+
+                      return (
+                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-visible">
+                          <div className="w-full flex items-center justify-between p-6">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${'bg-teal-600/10 text-teal-600'}`}>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                              </div>
+                              <div className="text-left">
+                                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Uncategorized</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">{uncategorizedTotal} {uncategorizedTotal === 1 ? 'item' : 'items'} not in folders</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-4 bg-slate-50 dark:bg-slate-900/30">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-visible">
+                              {uncategorizedFlashcards.map((item) => (
+                                <div key={`uncat-fav-flash-${item._id}`} onClick={() => router.push(`/student_page/library/${item._id}`)} className="bg-white dark:bg-slate-800 border rounded-xl p-3 cursor-pointer">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-1 sm:gap-2">
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                                      <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
+                                    </div>
+                                    <button onClick={(e) => { e.stopPropagation(); toggleFavorite(item._id, 'flashcard', item.isFavorite || false); }} className={`p-1 rounded-lg ${item.isFavorite ? 'text-yellow-500' : 'text-gray-400'}`}>
+                                      <svg className="w-4 h-4" fill={item.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                    </button>
+                                  </div>
+                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                </div>
+                              ))}
+
+                              {uncategorizedPracticeTests.map((test) => (
+                                <div key={`uncat-fav-test-${test._id}`} onClick={() => router.push(`/student_page/practice_tests/${test._id}`)} className="bg-white dark:bg-slate-800 border rounded-xl p-3 cursor-pointer">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-1 sm:gap-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                                      <span className="text-xs sm:text-sm font-medium text-green-500">Practice Test • {test.totalPoints} pts</span>
+                                    </div>
+                                    <button onClick={(e) => { e.stopPropagation(); toggleFavorite(test._id, 'practice_test', test.isFavorite || false); }} className={`p-1 rounded-lg ${test.isFavorite ? 'text-yellow-500' : 'text-gray-400'}`}>
+                                      <svg className="w-4 h-4" fill={test.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                    </button>
+                                  </div>
+                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{test.title}</h4>
+                                </div>
+                              ))}
+
+                              {uncategorizedSummaries.map((summary) => (
+                                <div key={`uncat-fav-sum-${summary._id}`} onClick={() => router.push(`/student_page/summaries/${summary._id}`)} className="bg-white dark:bg-slate-800 border rounded-xl p-3 cursor-pointer">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-1 sm:gap-2">
+                                      <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                                      <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                    </div>
+                                    <button onClick={(e) => { e.stopPropagation(); toggleFavorite(summary._id, 'summary', summary.isFavorite || false); }} className={`p-1 rounded-lg ${summary.isFavorite ? 'text-yellow-500' : 'text-gray-400'}`}>
+                                      <svg className="w-4 h-4" fill={summary.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                    </button>
+                                  </div>
+                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              }
+
+              // List view - show favorite folders first then favorite items (use same card + actions as other tabs)
+              return (
+                <div className="space-y-6">
+                  {favoriteFolders.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Favorite Folders</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {favoriteFolders.map(folder => (
+                          <div
+                            key={`fav-folder-${folder._id}`}
+                            onClick={() => { setExpandedFolder(folder._id); setViewMode('by_folders'); }}
+                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 cursor-pointer relative hover:shadow-lg hover:border-teal-600/20 transition-all duration-200"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">{folder.title}</h4>
+
+                              <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleFavorite(folder._id, 'folder', folder.isFavorite || false); }}
+                                  className={`p-1.5 rounded-lg transition-colors ${folder.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
+                                  title={folder.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                >
+                                  <svg className="w-4 h-4" fill={folder.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); renameFolder(folder._id, folder.title); }}
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 transition-colors"
+                                  title="Rename folder"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); deleteFolder(folder._id, folder.title); }}
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                  title="Delete folder"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Folder</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Favorite Items</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {[...favoriteFlashcards, ...favoritePracticeTests, ...favoriteSummaries].map((item: any) => {
+                        // Determine type by presence of fields and reuse full card UI per type
+                        if ((item as FlashcardItem).cards !== undefined) {
+                          const fc = item as FlashcardItem;
+                          return (
+                            <div
+                              key={`fav-item-flash-${fc._id}`}
+                              onClick={() => router.push(`/student_page/library/${fc._id}`)}
+                              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-6 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative h-full flex flex-col"
+                            >
+                              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                                <div className="flex items-center gap-1 sm:gap-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {fc.cards?.length || 0} cards</span>
+                                    {fc.isFavorite && <span className="text-yellow-500 text-sm">★</span>}
+                                  </div>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); toggleFavorite(fc._id, 'flashcard', fc.isFavorite || false); }}
+                                    className={`p-1.5 rounded-lg transition-colors ${fc.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
+                                    title={fc.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                  >
+                                    <svg className="w-4 h-4" fill={fc.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === fc._id ? null : fc._id); }}
+                                    className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
+                                    aria-label="Open actions"
+                                  >
+                                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                      <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="mb-3">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{fc.title}</h3>
+                                {fc.description && (
+                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 line-clamp-2">{fc.description}</p>
+                                )}
+                              </div>
+
+                              <div className="mt-auto flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 bg-blue-500/10 rounded-full flex items-center justify-center">
+                                    <span className="text-xs font-medium text-blue-500">Y</span>
+                                  </div>
+                                  <span className="text-xs text-gray-500 dark:text-slate-400">You</span>
+                                </div>
+                                <span className="text-xs text-gray-400 dark:text-slate-500">{fc.updatedAt ? new Date(fc.updatedAt).toLocaleDateString() : 'Recently'}</span>
+                              </div>
+
+                              {/* Dropdown Menu */}
+                              {openMenuId === fc._id && (
+                                <div className="absolute top-12 right-2 sm:right-4 w-44 sm:w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { toggleFavorite(fc._id, 'flashcard', fc.isFavorite || false); setOpenMenuId(null); }}>{fc.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
+                                  <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRename(fc); setOpenMenuId(null); }}>Rename</button>
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/library/${fc._id}`); setOpenMenuId(null); }}>Edit</button>
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(fc._id, 'flashcard', fc.title); setOpenMenuId(null); }}>Move to Folder</button>
+                                  <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                  <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDelete(fc._id); setOpenMenuId(null); }}>Delete</button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        if ((item as PracticeTestItem).totalPoints !== undefined) {
+                          const pt = item as PracticeTestItem;
+                          return (
+                            <div
+                              key={`fav-item-test-${pt._id}`}
+                              onClick={() => router.push(`/student_page/practice_tests/${pt._id}`)}
+                              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-6 hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 relative cursor-pointer"
+                            >
+                              <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <span className="text-xs sm:text-sm font-medium text-green-500">Practice Test • {pt.totalPoints} pts</span>
+                                      </div>
+                                      <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1 line-clamp-2 flex items-center gap-2">{pt.title}</h3>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                  <button onClick={(e) => { e.stopPropagation(); toggleFavorite(pt._id, 'practice_test', pt.isFavorite || false); }} className={`p-1.5 rounded-lg transition-colors ${pt.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`} title={pt.isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
+                                    <svg className="w-4 h-4" fill={pt.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                  </button>
+                                  <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === pt._id ? null : pt._id); }} className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all" aria-label="Open actions">
+                                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {openMenuId === pt._id && (
+                                <div className="absolute right-0 top-12 w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); toggleFavorite(pt._id, 'practice_test', pt.isFavorite || false); setOpenMenuId(null); }}>{pt.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
+                                  <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); router.push(`/student_page/practice_tests/${pt._id}`); setOpenMenuId(null); }}>View</button>
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); handleRenamePracticeTest(pt); setOpenMenuId(null); }}>Rename</button>
+                                  <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={(e) => { e.stopPropagation(); openFolderModal(pt._id, 'practice_test', pt.title); setOpenMenuId(null); }}>Move to Folder</button>
+                                  <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                  <button onClick={async (e) => { e.stopPropagation(); handleDeletePracticeTest(pt._id); }} className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl transition-colors">Delete</button>
+                                </div>
+                              )}
+
+                              <p className="text-xs text-slate-500 dark:text-slate-400">Practice Test • {pt.totalPoints} pts</p>
+                            </div>
+                          );
+                        }
+
+                        // Summary
+                        const sm = item as SummaryItem;
+                        return (
+                          <div
+                            key={`fav-item-sum-${sm._id}`}
+                            onClick={() => router.push(`/student_page/summaries/${sm._id}`)}
+                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-6 pr-12 sm:pr-16 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer group relative"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {sm.wordCount} words</span>
+                                </div>
+                                <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 flex-1 mr-2 flex items-center gap-2 min-w-0">{sm.title}{sm.isFavorite && <span className="text-yellow-500 text-sm">★</span>}</h3>
+                              </div>
+                              <div className="absolute top-4 right-4 flex items-center gap-1">
+                                <button onClick={(e) => { e.stopPropagation(); toggleFavorite(sm._id, 'summary', sm.isFavorite || false); }} className={`p-1.5 rounded-lg transition-colors ${sm.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`} title={sm.isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
+                                  <svg className="w-4 h-4" fill={sm.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === sm._id ? null : sm._id); }} className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all" aria-label="Open actions">
+                                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Subject: {sm.subject}</p>
+                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Words: {sm.wordCount} • {sm.readingTime} min read</p>
+                            </div>
+
+                            {/* Dropdown Menu */}
+                            {openMenuId === sm._id && (
+                              <div className="absolute top-12 right-2 sm:right-4 w-44 sm:w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(sm._id, 'summary', sm.isFavorite || false); setOpenMenuId(null); }}>{sm.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
+                                <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${sm._id}`); setOpenMenuId(null); }}>View</button>
+                                <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(sm); setOpenMenuId(null); }}>Rename</button>
+                                <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={async () => {
+                                  if (!userId) return; setOpenMenuId(null);
+                                  try {
+                                    const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
+                                      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: sm.content, title: `${sm.title} - Flashcards`, subject: sm.subject, difficulty: sm.difficulty, maxCards: 15 })
+                                    });
+                                    const data = await response.json();
+                                    if (!response.ok || !data.success) throw new Error(data.error || 'Failed to generate flashcards');
+                                    router.push('/student_page/library?tab=flashcards');
+                                  } catch (error) { console.error('Flashcard generation failed:', error); showError(error instanceof Error ? error.message : 'Failed to generate flashcards'); }
+                                }}>Create Flashcards</button>
+                                <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(sm._id, 'summary', sm.title); setOpenMenuId(null); }}>Move to Folder</button>
+                                <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDeleteSummary(sm._id); setOpenMenuId(null); }}>Delete</button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
         {activeTab === 'practice_tests' && (
