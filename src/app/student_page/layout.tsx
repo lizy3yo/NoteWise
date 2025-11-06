@@ -707,7 +707,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         />
                       </svg>
                       {isExpanded && (
-                        <span className="whitespace-nowrap">Study Notes</span>
+                        <span className="whitespace-nowrap">Generate</span>
                       )}
                     </Link>
 

@@ -1,6 +1,8 @@
 "use client";
 import React, { useRef, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Alert from "@/components/ui/alert_template/Alert";
+import { useAlert } from "@/hooks/useAlert";
 
 function StudyModeContent() {
   const router = useRouter();
@@ -20,8 +22,8 @@ function StudyModeContent() {
 
   // generation state
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const { alert, showError, showSuccess, showInfo, hideAlert } = useAlert();
 
   // summary options
   const [summaryType, setSummaryType] = useState<'brief' | 'detailed' | 'bullet-points' | 'outline'>('outline');
@@ -77,6 +79,7 @@ function StudyModeContent() {
   const handlePasteInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const v = e.target.value;
     if (v.length <= MAX_CHARS) setPasteText(v);
+    if (alert.isVisible) hideAlert();
   };
 
   const handlePasteDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
@@ -119,6 +122,32 @@ function StudyModeContent() {
     }
     console.log('Adding files:', Array.from(newFiles).map(f => ({ name: f.name, size: f.size, type: f.type })));
     const fileArray = Array.from(newFiles);
+
+    // If creating a summary, only allow simple text files that the summary API supports.
+    if (createType === 'summary') {
+      const supported = fileArray.filter((f) => {
+        const n = f.name.toLowerCase();
+        return n.endsWith('.txt') || n.endsWith('.csv');
+      });
+
+      if (supported.length === 0) {
+        // Show a helpful client-side error instead of sending unsupported files to the API.
+        showError('Summary uploads currently support only .txt and .csv files. Please paste text or use a .txt/.csv file.', 'Unsupported file type');
+        return;
+      }
+
+      // clear previous generation errors when we have valid files
+      hideAlert();
+
+      setFiles((prev) => {
+        const updated = [...prev, ...supported].slice(0, 20);
+        console.log('Files state updated:', updated.length, 'files');
+        return updated;
+      });
+      return;
+    }
+
+    // Default behaviour for flashcards or other upload types
     setFiles((prev) => {
       const updated = [...prev, ...fileArray].slice(0, 20);
       console.log('Files state updated:', updated.length, 'files');
@@ -156,7 +185,7 @@ function StudyModeContent() {
 
   const generateSummary = async () => {
     setIsGenerating(true);
-    setGenerationError(null);
+    hideAlert();
 
     console.log('🚀 Starting generation:', {
       createType,
@@ -247,12 +276,18 @@ function StudyModeContent() {
       }
 
       // Success - redirect to the appropriate library tab
-      if (createType === 'summary') router.push('/student_page/library?tab=study_notes');
-      else if (createType === 'flashcards') router.push('/student_page/library?tab=flashcards');
+      const successMsg = createType === 'summary' ? 'Summary generated successfully' : 'Flashcards generated successfully';
+      showSuccess(successMsg, 'Generation Complete');
+
+      setTimeout(() => {
+        if (createType === 'summary') router.push('/student_page/library?tab=study_notes');
+        else if (createType === 'flashcards') router.push('/student_page/library?tab=flashcards');
+      }, 400);
 
     } catch (error) {
       console.error('Summary generation failed:', error);
-      setGenerationError(error instanceof Error ? error.message : 'Failed to generate summary');
+      const msg = error instanceof Error ? error.message : 'Failed to generate summary';
+      showError(msg, 'Generation Failed');
     } finally {
       setIsGenerating(false);
     }
@@ -261,6 +296,16 @@ function StudyModeContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          title={alert.title}
+          isVisible={alert.isVisible}
+          onClose={hideAlert}
+          autoClose={alert.type === "success"}
+          autoCloseDelay={3000}
+          position="bottom-right"
+        />
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
@@ -435,15 +480,26 @@ function StudyModeContent() {
                   className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-8 sm:py-12 lg:py-16 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-gray-800 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]"
                 >
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">DOC</div>
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PDF</div>
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PPT</div>
+                    {createType === 'summary' ? (
+                      <>
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">TXT</div>
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-amber-400 to-amber-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">CSV</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">DOC</div>
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PDF</div>
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PPT</div>
+                      </>
+                    )}
                   </div>
                   <div className="text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">
                     {createType === 'flashcards' ? 'Upload files for AI processing' : 'Drag notes, slides, or readings here'}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                    {createType === 'flashcards' ? 'PDF, Word, PowerPoint, Text files (max 10MB) - Processed with advanced AI' : 'Supported: .docx, .pdf, .pptx'}
+                    {createType === 'flashcards'
+                      ? 'PDF, Word, PowerPoint, Text files (max 10MB) - Processed with advanced AI'
+                      : 'Supported for summaries: .txt, .csv (other formats are not supported by summary upload)'}
                   </div>
                   <div className="mt-3">
                     <button
@@ -456,7 +512,7 @@ function StudyModeContent() {
                       ref={fileInputRef}
                       onChange={handleFileInput}
                       type="file"
-                      accept=".pdf,.docx,.pptx,.txt,.md,.doc"
+                      accept={createType === 'summary' ? '.txt,.csv' : '.pdf,.docx,.pptx,.txt,.md,.doc'}
                       className="hidden"
                       multiple
                     />
@@ -521,16 +577,7 @@ function StudyModeContent() {
             </div>
           </div>
 
-          {/* Error Display */}
-          {generationError && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-              <div className="flex items-center gap-2">
-                <span className="text-red-500">⚠️</span>
-                <span className="text-sm font-medium text-red-900 dark:text-red-100">Generation Failed</span>
-              </div>
-              <p className="text-sm text-red-700 dark:text-red-300 mt-1">{generationError}</p>
-            </div>
-          )}
+          {/* Alerts are shown via the global Alert component (useAlert) */}
         </div>
 
         {/* Generate Button - Fixed on mobile, inline on desktop */}

@@ -196,15 +196,18 @@ function PrivateLibraryContent() {
     const tabParam = searchParams.get('tab');
     if (tabParam && !isLoading) {
       const allowed = ['flashcards', 'study_notes', 'practice_tests', 'folders'] as const;
-      // Only switch tabs if the URL parameter is different from current tab
-      if ((allowed as readonly string[]).includes(tabParam) && tabParam !== activeTab) {
+      // Only switch tabs if the URL parameter is valid
+      if ((allowed as readonly string[]).includes(tabParam)) {
         setActiveTab(tabParam as any);
       }
     }
+  }, [searchParams, isLoading]);
 
+  // Separate effect for auto-expanding folders based on subject parameter
+  useEffect(() => {
     // Check for subject to auto-expand folder
     const autoExpandSubject = searchParams.get('subject');
-  if (autoExpandSubject && viewMode === 'by_folders' && !isLoading) {
+    if (autoExpandSubject && viewMode === 'by_folders' && !isLoading) {
       const decodedSubject = decodeURIComponent(autoExpandSubject);
       setExpandedFolder(decodedSubject);
 
@@ -235,7 +238,7 @@ function PrivateLibraryContent() {
         }
       }
     }
-  }, [searchParams, viewMode, isLoading, flashcards, activeTab]);
+  }, [searchParams, viewMode, isLoading, flashcards]);
 
   useEffect(() => {
     let isMounted = true;
