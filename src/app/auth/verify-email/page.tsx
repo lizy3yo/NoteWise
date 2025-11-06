@@ -40,6 +40,22 @@ function VerifyEmailForm() {
     if (alert.isVisible) hideAlert();
   };
 
+  const handleCodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // block non-digit printable characters while allowing navigation/control keys
+    if (e.key.length === 1 && !/\d/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleCodePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("Text");
+    if (/\D/.test(pasted)) {
+      e.preventDefault();
+      const digits = pasted.replace(/\D/g, "").slice(0, 6);
+      setVerificationCode(digits);
+    }
+  };
+
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -208,6 +224,8 @@ function VerifyEmailForm() {
               required
               value={verificationCode}
               onChange={handleInputChange}
+              onKeyDown={handleCodeKeyDown}
+              onPaste={handleCodePaste}
               className="w-full px-4 py-4 border border-teal-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900/30 outline-none transition-all duration-200 text-center text-xl sm:text-2xl font-mono tracking-widest placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="000000"
               disabled={isLoading}

@@ -29,8 +29,31 @@ function ResetPasswordForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === "resetCode") {
+      // keep digits only and limit to 6 chars
+      const digits = value.replace(/\D/g, "").slice(0, 6);
+      setFormData(prev => ({ ...prev, [name]: digits }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     if (alert.isVisible) hideAlert();
+  };
+
+  const handleCodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // allow control/navigation keys but block non-digit printable characters
+    if (e.key.length === 1 && !/\d/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleCodePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("Text");
+    // If pasted content contains non-digits, prevent default and insert filtered digits
+    if (/\D/.test(pasted)) {
+      e.preventDefault();
+      const digits = pasted.replace(/\D/g, "").slice(0, 6);
+      setFormData(prev => ({ ...prev, resetCode: digits }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
