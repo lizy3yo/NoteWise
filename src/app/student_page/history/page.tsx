@@ -5,32 +5,15 @@ import Link from "next/link";
 import useAuth from '@/hooks/useAuth';
 import { authManager } from '@/utils/auth';
 import { 
-  FileText, 
-  BookOpen, 
-  ClipboardCheck, 
-  Trash2, 
-  Edit, 
-  Plus,
-  Clock,
-  Calendar,
-  Filter,
-  TrendingUp,
-  Award,
-  RefreshCw,
-  Folder,
-  Star,
-  FolderEdit,
-  User,
-  Lock,
-  Palette,
-  LogIn,
-  LogOut
+  FileText, BookOpen, ClipboardCheck, Trash2, Edit, Plus,
+  Clock, Calendar, Filter, TrendingUp, Award, RefreshCw,
+  Folder, Star, FolderEdit, User, Lock
 } from 'lucide-react';
 
 type Activity = {
   _id: string;
-  type: string;
-  action: string;
+  type?: string;
+  action?: string;
   meta?: any;
   progress?: number;
   createdAt?: string;
@@ -57,9 +40,6 @@ const activityIcons: Record<string, any> = {
   'folder.favorite': Star,
   'profile.update': User,
   'profile.password_change': Lock,
-  'appearance.theme_change': Palette,
-  'auth.login': LogIn,
-  'auth.logout': LogOut,
 };
 
 const activityColors: Record<string, string> = {
@@ -78,9 +58,7 @@ const activityColors: Record<string, string> = {
   'folder.favorite': 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
   'profile.update': 'text-violet-600 bg-violet-50 dark:bg-violet-900/20',
   'profile.password_change': 'text-rose-600 bg-rose-50 dark:bg-rose-900/20',
-  'appearance.theme_change': 'text-fuchsia-600 bg-fuchsia-50 dark:bg-fuchsia-900/20',
-  'auth.login': 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
-  'auth.logout': 'text-gray-600 bg-gray-50 dark:bg-gray-900/20',
+  
 };
 
 export default function HistoryPage() {
@@ -104,6 +82,8 @@ export default function HistoryPage() {
         return;
       }
       const data = await res.json();
+      // Log fetched activities for debugging types/timestamps
+      console.debug('History: fetched activities', data.activities);
       setActivities(data.activities || []);
     } catch (err) {
       console.error('Failed to load activities', err);
@@ -119,39 +99,103 @@ export default function HistoryPage() {
     }
   }, [user, isLoading]);
 
+  // Normalize/respect different activity shapes -- some events (login/logout, theme changes)
+  // may come back with different field names or only an action. Resolve to a stable
+  // type string used for icons, colors and filtering.
+  const resolveActivityType = (act: Activity) => {
+    if (!act) return '';
+    // If server provided a type, trust it first
+    if (act.type) return act.type;
+
+    const action = (act.action || '').toString().toLowerCase();
+
+    // Common special cases
+    if (action.includes('login')) return 'auth.login';
+    if (action.includes('logout')) return 'auth.logout';
+
+    // Theme changes may be recorded as action='theme', 'theme_change', 'dark', 'light', or in meta
+    if (action.includes('theme') || action.includes('dark') || action.includes('light') || (act.meta && (act.meta.mode || act.meta.theme))) {
+      return 'appearance.theme_change';
+    }
+
+    // If meta contains a type, use it
+    if (act.meta && typeof act.meta.type === 'string') return act.meta.type;
+
+    // fallback: try to infer category from action words
+    if (action.includes('flashcard')) return `flashcard.${action.replace(/\s+/g, '_')}`;
+    if (action.includes('summary')) return `summary.${action.replace(/\s+/g, '_')}`;
+    if (action.includes('practice') || action.includes('test')) return `practice_test.${action.replace(/\s+/g, '_')}`;
+
+    // Last resort: return the raw action or empty
+    return action || '';
+  };
+
   // Filter and group activities
   const groupedActivities = useMemo(() => {
     if (!activities) return [];
-    
+
+    // prepare resolved types array for debugging and consistent use
+    const resolvedMap = new Map<string, string>();
+    activities.forEach(act => {
+      resolvedMap.set(act._id, resolveActivityType(act));
+    });
+
     let filtered = activities;
 
-    // Filter by type
+    // Filter by type - use a case-insensitive substring match so variants like
+    // 'auth.login' or 'authentication.login' both match when filterType is 'auth' or 'authentication'.
     if (filterType !== 'all') {
-      filtered = filtered.filter(act => act.type.startsWith(filterType));
+      const ft = filterType.toLowerCase();
+      filtered = filtered.filter(act => {
+        const resolved = (resolvedMap.get(act._id) || '').toLowerCase();
+        return resolved.includes(ft);
+      });
     }
 
-    // Filter by time
+    // Filter by time - if an activity lacks createdAt (e.g. some auth events), include it
     const now = new Date();
     if (timeFilter === 'today') {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      filtered = filtered.filter(act => new Date(act.createdAt || '') >= today);
+      filtered = filtered.filter(act => {
+        if (!act.createdAt) return true; // include undated activities
+        const d = new Date(act.createdAt);
+        return !isNaN(d.getTime()) && d >= today;
+      });
     } else if (timeFilter === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(act => new Date(act.createdAt || '') >= weekAgo);
+      filtered = filtered.filter(act => {
+        if (!act.createdAt) return true;
+        const d = new Date(act.createdAt);
+        return !isNaN(d.getTime()) && d >= weekAgo;
+      });
     } else if (timeFilter === 'month') {
       const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(act => new Date(act.createdAt || '') >= monthAgo);
+      filtered = filtered.filter(act => {
+        if (!act.createdAt) return true;
+        const d = new Date(act.createdAt);
+        return !isNaN(d.getTime()) && d >= monthAgo;
+      });
     }
 
-    // Group by date
-    const groups: Record<string, Activity[]> = {};
+    // Group by date. Activities without a valid createdAt are grouped under 'Unknown Date'.
+  const groups: Record<string, Activity[]> = {};
+    const UNKNOWN_KEY = 'Unknown Date';
     filtered.forEach(act => {
-      if (!act.createdAt) return;
+      if (!act.createdAt) {
+        if (!groups[UNKNOWN_KEY]) groups[UNKNOWN_KEY] = [];
+        groups[UNKNOWN_KEY].push(act);
+        return;
+      }
       const date = new Date(act.createdAt);
-      const dateKey = date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      if (isNaN(date.getTime())) {
+        if (!groups[UNKNOWN_KEY]) groups[UNKNOWN_KEY] = [];
+        groups[UNKNOWN_KEY].push(act);
+        return;
+      }
+      const dateKey = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -159,31 +203,50 @@ export default function HistoryPage() {
       groups[dateKey].push(act);
     });
 
-    return Object.entries(groups).map(([date, activities]) => ({
-      date,
-      activities
-    }));
+    // Convert to array and keep Unknown Date at the top if present
+    const entries = Object.entries(groups).map(([date, activities]) => ({ date, activities }));
+    entries.sort((a, b) => {
+      if (a.date === UNKNOWN_KEY) return -1;
+      if (b.date === UNKNOWN_KEY) return 1;
+      // parse dates - newest first
+      const ad = new Date(a.date).getTime();
+      const bd = new Date(b.date).getTime();
+      return bd - ad;
+    });
+
+    return entries;
   }, [activities, filterType, timeFilter]);
 
   // Calculate stats
   const stats = useMemo(() => {
     if (!activities) return { total: 0, flashcards: 0, summaries: 0, tests: 0 };
+    let flashcards = 0, summaries = 0, tests = 0;
+    activities.forEach(a => {
+      const rt = resolveActivityType(a);
+      if (rt.startsWith('flashcard')) flashcards++;
+      if (rt.startsWith('summary')) summaries++;
+      if (rt.startsWith('practice_test')) tests++;
+    });
     return {
       total: activities.length,
-      flashcards: activities.filter(a => a.type.startsWith('flashcard')).length,
-      summaries: activities.filter(a => a.type.startsWith('summary')).length,
-      tests: activities.filter(a => a.type.startsWith('practice_test')).length,
+      flashcards,
+      summaries,
+      tests,
     };
   }, [activities]);
 
-  const formatActivityLabel = (type: string, action: string) => {
-    const parts = type.split('.');
-    const category = parts[0].replace('_', ' ');
-    return `${category.charAt(0).toUpperCase() + category.slice(1)} ${action}`;
+  const formatActivityLabel = (type: string | undefined, action: string | undefined) => {
+    const t = (type || '').toString();
+    const parts = t.split('.');
+    const category = (parts[0] || '').replace('_', ' ');
+    const actionPart = action || parts[1] ? (parts[1] || '').replace(/_/g, ' ') : '';
+    const titleCategory = category ? `${category.charAt(0).toUpperCase() + category.slice(1)}` : '';
+    return `${titleCategory} ${actionPart}`.trim();
   };
 
   const getActivityIcon = (type: string) => {
-    const Icon = activityIcons[type] || Clock;
+    // try the exact key, then lowercase fallback, else default
+    const Icon = activityIcons[type] || activityIcons[type.toLowerCase?.()] || Clock;
     return Icon;
   };
 
@@ -266,8 +329,7 @@ export default function HistoryPage() {
               <option value="practice_test">Practice Tests</option>
               <option value="folder">Folders</option>
               <option value="profile">Profile</option>
-              <option value="appearance">Appearance</option>
-              <option value="auth">Authentication</option>
+              
             </select>
           </div>
 
@@ -312,8 +374,13 @@ export default function HistoryPage() {
               {/* Activities */}
               <div className="space-y-2">
                 {group.activities.map((act) => {
-                  const Icon = getActivityIcon(act.type);
-                  const colorClass = activityColors[act.type] || 'text-slate-600 bg-slate-50 dark:bg-slate-800';
+                  // resolve the type so display is consistent even if server sends different shapes
+                  const resolvedType = resolveActivityType(act);
+                  // debug: show resolved type in console when needed
+                  // console.debug('Activity resolved type', act._id, resolvedType);
+
+                  const Icon = getActivityIcon(resolvedType);
+                  const colorClass = activityColors[resolvedType] || 'text-slate-600 bg-slate-50 dark:bg-slate-800';
                   
                   return (
                     <div
@@ -329,7 +396,7 @@ export default function HistoryPage() {
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <h4 className="font-semibold text-slate-800 dark:text-white">
-                                {formatActivityLabel(act.type, act.action)}
+                                {formatActivityLabel(resolvedType, act.action)}
                               </h4>
                               {act.meta?.title && (
                                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
