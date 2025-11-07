@@ -1,7 +1,6 @@
 "use client";
 import React, { useRef, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Alert from "@/components/ui/alert_template/Alert";
 import { useAlert } from "@/hooks/useAlert";
 
 function StudyModeContent() {
@@ -381,16 +380,7 @@ function StudyModeContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          title={alert.title}
-          isVisible={alert.isVisible}
-          onClose={hideAlert}
-          autoClose={alert.type === "success"}
-          autoCloseDelay={3000}
-          position="bottom-right"
-        />
+        {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">

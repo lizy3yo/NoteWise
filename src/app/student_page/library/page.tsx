@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PrimaryActionButton from '@/components/ui/buttons/PrimaryActionButton';
 import { useAlert } from '@/hooks/useAlert';
-import Alert from '@/components/ui/alert_template/Alert';
+// Alert rendering removed here; use the global Alert in student_page/layout.tsx
 
 type FlashcardItem = {
   _id: string;
@@ -4603,18 +4603,7 @@ function PrivateLibraryContent() {
         </div>
       )}
 
-      {/* Alert Notification */}
-      <Alert
-        type={alert.type}
-        message={alert.message}
-        title={alert.title}
-        isVisible={alert.isVisible}
-        onClose={hideAlert}
-        autoClose={true}
-        autoCloseDelay={5000}
-        position="top-right"
-        showIcon={true}
-      />
+      {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
     </div>
   );
 }

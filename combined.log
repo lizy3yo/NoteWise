@@ -3788,3 +3788,6 @@
 {"timestamp":"2025-11-07T08:17:54.699Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
 {"timestamp":"2025-11-07T08:17:54.699Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-07T08:17:55.334Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:19:27.057Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:19:27.058Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweed\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:19:27.704Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}

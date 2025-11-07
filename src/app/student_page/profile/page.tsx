@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { validateEmail, validatePassword } from "@/lib/validation";
-import Alert from "@/components/ui/alert_template/Alert";
 import { useAlert } from "@/hooks/useAlert";
 
 interface UserProfile {
@@ -459,17 +458,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* Alert Component */}
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          title={alert.title}
-          isVisible={alert.isVisible}
-          onClose={hideAlert}
-          autoClose={alert.type === "success"}
-          autoCloseDelay={3000}
-          position="top-right"
-        />
+        {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
 
         {/* Tab Navigation */}
         <div className="mb-6">
