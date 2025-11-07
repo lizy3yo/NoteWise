@@ -27,6 +27,7 @@ export default function UserDashboard() {
   });
   const [loadingStats, setLoadingStats] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Array<{_id: string; title: string; type: string}>>([]);
 
   // Resolve first name from several sources
   const fromAuth =
@@ -89,40 +90,78 @@ export default function UserDashboard() {
           const flashcardsPromise = fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' });
           const foldersPromise = fetch(`/api/student_page/folder?userId=${userId}`, { credentials: 'include' });
           const testsPromise = fetch(`/api/student_page/practice-test?userId=${userId}`, { credentials: 'include' });
+          const summariesPromise = fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' });
 
-          const [flashcardsRes, foldersRes, testsRes] = await Promise.allSettled([
+          const [flashcardsRes, foldersRes, testsRes, summariesRes] = await Promise.allSettled([
             flashcardsPromise,
             foldersPromise,
             testsPromise,
+            summariesPromise,
           ]);
 
           let totalFlashcards = 0;
           let totalFolders = 0;
           let totalTests = 0;
           let recentActivity = fallback.recentActivity;
+          let fetchedFlashcards: any[] = [];
+          let fetchedFolders: any[] = [];
+          let fetchedTests: any[] = [];
+          let fetchedSummaries: any[] = [];
 
           if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.ok) {
             const data = await flashcardsRes.value.json().catch(() => null);
             const flashcards = (data && data.flashcards) || [];
-            totalFlashcards = Array.isArray(flashcards) ? flashcards.length : 0;
-            if (flashcards && flashcards[0]) {
-              recentActivity = `Last: ${flashcards[0].title || 'Updated a flashcard'}`;
+            fetchedFlashcards = Array.isArray(flashcards) ? flashcards : [];
+            totalFlashcards = fetchedFlashcards.length;
+            if (fetchedFlashcards[0]) {
+              recentActivity = `Last: ${fetchedFlashcards[0].title || 'Updated a flashcard'}`;
             }
           }
 
           if (foldersRes.status === 'fulfilled' && foldersRes.value.ok) {
             const data = await foldersRes.value.json().catch(() => null);
             const folders = (data && (data.folders || data.folders)) || data?.folders || [];
-            totalFolders = Array.isArray(folders) ? folders.length : 0;
+            fetchedFolders = Array.isArray(folders) ? folders : [];
+            totalFolders = fetchedFolders.length;
           }
 
           if (testsRes.status === 'fulfilled' && testsRes.value.ok) {
             const data = await testsRes.value.json().catch(() => null);
             const tests = (data && data.practiceTests) || [];
-            totalTests = Array.isArray(tests) ? tests.length : 0;
-            if (tests && tests[0]) {
-              recentActivity = `Saved test: ${tests[0].title}`;
+            fetchedTests = Array.isArray(tests) ? tests : [];
+            totalTests = fetchedTests.length;
+            if (fetchedTests[0]) {
+              recentActivity = `Saved test: ${fetchedTests[0].title}`;
             }
+          }
+
+          if (summariesRes.status === 'fulfilled' && summariesRes.value.ok) {
+            const data = await summariesRes.value.json().catch(() => null);
+            const s = (data && data.summaries) || data?.summaries || [];
+            fetchedSummaries = Array.isArray(s) ? s : [];
+          }
+
+          // Build favorites list from fetched items (flashcards, folders, tests, summaries)
+          try {
+            const favs: Array<{_id: string; title: string; type: string}> = [];
+            fetchedFolders.forEach((f: any) => {
+              if (f.isFavorite) favs.push({ _id: f._id, title: f.title || 'Folder', type: 'folder' });
+            });
+            fetchedFlashcards.forEach((f: any) => {
+              if (f.isFavorite) favs.push({ _id: f._id, title: f.title || 'Flashcards', type: 'flashcard' });
+            });
+            fetchedTests.forEach((t: any) => {
+              if (t.isFavorite) favs.push({ _id: t._id, title: t.title || 'Practice Test', type: 'practice_test' });
+            });
+            fetchedSummaries.forEach((s: any) => {
+              if (s.isFavorite) favs.push({ _id: s._id, title: s.title || 'Summary', type: 'summary' });
+            });
+
+            // Keep most recent favorites first — try to preserve server ordering
+            setFavorites(favs.slice(0, 8));
+          } catch (e) {
+            // ignore
+            setFavorites([]);
           }
 
           // totalUploads: best-effort aggregated metric (flashcards + practice tests)
@@ -322,6 +361,93 @@ export default function UserDashboard() {
           </div>
 
           <div className="col-span-4">
+            {/* Favorites Shortcuts Panel - separated into folders and items */}
+            <div className="panel panel-padded-lg mb-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <h2 className="section-title mb-3 text-gray-900 dark:text-white">Favorites</h2>
+              <div className="space-y-3">
+                {/* Split favorites into folders and other items */}
+                {(() => {
+                  const folderFavs = favorites.filter(f => f.type === 'folder');
+                  const itemFavs = favorites.filter(f => f.type !== 'folder');
+                  if (folderFavs.length === 0 && itemFavs.length === 0) {
+                    return (
+                      <div className="p-3 text-sm text-gray-600 dark:text-gray-400">No favorites yet. Mark items as favorites in your library to see shortcuts here.</div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {folderFavs.length > 0 && (
+                        <div>
+                          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Folders</h3>
+                          <div className="space-y-1">
+                            {folderFavs.map(f => (
+                              <Link key={f._id} href={`/student_page/library?tab=favorites`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors no-underline">
+                                <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-900/10 rounded-md flex items-center justify-center flex-shrink-0">
+                                  <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.title}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">Folder</p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {itemFavs.length > 0 && (
+                        <div>
+                          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Items</h3>
+                          <div className="space-y-1">
+                            {itemFavs.map(f => (
+                              <Link key={f._id} href={`/student_page/library?tab=favorites`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors no-underline">
+                                <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center flex-shrink-0">
+                                  {/* Flashcard */}
+                                  {f.type === 'flashcard' && (
+                                    <svg className="w-4 h-4 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                      <rect x="3" y="6" width="14" height="10" rx="2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <rect x="7" y="9" width="14" height="10" rx="2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  )}
+
+                                  {/* Practice test (clipboard/list) */}
+                                  {f.type === 'practice_test' && (
+                                    <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                      <path d="M9 2h6a2 2 0 012 2v16a2 2 0 01-2 2H9a2 2 0 01-2-2V4a2 2 0 012-2z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M9 8h6M9 12h6M9 16h4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  )}
+
+                                  {/* Summary (document) */}
+                                  {f.type === 'summary' && (
+                                    <svg className="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                      <path d="M7 3h7l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V3z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M7 13h10M7 9h6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.title}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{f.type.replace('_', ' ')}</p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="pt-2">
+                        <Link href="/student_page/library?tab=favorites" className="text-sm text-teal-600 dark:text-teal-300 hover:underline">View all favorites</Link>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
             <div className="panel panel-padded-lg h-80 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
               <h2 className="section-title mb-4 text-gray-900 dark:text-white">Quick Actions</h2>
               <div className="qa-group flex-1 flex flex-col justify-center">

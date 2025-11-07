@@ -541,12 +541,7 @@ function StudyModeContent() {
                       </button>
                     </div>
                   ))}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                  >
-                    + Add more files
-                  </button>
+                  {/* Removed: '+ Add more files' button - users may not add more files after initial selection */}
                 </div>
               )}
             </div>
