@@ -6,6 +6,7 @@ import { UploadFile } from '@/app/lib/upload';
 import Flashcard from '@/models/flashcard';
 import User from '@/models/user';
 import { Types } from 'mongoose';
+import { logActivity } from '@/lib/activity';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -270,6 +271,21 @@ export async function POST(request: NextRequest) {
       fileName: file.name,
       cardsGenerated: result.flashcards.length,
       qualityScore: result.qualityMetrics.overallScore
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'flashcard.generate',
+      action: 'generated from file',
+      meta: {
+        flashcardId: String(flashcard._id),
+        title: flashcard.title,
+        cardCount: result.flashcards.length,
+        fileName: file.name,
+        subject: result.analysis.subject
+      },
+      progress: 100
     });
 
     return NextResponse.json({

@@ -23,6 +23,7 @@ import { authenticate } from '@/lib/middleware/authenticate';
 import { authorize } from '@/lib/middleware/authorize';
 import { logger } from '@/lib/winston';
 import { validatePassword } from '@/lib/middleware/validation';
+import { logActivity } from '@/lib/activity';
 
 //Models
 import User from '@/models/user';
@@ -94,6 +95,15 @@ export async function PUT(request: NextRequest) {
 
         // Update password
         await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
+
+        // Log activity
+        await logActivity({
+            userId: String(userId),
+            type: 'profile.password_change',
+            action: 'changed password',
+            meta: {},
+            progress: 100
+        });
 
         return NextResponse.json({ 
             message: 'Password changed successfully' 

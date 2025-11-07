@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongoose';
 import { Summary } from '@/models/summary';
 import { logger } from '@/lib/winston';
+import { logActivity } from '@/lib/activity';
 
 // GET - Fetch summaries for a user or a specific summary by ID
 export async function GET(request: NextRequest) {
@@ -122,6 +123,18 @@ export async function DELETE(request: NextRequest) {
       title: deletedSummary.title
     });
 
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'summary.delete',
+      action: 'deleted',
+      meta: {
+        summaryId: String(summaryId),
+        title: deletedSummary.title
+      },
+      progress: 100
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Summary deleted successfully'
@@ -185,6 +198,19 @@ export async function PATCH(request: NextRequest) {
       summaryId,
       userId,
       updatedFields: Object.keys(updateData)
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'summary.update',
+      action: 'updated',
+      meta: {
+        summaryId: String(summaryId),
+        title: updatedSummary.title,
+        updatedFields: Object.keys(updateData)
+      },
+      progress: 100
     });
 
     return NextResponse.json({

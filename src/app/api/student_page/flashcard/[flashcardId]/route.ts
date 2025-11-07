@@ -25,6 +25,7 @@ import { logger } from '@/lib/winston';
 import config from '@/lib/config';
 import { connectToDatabase } from '@/lib/mongoose';
 import { validateEmail, validatePassword } from '@/lib/middleware/validation';
+import { logActivity } from '@/lib/activity';
 
 //Models
 import User from '@/models/user';
@@ -296,6 +297,18 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             }, { status: 404 });
         }
 
+        // Log activity
+        await logActivity({
+            userId: String(userId),
+            type: 'flashcard.update',
+            action: 'updated',
+            meta: {
+                flashcardId: String(flashcardId),
+                title: title
+            },
+            progress: 100
+        });
+
         return NextResponse.json({ 
             message: 'Flashcard updated successfully', 
             flashcard: updatedflashcard 
@@ -359,6 +372,18 @@ export const DELETE = async (request: NextRequest, context: {params: any}) => {
         }
 
         await Flashcard.findByIdAndDelete(flashcardId);
+
+        // Log activity
+        await logActivity({
+            userId: String(userId),
+            type: 'flashcard.delete',
+            action: 'deleted',
+            meta: {
+                flashcardId: String(flashcardId),
+                title: deletedFlashcard.title
+            },
+            progress: 100
+        });
 
         return NextResponse.json({ 
             message: 'Flashcard deleted successfully' 

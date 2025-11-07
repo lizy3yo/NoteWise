@@ -20,6 +20,7 @@ import { Types } from 'mongoose';
 //Custom Modules
 import { logger } from '@/lib/winston';
 import { connectToDatabase } from '@/lib/mongoose';
+import { logActivity } from '@/lib/activity';
 
 //Models
 import User from '@/models/user';
@@ -95,6 +96,18 @@ export const POST = async (request: NextRequest) => {
       title: folder.title
     });
 
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'folder.create',
+      action: 'created',
+      meta: {
+        folderId: String(folder._id),
+        title: folder.title
+      },
+      progress: 100
+    });
+
     return NextResponse.json({
       success: true,
       folder: {
@@ -158,6 +171,33 @@ export const PATCH = async (request: NextRequest) => {
       updates: updateData
     });
 
+    // Log activity based on what was updated
+    if (isFavorite !== undefined) {
+      await logActivity({
+        userId: String(userId),
+        type: 'folder.favorite',
+        action: isFavorite ? 'added to favorites' : 'removed from favorites',
+        meta: {
+          folderId: String(folderId),
+          title: folder.title
+        },
+        progress: 100
+      });
+    }
+    
+    if (title !== undefined) {
+      await logActivity({
+        userId: String(userId),
+        type: 'folder.rename',
+        action: 'renamed',
+        meta: {
+          folderId: String(folderId),
+          newTitle: folder.title
+        },
+        progress: 100
+      });
+    }
+
     return NextResponse.json({
       success: true,
       folder: {
@@ -210,6 +250,18 @@ export const DELETE = async (request: NextRequest) => {
       folderId: folder._id,
       userId,
       title: folder.title
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'folder.delete',
+      action: 'deleted',
+      meta: {
+        folderId: String(folderId),
+        title: folder.title
+      },
+      progress: 100
     });
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongoose';
 import { logger } from '@/lib/winston';
+import { logActivity } from '@/lib/activity';
 // Ensure Node.js runtime for Buffer and native libs
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -109,6 +110,22 @@ export async function POST(request: NextRequest) {
       analysisType,
       contentLength: contentToAnalyze.length
     });
+
+    // Log activity for history tracking (non-blocking)
+    try {
+      await logActivity({
+        userId,
+        type: 'flashcard.generate',
+        action: analysisType || 'flashcards',
+        meta: {
+          numCards: (result as any)?.cards?.length ?? (result as any)?.cards?.length ?? 0,
+          title: (result as any)?.title ?? ''
+        },
+        progress: 100
+      });
+    } catch (err) {
+      logger.warn('Failed to log activity for flashcard.generate', { err });
+    }
 
     return NextResponse.json({
       result,

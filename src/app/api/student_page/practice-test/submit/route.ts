@@ -3,6 +3,7 @@ import { PracticeTestSubmission } from '@/models/practice-test-submission';
 import { PracticeTest } from '@/models/practice-test';
 import { connectToDatabase } from '@/lib/mongoose';
 import { logger } from '@/lib/winston';
+import { logActivity } from '@/lib/activity';
 
 export const dynamic = 'force-dynamic';
 
@@ -100,6 +101,22 @@ export async function POST(req: NextRequest) {
       score,
       pointsEarned,
       totalPoints
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'practice_test.submit',
+      action: 'completed',
+      meta: {
+        submissionId: String(submission._id),
+        practiceTestId: practiceTestId !== 'temp' ? String(practiceTestId) : undefined,
+        score,
+        pointsEarned,
+        totalPoints,
+        isPerfectScore
+      },
+      progress: 100
     });
 
     return NextResponse.json({

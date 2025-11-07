@@ -4,6 +4,7 @@ import FlashcardModel from '@/models/flashcard';
 import { connectToDatabase } from '@/lib/mongoose';
 import { logger } from '@/lib/winston';
 import { Types } from 'mongoose';
+import { logActivity } from '@/lib/activity';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 seconds timeout for AI generation
@@ -259,6 +260,21 @@ export async function POST(req: NextRequest) {
       writtenCount: result.writtenQuestions.length,
       totalPoints: result.totalPoints,
       subject: result.subject
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'practice_test.generate',
+      action: 'generated',
+      meta: {
+        title: testTitle,
+        questionCount: result.multipleChoiceQuestions.length + result.writtenQuestions.length,
+        totalPoints: result.totalPoints,
+        subject: result.subject,
+        source
+      },
+      progress: 100
     });
 
     return NextResponse.json({

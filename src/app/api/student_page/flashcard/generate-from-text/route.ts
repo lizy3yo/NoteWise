@@ -5,6 +5,7 @@ import { validateContent } from '@/lib/ai/flashcard-generator';
 import Flashcard from '@/models/flashcard';
 import User from '@/models/user';
 import { Types } from 'mongoose';
+import { logActivity } from '@/lib/activity';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -126,6 +127,20 @@ export async function POST(request: NextRequest) {
       cardsGenerated: result.flashcards.length,
       qualityScore: result.qualityMetrics.overallScore,
       subject: result.analysis.subject
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'flashcard.generate',
+      action: 'generated from text',
+      meta: {
+        flashcardId: String(flashcard._id),
+        title: flashcard.title,
+        cardCount: result.flashcards.length,
+        subject: result.analysis.subject
+      },
+      progress: 100
     });
 
     return NextResponse.json({

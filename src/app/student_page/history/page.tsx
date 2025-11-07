@@ -1,0 +1,428 @@
+"use client";
+
+import React, { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
+import useAuth from '@/hooks/useAuth';
+import { authManager } from '@/utils/auth';
+import { 
+  FileText, 
+  BookOpen, 
+  ClipboardCheck, 
+  Trash2, 
+  Edit, 
+  Plus,
+  Clock,
+  Calendar,
+  Filter,
+  TrendingUp,
+  Award,
+  RefreshCw,
+  Folder,
+  Star,
+  FolderEdit,
+  User,
+  Lock,
+  Palette,
+  LogIn,
+  LogOut
+} from 'lucide-react';
+
+type Activity = {
+  _id: string;
+  type: string;
+  action: string;
+  meta?: any;
+  progress?: number;
+  createdAt?: string;
+};
+
+type ActivityGroup = {
+  date: string;
+  activities: Activity[];
+};
+
+const activityIcons: Record<string, any> = {
+  'flashcard.create': Plus,
+  'flashcard.update': Edit,
+  'flashcard.delete': Trash2,
+  'flashcard.generate': BookOpen,
+  'summary.generate': FileText,
+  'summary.update': Edit,
+  'summary.delete': Trash2,
+  'practice_test.submit': ClipboardCheck,
+  'practice_test.generate': Plus,
+  'folder.create': Folder,
+  'folder.rename': FolderEdit,
+  'folder.delete': Trash2,
+  'folder.favorite': Star,
+  'profile.update': User,
+  'profile.password_change': Lock,
+  'appearance.theme_change': Palette,
+  'auth.login': LogIn,
+  'auth.logout': LogOut,
+};
+
+const activityColors: Record<string, string> = {
+  'flashcard.create': 'text-teal-600 bg-teal-50 dark:bg-teal-900/20',
+  'flashcard.update': 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+  'flashcard.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
+  'flashcard.generate': 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+  'summary.generate': 'text-green-600 bg-green-50 dark:bg-green-900/20',
+  'summary.update': 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+  'summary.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
+  'practice_test.submit': 'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
+  'practice_test.generate': 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20',
+  'folder.create': 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20',
+  'folder.rename': 'text-sky-600 bg-sky-50 dark:bg-sky-900/20',
+  'folder.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
+  'folder.favorite': 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+  'profile.update': 'text-violet-600 bg-violet-50 dark:bg-violet-900/20',
+  'profile.password_change': 'text-rose-600 bg-rose-50 dark:bg-rose-900/20',
+  'appearance.theme_change': 'text-fuchsia-600 bg-fuchsia-50 dark:bg-fuchsia-900/20',
+  'auth.login': 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
+  'auth.logout': 'text-gray-600 bg-gray-50 dark:bg-gray-900/20',
+};
+
+export default function HistoryPage() {
+  const { user, isLoading } = useAuth();
+  const [activities, setActivities] = useState<Activity[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [filterType, setFilterType] = useState<string>('all');
+  const [timeFilter, setTimeFilter] = useState<string>('all');
+
+  const fetchActivities = async (userId: string) => {
+    try {
+      setLoading(true);
+
+      const res = await authManager.makeAuthenticatedRequest(
+        `/api/student_page/history?userId=${encodeURIComponent(userId)}`,
+        { method: 'GET', credentials: 'include' }
+      );
+
+      if (!res.ok) {
+        setActivities([]);
+        return;
+      }
+      const data = await res.json();
+      setActivities(data.activities || []);
+    } catch (err) {
+      console.error('Failed to load activities', err);
+      setActivities([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoading && user && (user as any)._id) {
+      fetchActivities((user as any)._id);
+    }
+  }, [user, isLoading]);
+
+  // Filter and group activities
+  const groupedActivities = useMemo(() => {
+    if (!activities) return [];
+    
+    let filtered = activities;
+
+    // Filter by type
+    if (filterType !== 'all') {
+      filtered = filtered.filter(act => act.type.startsWith(filterType));
+    }
+
+    // Filter by time
+    const now = new Date();
+    if (timeFilter === 'today') {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      filtered = filtered.filter(act => new Date(act.createdAt || '') >= today);
+    } else if (timeFilter === 'week') {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(act => new Date(act.createdAt || '') >= weekAgo);
+    } else if (timeFilter === 'month') {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(act => new Date(act.createdAt || '') >= monthAgo);
+    }
+
+    // Group by date
+    const groups: Record<string, Activity[]> = {};
+    filtered.forEach(act => {
+      if (!act.createdAt) return;
+      const date = new Date(act.createdAt);
+      const dateKey = date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(act);
+    });
+
+    return Object.entries(groups).map(([date, activities]) => ({
+      date,
+      activities
+    }));
+  }, [activities, filterType, timeFilter]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!activities) return { total: 0, flashcards: 0, summaries: 0, tests: 0 };
+    return {
+      total: activities.length,
+      flashcards: activities.filter(a => a.type.startsWith('flashcard')).length,
+      summaries: activities.filter(a => a.type.startsWith('summary')).length,
+      tests: activities.filter(a => a.type.startsWith('practice_test')).length,
+    };
+  }, [activities]);
+
+  const formatActivityLabel = (type: string, action: string) => {
+    const parts = type.split('.');
+    const category = parts[0].replace('_', ' ');
+    return `${category.charAt(0).toUpperCase() + category.slice(1)} ${action}`;
+  };
+
+  const getActivityIcon = (type: string) => {
+    const Icon = activityIcons[type] || Clock;
+    return Icon;
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Activity History</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+              Track all your learning activities and progress
+            </p>
+          </div>
+          <button
+            onClick={() => user && (user as any)._id && fetchActivities((user as any)._id)}
+            className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+            disabled={loading}
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border border-teal-200 dark:border-teal-700 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-teal-700 dark:text-teal-300">Total</p>
+                <p className="text-2xl font-bold text-teal-900 dark:text-teal-100">{stats.total}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Flashcards</p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.flashcards}</p>
+              </div>
+              <BookOpen className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Summaries</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.summaries}</p>
+              </div>
+              <FileText className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Tests</p>
+                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.tests}</p>
+              </div>
+              <ClipboardCheck className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Type:</span>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All Activities</option>
+              <option value="flashcard">Flashcards</option>
+              <option value="summary">Summaries</option>
+              <option value="practice_test">Practice Tests</option>
+              <option value="folder">Folders</option>
+              <option value="profile">Profile</option>
+              <option value="appearance">Appearance</option>
+              <option value="auth">Authentication</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Time:</span>
+            <select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">Last 7 Days</option>
+              <option value="month">Last 30 Days</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity Timeline */}
+      <div className="space-y-6">
+        {loading || isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <RefreshCw className="w-8 h-8 animate-spin text-teal-600" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading activity...</p>
+            </div>
+          </div>
+        ) : groupedActivities.length > 0 ? (
+          groupedActivities.map((group) => (
+            <div key={group.date} className="space-y-3">
+              {/* Date Header */}
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+                  {group.date}
+                </h3>
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+              </div>
+
+              {/* Activities */}
+              <div className="space-y-2">
+                {group.activities.map((act) => {
+                  const Icon = getActivityIcon(act.type);
+                  const colorClass = activityColors[act.type] || 'text-slate-600 bg-slate-50 dark:bg-slate-800';
+                  
+                  return (
+                    <div
+                      key={act._id}
+                      className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`p-2.5 rounded-lg ${colorClass} flex-shrink-0`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-slate-800 dark:text-white">
+                                {formatActivityLabel(act.type, act.action)}
+                              </h4>
+                              {act.meta?.title && (
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                  {act.meta.title}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                {act.meta?.cardCount !== undefined && (
+                                  <span className="flex items-center gap-1">
+                                    <BookOpen className="w-3 h-3" />
+                                    {act.meta.cardCount} cards
+                                  </span>
+                                )}
+                                {act.meta?.wordCount !== undefined && (
+                                  <span className="flex items-center gap-1">
+                                    <FileText className="w-3 h-3" />
+                                    {act.meta.wordCount} words
+                                  </span>
+                                )}
+                                {act.meta?.score !== undefined && (
+                                  <span className="flex items-center gap-1">
+                                    <Award className="w-3 h-3" />
+                                    Score: {act.meta.score}%
+                                  </span>
+                                )}
+                                {act.meta?.subject && (
+                                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">
+                                    {act.meta.subject}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                              <Clock className="w-3 h-3" />
+                              {act.createdAt ? new Date(act.createdAt).toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit' 
+                              }) : ''}
+                            </div>
+                          </div>
+
+                          {typeof act.progress === 'number' && act.progress < 100 && (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
+                                <span>Progress</span>
+                                <span>{act.progress}%</span>
+                              </div>
+                              <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-2 bg-teal-500 rounded-full transition-all"
+                                  style={{ width: `${Math.min(100, Math.max(0, act.progress))}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-12 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-full">
+                <Clock className="w-12 h-12 text-slate-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-800 dark:text-white mb-2">No Activity Yet</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
+                  {filterType !== 'all' || timeFilter !== 'all' 
+                    ? 'No activities found for the selected filters. Try adjusting your filters.'
+                    : 'Start creating flashcards, summaries, or taking practice tests to see your activity here.'}
+                </p>
+              </div>
+              {(filterType !== 'all' || timeFilter !== 'all') && (
+                <button
+                  onClick={() => {
+                    setFilterType('all');
+                    setTimeFilter('all');
+                  }}
+                  className="mt-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

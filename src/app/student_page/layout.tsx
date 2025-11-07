@@ -767,11 +767,42 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         </span>
                       )}
                     </Link>
+                    {/* Unified History link (shows all activity: summaries, flashcards, practice tests) */}
+                    <div className="mt-1">
+                      {/* header removed: keep only the History link to avoid duplicate label */}
+
+                      <Link
+                        href="/student_page/history"
+                        className={`flex items-center ${!isExpanded
+                          ? "justify-center w-full p-2.5 mx-0"
+                          : "gap-4 px-5 py-2.5 mx-4"
+                          } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
+                          } ${pathname === "/student_page/history"
+                          ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
+                          : ""
+                        }`}
+                        title={!isExpanded ? "History" : ""}
+                      >
+                        <svg
+                          className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${pathname === "/student_page/history" ? "text-teal-600" : ""}`}
+                          width="20"
+                          height="20"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 3v4M8 3v4" />
+                        </svg>
+                        {isExpanded && <span className="whitespace-nowrap">History</span>}
+                      </Link>
+                    </div>
                   </div>
                 </nav>
               </div>
             </div>
 
+                    
             {/* Notification Card - Above Profile Section */}
             {isExpanded && (
               <div className="flex-shrink-0 px-6 pb-4">

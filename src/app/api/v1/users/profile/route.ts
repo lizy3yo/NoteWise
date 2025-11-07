@@ -23,6 +23,7 @@ import { authenticate } from '@/lib/middleware/authenticate';
 import { authorize } from '@/lib/middleware/authorize';
 import { logger } from '@/lib/winston';
 import { validateUsername, validateEmail, validateName } from '@/lib/middleware/validation';
+import { logActivity } from '@/lib/activity';
 
 //Models
 import User from '@/models/user';
@@ -146,6 +147,23 @@ export async function PUT(request: NextRequest) {
                 logger.error('Failed to send verification email:', emailError);
                 // Don't fail the request if email sending fails
             }
+        }
+
+        // Log activity
+        const updatedFields = Object.keys(updateData).filter(key => key !== 'emailVerificationToken' && key !== 'emailVerificationExpires' && key !== 'isEmailVerified');
+        if (updatedFields.length > 0) {
+            await logActivity({
+                userId: String(userId),
+                type: 'profile.update',
+                action: 'updated',
+                meta: {
+                    fields: updatedFields,
+                    email: email || undefined,
+                    firstName: firstName || undefined,
+                    lastName: lastName || undefined
+                },
+                progress: 100
+            });
         }
 
         return NextResponse.json({ 

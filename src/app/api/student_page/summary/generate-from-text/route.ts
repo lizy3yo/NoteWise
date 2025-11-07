@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/mongoose';
 import { Summary } from '@/models/summary';
 import { InternalSummaryGenerator } from '@/lib/ai/internal-summary-generator';
 import { logger } from '@/lib/winston';
+import { logActivity } from '@/lib/activity';
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,6 +87,20 @@ export async function POST(request: NextRequest) {
       userId,
       wordCount: result.summary.wordCount,
       compressionRatio: result.compressionRatio
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'summary.generate',
+      action: 'generated from text',
+      meta: {
+        summaryId: String(savedSummary._id),
+        title: savedSummary.title,
+        wordCount: savedSummary.wordCount,
+        subject: savedSummary.subject
+      },
+      progress: 100
     });
 
     return NextResponse.json({

@@ -25,6 +25,7 @@ import { logger } from '@/lib/winston';
 import config from '@/lib/config';
 import { connectToDatabase } from '@/lib/mongoose';
 import { validateEmail, validatePassword } from '@/lib/middleware/validation';
+import { logActivity } from '@/lib/activity';
 
 //Models
 import User from '@/models/user';
@@ -214,6 +215,20 @@ export const POST = async (request: NextRequest) => {
         await newFlashcard.save();
         
         logger.info(`Flashcard created successfully. ID: ${newFlashcard._id}, Subject: ${newFlashcard.subject || 'NONE'}`);
+
+        // Log activity
+        await logActivity({
+            userId: String(userId),
+            type: 'flashcard.create',
+            action: 'created',
+            meta: {
+                flashcardId: String(newFlashcard._id),
+                title: title,
+                cardCount: cards.length,
+                subject: trimmedSubject || undefined
+            },
+            progress: 100
+        });
 
         return new NextResponse(JSON.stringify({ 
             message: "Flashcard created successfully",

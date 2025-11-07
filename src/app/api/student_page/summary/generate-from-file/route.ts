@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/mongoose';
 import { Summary } from '@/models/summary';
 import { InternalSummaryGenerator } from '@/lib/ai/internal-summary-generator';
 import { logger } from '@/lib/winston';
+import { logActivity } from '@/lib/activity';
 
 // File processing utilities
 async function extractTextFromFile(file: File): Promise<string> {
@@ -151,6 +152,21 @@ export async function POST(request: NextRequest) {
       fileName: file.name,
       wordCount: result.summary.wordCount,
       compressionRatio: result.compressionRatio
+    });
+
+    // Log activity
+    await logActivity({
+      userId: String(userId),
+      type: 'summary.generate',
+      action: 'generated from file',
+      meta: {
+        summaryId: String(savedSummary._id),
+        title: savedSummary.title,
+        wordCount: savedSummary.wordCount,
+        fileName: file.name,
+        subject: savedSummary.subject
+      },
+      progress: 100
     });
 
     return NextResponse.json({
