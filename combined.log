@@ -3502,3 +3502,28 @@
 {"timestamp":"2025-11-07T06:07:03.703Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-07T06:07:03.703Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-07T06:07:03.703Z","level":"info","message":"  Flashcard 3: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:08:59.613Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:08:59.614Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:08:59.614Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:08:59.615Z","level":"info","message":"  Flashcard 3: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:00.261Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T06:09:02.126Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T06:09:02.151Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.151Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.152Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.152Z","level":"info","message":"  Flashcard 3: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.597Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T06:09:02.621Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.622Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.622Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:09:02.623Z","level":"info","message":"  Flashcard 3: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:39.713Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T06:10:39.721Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:39.721Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:39.722Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:39.723Z","level":"info","message":"  Flashcard 3: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:40.192Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T06:10:40.203Z","level":"info","message":"GET /flashcard: Found 3 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:40.204Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betwee\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:40.204Z","level":"info","message":"  Flashcard 2: \"Understanding Computers: A Simple Overview - Flashca\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T06:10:40.205Z","level":"info","message":"  Flashcard 3: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
