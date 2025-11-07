@@ -34,6 +34,7 @@ export default function PracticeTestsPage() {
   const [tab, setTab] = useState<"sets" | "notes" | "upload" | "paste" | "drive">("sets");
   const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
   const [summaries, setSummaries] = useState<SummaryItem[]>([]);
+  const [folders, setFolders] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,8 +75,13 @@ export default function PracticeTestsPage() {
   const flashcardsBySubject = useMemo(() => {
     const grouped = new Map<string, FlashcardItem[]>();
 
+    // build folder id -> title map so we can show real folder titles when items are in folders
+    const folderMap: Record<string, string> = {};
+    folders.forEach((f: any) => { if (f && f._id) folderMap[f._id] = f.title; });
+
     visibleFlashcards.forEach((flashcard) => {
-      const subject = flashcard.subject || 'Uncategorized';
+      const folderTitle = flashcard && (flashcard as any).folder ? folderMap[(flashcard as any).folder] : undefined;
+      const subject = folderTitle || flashcard.subject || 'Uncategorized';
       if (!grouped.has(subject)) {
         grouped.set(subject, []);
       }
@@ -88,14 +94,19 @@ export default function PracticeTestsPage() {
     });
 
     return grouped;
-  }, [visibleFlashcards]);
+  }, [visibleFlashcards, folders]);
 
   // Group summaries by subject
   const summariesBySubject = useMemo(() => {
     const grouped = new Map<string, SummaryItem[]>();
 
+    // folder id -> title map
+    const folderMap: Record<string, string> = {};
+    folders.forEach((f: any) => { if (f && f._id) folderMap[f._id] = f.title; });
+
     visibleSummaries.forEach((summary) => {
-      const subject = summary.subject || 'Uncategorized';
+      const folderTitle = summary && (summary as any).folder ? folderMap[(summary as any).folder] : undefined;
+      const subject = folderTitle || summary.subject || 'Uncategorized';
       if (!grouped.has(subject)) {
         grouped.set(subject, []);
       }
@@ -108,7 +119,7 @@ export default function PracticeTestsPage() {
     });
 
     return grouped;
-  }, [visibleSummaries]);
+  }, [visibleSummaries, folders]);
 
   useEffect(() => {
     let mounted = true;
@@ -157,6 +168,22 @@ export default function PracticeTestsPage() {
           if (mounted && summariesData.success) {
             setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
           }
+        }
+
+        // Fetch folders (so practice tests page shows real folder data like Library/Study Notes)
+        try {
+          const foldersRes = await fetch(`/api/student_page/folder?userId=${uid}`, { cache: "no-store" });
+          if (foldersRes.ok) {
+            const foldersData = await foldersRes.json();
+            if (mounted) {
+              setFolders(Array.isArray(foldersData?.folders) ? foldersData.folders : []);
+            }
+          } else {
+            // not fatal for this page — just log
+            console.warn('practice_tests: failed to load folders');
+          }
+        } catch (e) {
+          // ignore folder fetch errors
         }
       } catch (e: unknown) {
         if (!mounted) return;
