@@ -28,6 +28,15 @@ export const useAlert = () => {
             message,
             title
         });
+        // Dispatch a global event so layout (or any global listener) can show the alert
+        try {
+            if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
+                const ev = new CustomEvent('notewise:alert', { detail: { type, message, title } });
+                window.dispatchEvent(ev);
+            }
+        } catch (e) {
+            // ignore if CustomEvent isn't supported
+        }
     }, []);
 
     const hideAlert = useCallback(() => {

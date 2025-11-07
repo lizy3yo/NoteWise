@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { useAlert } from '@/hooks/useAlert';
 
 interface Summary {
     _id: string;
@@ -88,22 +89,76 @@ export default function SummaryViewPage() {
     };
 
     const deleteSummary = async () => {
-        if (!userId || !confirm('Are you sure you want to delete this summary?')) return;
+        // This function performs the delete. Confirmation is handled by the in-app modal.
+        if (!userId) {
+            showError('User not found.');
+            return;
+        }
 
         try {
+            setDeleteLoading(true);
             const response = await fetch(`/api/student_page/summary?userId=${userId}&summaryId=${summaryId}`, {
                 method: 'DELETE'
             });
             const data = await response.json();
 
             if (data.success) {
+                showSuccess('Summary deleted successfully');
                 router.push('/student_page/library?tab=study_notes');
             } else {
-                alert(data.error || 'Failed to delete summary');
+                showError(data.error || 'Failed to delete summary');
             }
         } catch (err) {
             console.error('Error deleting summary:', err);
-            alert('Failed to delete summary');
+            showError('Failed to delete summary');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    // Delete confirmation modal state
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+    const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+
+    const openDeleteConfirm = () => {
+        if (!userId) {
+            showError('User not found.');
+            return;
+        }
+        setShowDeleteConfirm(true);
+    };
+
+    const [showResummarizeModal, setShowResummarizeModal] = useState<boolean>(false);
+    const [resummarizeLoading, setResummarizeLoading] = useState<boolean>(false);
+    const { showSuccess, showError } = useAlert();
+
+    const resummarize = async () => {
+        if (!userId) {
+            showError('User not found.');
+            return;
+        }
+
+        try {
+            setResummarizeLoading(true);
+            const response = await fetch(`/api/student_page/summary/resummarize?userId=${userId}&summaryId=${summaryId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Failed to resummarize');
+            }
+
+            // Update the displayed summary
+            setSummary(data.summary);
+            setShowResummarizeModal(false);
+            showSuccess('Summary resummarized successfully');
+        } catch (err) {
+            console.error('Error resummarizing summary:', err);
+            showError(err instanceof Error ? err.message : 'Failed to resummarize');
+        } finally {
+            setResummarizeLoading(false);
         }
     };
 
@@ -227,7 +282,13 @@ export default function SummaryViewPage() {
                             Create Flashcards from This
                         </button>
                         <button
-                            onClick={deleteSummary}
+                            onClick={() => setShowResummarizeModal(true)}
+                            className="px-6 py-3 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors font-medium"
+                        >
+                            Resummarize
+                        </button>
+                        <button
+                            onClick={openDeleteConfirm}
                             className="px-6 py-3 border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium"
                         >
                             Delete Summary
@@ -301,6 +362,90 @@ export default function SummaryViewPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Resummarize Confirmation Modal */}
+                {showResummarizeModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50" onClick={() => { if (!resummarizeLoading) setShowResummarizeModal(false); }}></div>
+                        <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Resummarize Summary</h3>
+                                <button
+                                    className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 p-1"
+                                    onClick={() => { if (!resummarizeLoading) setShowResummarizeModal(false); }}
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
+                                This will regenerate and overwrite the existing summary content. Are you sure you want to continue?
+                            </p>
+
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowResummarizeModal(false)}
+                                    className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
+                                    disabled={resummarizeLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={resummarize}
+                                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${resummarizeLoading ? 'opacity-60 cursor-not-allowed' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
+                                    disabled={resummarizeLoading}
+                                >
+                                    {resummarizeLoading ? 'Resummarizing...' : 'Resummarize'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Delete Confirmation Modal */}
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50" onClick={() => { if (!deleteLoading) setShowDeleteConfirm(false); }}></div>
+                        <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Delete Summary</h3>
+                                <button
+                                    className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 p-1"
+                                    onClick={() => { if (!deleteLoading) setShowDeleteConfirm(false); }}
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
+                                Are you sure you want to delete this summary? This action cannot be undone.
+                            </p>
+
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
+                                    disabled={deleteLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={deleteSummary}
+                                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${deleteLoading ? 'opacity-60 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'}`}
+                                    disabled={deleteLoading}
+                                >
+                                    {deleteLoading ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

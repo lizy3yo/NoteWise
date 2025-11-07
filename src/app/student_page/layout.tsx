@@ -71,7 +71,21 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const [userEmail, setUserEmail] = useState<string | null>(null); // << new state
   const [userImage, setUserImage] = useState<string | null>(null); // << new state
   const [currentTime, setCurrentTime] = useState<string>("");
-  const { alert, showError, showSuccess, showWarning, showInfo, hideAlert } = useAlert();
+  const { alert, showAlert, showError, showSuccess, showWarning, showInfo, hideAlert } = useAlert();
+
+  // Listen for global alert events (dispatched by useAlert in other components)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent | any;
+      const detail = ce?.detail;
+      if (!detail) return;
+      const { type, message, title } = detail;
+      if (typeof showAlert === 'function') showAlert(type, message, title);
+    };
+
+    window.addEventListener('notewise:alert', handler as EventListener);
+    return () => window.removeEventListener('notewise:alert', handler as EventListener);
+  }, [showAlert]);
   const sidebarRef = useRef<HTMLElement | null>(null);
   const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
   const bufferActiveRef = useRef(false);
