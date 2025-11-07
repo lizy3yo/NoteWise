@@ -14,10 +14,9 @@ async function extractTextFromFile(file: File): Promise<string> {
     return await file.text();
   }
   
+  // CSV files are no longer supported for summaries
   if (fileType === 'text/csv' || fileName.endsWith('.csv')) {
-    const text = await file.text();
-    // Convert CSV to readable text
-    return text.split('\n').map(line => line.replace(/,/g, ' | ')).join('\n');
+    throw new Error('CSV files are not supported for summaries. Please use .txt files or paste the text directly.');
   }
   
   // For other file types, we'll need to implement proper extraction
@@ -34,7 +33,7 @@ async function extractTextFromFile(file: File): Promise<string> {
     throw new Error('PowerPoint files are not yet supported. Please copy and paste the text content instead.');
   }
   
-  throw new Error(`Unsupported file type: ${fileType}. Please use .txt or .csv files, or copy and paste the content.`);
+  throw new Error(`Unsupported file type: ${fileType}. Please use .txt files, or copy and paste the content.`);
 }
 
 export async function POST(request: NextRequest) {

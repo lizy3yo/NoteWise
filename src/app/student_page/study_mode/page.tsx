@@ -211,12 +211,12 @@ function StudyModeContent() {
     if (createType === 'summary') {
       const supported = fileArray.filter((f) => {
         const n = f.name.toLowerCase();
-        return n.endsWith('.txt') || n.endsWith('.csv');
+        return n.endsWith('.txt');
       });
 
       if (supported.length === 0) {
         // Show a helpful client-side error instead of sending unsupported files to the API.
-        showError('Summary uploads currently support only .txt and .csv files. Please paste text or use a .txt/.csv file.', 'Unsupported file type');
+        showError('Summary uploads currently support only .txt files. Please paste text or use a .txt file.', 'Unsupported file type');
         return;
       }
 
@@ -558,7 +558,6 @@ function StudyModeContent() {
                     {createType === 'summary' ? (
                       <>
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">TXT</div>
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-amber-400 to-amber-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">CSV</div>
                       </>
                     ) : (
                       <>
@@ -574,7 +573,7 @@ function StudyModeContent() {
                   <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                     {createType === 'flashcards'
                       ? 'PDF, Word, PowerPoint, Text files (max 10MB) - Processed with advanced AI'
-                      : 'Supported for summaries: .txt, .csv (other formats are not supported by summary upload)'}
+                      : 'Only .txt files are supported for summary uploads'}
                   </div>
                   <div className="mt-3">
                     <button
@@ -587,7 +586,7 @@ function StudyModeContent() {
                       ref={fileInputRef}
                       onChange={handleFileInput}
                       type="file"
-                      accept={createType === 'summary' ? '.txt,.csv' : '.pdf,.docx,.pptx,.txt,.md,.doc'}
+                      accept={createType === 'summary' ? '.txt' : '.pdf,.docx,.pptx,.txt,.md,.doc'}
                       className="hidden"
                       multiple
                     />

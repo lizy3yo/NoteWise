@@ -175,19 +175,28 @@ Write: "This covers the basics of UI and UX design. UI (User Interface) is about
 JSON SCHEMA:
 {
   "summary": {
-    "title": "Clear, descriptive title",
-    "content": "Concise, easy-to-understand summary focusing on main concepts",
-    "keyPoints": ["Simple key point 1", "Simple key point 2", "Simple key point 3", "Simple key point 4", "Simple key point 5"],
-    "mainTopics": ["Main Topic 1", "Main Topic 2", "Main Topic 3"],
+    "title": "Clear, descriptive title (max 200 characters)",
+    "content": "Concise, easy-to-understand summary focusing on main concepts (max 10000 characters)",
+    "keyPoints": ["Simple key point 1 (max 500 chars)", "Simple key point 2", "Simple key point 3", "Simple key point 4", "Simple key point 5"],
+    "mainTopics": ["Topic 1 (max 100 chars)", "Topic 2 (max 100 chars)", "Topic 3 (max 100 chars)"],
     "wordCount": ${maxLength},
     "readingTime": 2,
     "difficulty": "easy|medium|hard",
     "subject": "${subject || 'General'}",
     "summaryType": "${summaryType}",
-    "tags": ["relevant", "searchable", "tags"],
+    "tags": ["tag1", "tag2", "tag3"],
     "confidence": 0.9
   }
 }
+
+CRITICAL LENGTH CONSTRAINTS:
+- title: Maximum 200 characters
+- content: Maximum 10,000 characters
+- keyPoints: Each point maximum 500 characters
+- mainTopics: Each topic maximum 100 characters (KEEP THESE SHORT - just the topic name, not a description!)
+- tags: Each tag maximum 50 characters
+
+IMPORTANT: mainTopics should be SHORT topic names only (e.g., "Career Development", "Programming Basics", "Study Techniques"), NOT long descriptions or sentences!
 
 QUALITY REQUIREMENTS:
 1. Summary must be CONCISE and focused on main concepts
@@ -231,7 +240,41 @@ CRITICAL OUTPUT FORMAT:
         throw new Error('Invalid response structure - missing summary field');
       }
 
-      return parsed as { summary: GeneratedSummary };
+      // Enforce length constraints to prevent validation errors
+      const summary = parsed.summary;
+      
+      // Truncate title if too long
+      if (summary.title && summary.title.length > 200) {
+        summary.title = summary.title.substring(0, 197) + '...';
+      }
+      
+      // Truncate content if too long
+      if (summary.content && summary.content.length > 10000) {
+        summary.content = summary.content.substring(0, 9997) + '...';
+      }
+      
+      // Truncate key points if too long
+      if (Array.isArray(summary.keyPoints)) {
+        summary.keyPoints = summary.keyPoints.map((point: string) => 
+          point && point.length > 500 ? point.substring(0, 497) + '...' : point
+        );
+      }
+      
+      // Truncate main topics if too long (this is the critical fix)
+      if (Array.isArray(summary.mainTopics)) {
+        summary.mainTopics = summary.mainTopics.map((topic: string) => 
+          topic && topic.length > 100 ? topic.substring(0, 97) + '...' : topic
+        );
+      }
+      
+      // Truncate tags if too long
+      if (Array.isArray(summary.tags)) {
+        summary.tags = summary.tags.map((tag: string) => 
+          tag && tag.length > 50 ? tag.substring(0, 47) + '...' : tag
+        );
+      }
+
+      return { summary } as { summary: GeneratedSummary };
 
     } catch (error) {
       logger.error('Failed to parse AI response:', {

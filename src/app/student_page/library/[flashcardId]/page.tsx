@@ -9,12 +9,8 @@ import {
 } from "next/navigation";
 import api from "@/lib/api";
 import {
-  Share2,
   Settings,
   FileStack,
-  Lightbulb,
-  ArrowLeftRight,
-  NotebookPen,
   RotateCcw,
   MoreHorizontal,
   Star,
@@ -25,6 +21,7 @@ import Image from "next/image";
 import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2"; // added import
 import PrimaryActionButton from "@/components/ui/buttons/PrimaryActionButton";
 import { Chip } from "@/components/ui/chip";
+import Modal from "@/components/ui/Modal";
 
 type FlashcardCard = {
   _id: string;
@@ -82,21 +79,11 @@ export default function FlashcardDetailPage() {
   const pathname = usePathname();
   const flashcardId = params.flashcardId as string;
 
-  // Color-coded icon classes for each tab
+  // Color-coded icon classes for each tab (only Flashcards kept)
   const tabIconColor = (label: string, isActive: boolean) => {
     const dim = isActive ? "" : " opacity-80";
-    switch (label) {
-      case "Flashcards":
-        return `text-sky-600 dark:text-sky-400${dim}`;
-      case "Learn":
-        return `text-violet-600 dark:text-violet-400${dim}`;
-      case "Match":
-        return `text-emerald-600 dark:text-emerald-400${dim}`;
-      case "Test":
-        return `text-cyan-600 dark:text-cyan-400${dim}`;
-      default:
-        return dim.trim();
-    }
+    if (label === "Flashcards") return `text-sky-600 dark:text-sky-400${dim}`;
+    return dim.trim();
   };
 
   useEffect(() => {
@@ -126,9 +113,7 @@ export default function FlashcardDetailPage() {
     description: "",
     tags: [] as string[],
     difficulty: "easy" as "easy" | "medium" | "hard",
-    accessType: "private" as "private" | "public",
-    sharingMode: undefined as "restricted" | "anyone_with_link" | undefined,
-    password: "",
+    // accessType, sharingMode and password removed
     linkRole: "viewer" as "viewer" | "editor",
     publicRole: "viewer" as "viewer" | "editor",
   });
@@ -186,9 +171,6 @@ export default function FlashcardDetailPage() {
           description: data.flashcard.description || "",
           tags: data.flashcard.tags || [],
           difficulty: data.flashcard.difficulty || "easy",
-          accessType: data.flashcard.accessType || "private",
-          sharingMode: data.flashcard.sharingMode,
-          password: "",
           linkRole: data.flashcard.linkRole || "viewer",
           publicRole: data.flashcard.publicRole || "viewer",
         });
@@ -254,9 +236,7 @@ export default function FlashcardDetailPage() {
             tags: editForm.tags,
             difficulty: editForm.difficulty,
             cards: flashcard.cards, // Keep existing cards
-            accessType: editForm.accessType,
-            sharingMode: editForm.sharingMode,
-            password: editForm.password || undefined,
+            // accessType/sharingMode/password removed
             linkRole: editForm.linkRole,
             publicRole: editForm.publicRole,
           }),
@@ -591,9 +571,7 @@ export default function FlashcardDetailPage() {
         description: flashcard.description || "",
         tags: flashcard.tags || [],
         difficulty: flashcard.difficulty || "easy",
-        accessType: flashcard.accessType || "private",
-        sharingMode: flashcard.sharingMode,
-        password: "",
+        // accessType/sharingMode/password removed
         linkRole: flashcard.linkRole || "viewer",
         publicRole: flashcard.publicRole || "viewer",
       });
@@ -675,13 +653,6 @@ export default function FlashcardDetailPage() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => setShowSharingModal(true)}
-              aria-label="Share"
-              className="p-2 sm:p-2.5 bg-teal-600 text-white rounded-xl hover:brightness-110 transition-all shadow-sm"
-            >
-              <Share2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-            <button
               onClick={() => setIsEditing(true)}
               aria-label="Settings"
               className="p-2 sm:p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:border-teal-600/30 hover:text-teal-600 transition-all shadow-sm"
@@ -715,13 +686,6 @@ export default function FlashcardDetailPage() {
                     href: `${base}/flashcard`,
                     Icon: FileStack,
                   },
-                  { label: "Learn", href: `${base}/learn`, Icon: Lightbulb },
-                  {
-                    label: "Match",
-                    href: `${base}/match`,
-                    Icon: ArrowLeftRight,
-                  },
-                  { label: "Test", href: `${base}/test`, Icon: NotebookPen },
                 ];
                 return tabs.map(({ label, href, Icon }) => {
                   const isActive = pathname?.startsWith(href);
@@ -1069,354 +1033,178 @@ export default function FlashcardDetailPage() {
         </div>
       </div>
 
-      {/* Card Edit Drawer (modern, right-side) */}
-      {(isAddingCard || editingCardId) && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/20 sm:bg-black/40" onClick={cancelCardEdit} />
-          <div className="w-full sm:w-[480px] lg:w-[520px] bg-white dark:bg-slate-900 shadow-2xl p-4 sm:p-6 overflow-auto">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {isAddingCard ? "Add Card" : "Edit Card"}
-              </h3>
+      {/* Card Edit Modal (converted from right-side drawer to Modal for library consistency) */}
+      <Modal
+        isOpen={Boolean(isAddingCard || editingCardId)}
+        onClose={cancelCardEdit}
+        title={isAddingCard ? "Add Card" : "Edit Card"}
+        maxWidth="max-w-xl"
+        footer={
+          <>
+            <button
+              onClick={cancelCardEdit}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm sm:text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors mr-3"
+            >
+              Cancel
+            </button>
+            {isAddingCard ? (
               <button
-                onClick={cancelCardEdit}
-                className="text-slate-500 hover:text-slate-900 dark:hover:text-white p-1"
+                onClick={handleAddCard}
+                disabled={!cardForm.question || !cardForm.answer}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-teal-600 text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium hover:bg-teal-700 transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                Add Card
+              </button>
+            ) : (
+              <button
+                onClick={() => editingCardId && handleEditCard(editingCardId)}
+                disabled={!cardForm.question || !cardForm.answer}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-teal-600 text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium hover:bg-teal-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            )}
+          </>
+        }
+      >
+        <div className="space-y-4 sm:space-y-6">
+          <label className="block">
+            <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Question</div>
+            <textarea
+              value={cardForm.question}
+              onChange={(e) => setCardForm((prev) => ({ ...prev, question: e.target.value }))}
+              rows={3}
+              className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
+              placeholder="Enter question (can be long, supports formatting)"
+            />
+          </label>
+
+          <label className="block">
+            <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Answer</div>
+            <textarea
+              value={cardForm.answer}
+              onChange={(e) => setCardForm((prev) => ({ ...prev, answer: e.target.value }))}
+              rows={3}
+              className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
+              placeholder="Enter answer"
+            />
+          </label>
+
+          {/* Image URL input removed per request */}
+        </div>
+      </Modal>
+
+      {/* Edit Set Modal (converted to shared Modal for consistency with Library) */}
+      <Modal
+        isOpen={isEditing}
+        onClose={cancelEditSet}
+        title="Flashcard Set Settings"
+        maxWidth="max-w-3xl"
+        footer={
+          <div className="w-full flex items-center justify-between gap-3">
+            <div>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                {isDeleting ? "Deleting..." : "Delete Flashcard Set"}
               </button>
             </div>
 
-            <div className="space-y-4 sm:space-y-6">
-              <label className="block">
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                  Question
-                </div>
-                <textarea
-                  value={cardForm.question}
-                  onChange={(e) =>
-                    setCardForm((prev) => ({
-                      ...prev,
-                      question: e.target.value,
-                    }))
-                  }
-                  rows={3}
-                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
-                  placeholder="Enter question (can be long, supports formatting)"
-                ></textarea>
-              </label>
-
-              <label className="block">
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                  Answer
-                </div>
-                <textarea
-                  value={cardForm.answer}
-                  onChange={(e) =>
-                    setCardForm((prev) => ({ ...prev, answer: e.target.value }))
-                  }
-                  rows={3}
-                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
-                  placeholder="Enter answer"
-                ></textarea>
-              </label>
-
-              <label className="block">
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                  Image URL (optional)
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <input
-                    type="url"
-                    value={cardForm.image}
-                    onChange={(e) =>
-                      setCardForm((prev) => ({
-                        ...prev,
-                        image: e.target.value,
-                      }))
-                    }
-                    placeholder="https://example.com/image.jpg"
-                    className="flex-1 p-2.5 sm:p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm sm:text-base"
-                  />
-                  {cardForm.image && (
-                    <div className="flex justify-center sm:justify-start">
-                      <Image
-                        src={cardForm.image}
-                        alt="preview"
-                        width={80}
-                        height={80}
-                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display =
-                            "none";
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </label>
-
-              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <button
-                  onClick={cancelCardEdit}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm sm:text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                {isAddingCard ? (
-                  <button
-                    onClick={handleAddCard}
-                    disabled={!cardForm.question || !cardForm.answer}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-teal-600 text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium hover:bg-teal-700 transition-colors"
-                  >
-                    Add Card
-                  </button>
-                ) : (
-                  <button
-                    onClick={() =>
-                      editingCardId && handleEditCard(editingCardId)
-                    }
-                    disabled={!cardForm.question || !cardForm.answer}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={cancelEditSet}
+                className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await handleEdit();
+                }}
+                disabled={!editForm.title.trim()}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors text-sm font-medium"
+              >
+                Save Changes
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        }
+      >
+        <div className="space-y-4 sm:space-y-6 p-1">
+          <label className="block">
+            <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Title</div>
+            <input
+              value={editForm.title}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
+              className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
+            />
+          </label>
 
-      {/* Edit Set Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={cancelEditSet}
-          />
-          <div className="relative z-50 max-w-3xl w-full bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-            <div className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Flashcard Set Settings
-                </h2>
-                <button
-                  onClick={cancelEditSet}
-                  className="text-slate-500 hover:text-slate-800 dark:hover:text-white p-1"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+          <label className="block">
+            <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Description</div>
+            <textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+              rows={3}
+              className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
+            />
+          </label>
 
-              <div className="space-y-4 sm:space-y-6">
-                <label className="block">
-                  <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                    Title
-                  </div>
-                  <input
-                    value={editForm.title}
-                    onChange={(e) =>
-                      setEditForm((prev) => ({
-                        ...prev,
-                        title: e.target.value,
-                      }))
-                    }
-                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                  />
-                </label>
+          <label className="block">
+            <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Tags (comma separated)</div>
+            <input
+              value={editForm.tags.join(", ")}
+              onChange={(e) => handleTagChange(e.target.value)}
+              className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
+            />
+          </label>
 
-                <label className="block">
-                  <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                    Description
-                  </div>
-                  <textarea
-                    value={editForm.description}
-                    onChange={(e) =>
-                      setEditForm((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    rows={3}
-                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
-                  />
-                </label>
-
-                <label className="block">
-                  <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                    Tags (comma separated)
-                  </div>
-                  <input
-                    value={editForm.tags.join(", ")}
-                    onChange={(e) => handleTagChange(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                  />
-                </label>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
-                      Difficulty
-                    </label>
-                    <select
-                      value={editForm.difficulty}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          difficulty: e.target.value as
-                            | "easy"
-                            | "medium"
-                            | "hard",
-                        }))
-                      }
-                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                    >
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
-                      Access
-                    </label>
-                    <select
-                      value={editForm.accessType}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          accessType: e.target.value as "private" | "public",
-                        }))
-                      }
-                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                    >
-                      <option value="private">Private</option>
-                      <option value="public">Public</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
-                      Sharing Mode
-                    </label>
-                    <select
-                      value={editForm.sharingMode ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value || undefined;
-                        setEditForm((prev) => ({
-                          ...prev,
-                          sharingMode: val as
-                            | "restricted"
-                            | "anyone_with_link"
-                            | undefined,
-                        }));
-                      }}
-                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                    >
-                      <option value="">None</option>
-                      <option value="restricted">Restricted</option>
-                      <option value="anyone_with_link">Anyone with link</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
-                      Password (optional)
-                    </label>
-                    <input
-                      type="password"
-                      value={editForm.password}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          password: e.target.value,
-                        }))
-                      }
-                      className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                    />
-                  </div>
-                </div>
-
-                <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <input
-                    type="checkbox"
-                    checked={trackProgress}
-                    onChange={() => setTrackProgress((v) => !v)}
-                    className="w-4 h-4 text-teal-600 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600 rounded focus:ring-teal-600 focus:ring-2"
-                  />
-                  <span className="text-sm text-slate-700 dark:text-slate-200">
-                    Enable progress tracking
-                  </span>
-                </label>
-
-                {/* Collaborators Section */}
-                {flashcard.sharedUsers && flashcard.sharedUsers.length > 0 && (
-                  <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
-                      Collaborators
-                    </h3>
-                    <div className="space-y-2">
-                      {flashcard.sharedUsers.map((u, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
-                        >
-                          <div>
-                            <div className="font-medium text-slate-900 dark:text-slate-100 text-sm">
-                              {u.email}
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 capitalize">
-                              {u.role} • {u.status}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeSharedUser(i)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors text-sm sm:text-base font-medium"
-                  >
-                    {isDeleting ? "Deleting..." : "Delete Flashcard Set"}
-                  </button>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={cancelEditSet}
-                      className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm sm:text-base font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await handleEdit();
-                      }}
-                      disabled={!editForm.title.trim()}
-                      className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors text-sm sm:text-base font-medium"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">Difficulty</label>
+              <select
+                value={editForm.difficulty}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, difficulty: e.target.value as "easy" | "medium" | "hard" }))}
+                className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
             </div>
           </div>
+
+          <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <input
+              type="checkbox"
+              checked={trackProgress}
+              onChange={() => setTrackProgress((v) => !v)}
+              className="w-4 h-4 text-teal-600 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600 rounded focus:ring-teal-600 focus:ring-2"
+            />
+            <span className="text-sm text-slate-700 dark:text-slate-200">Enable progress tracking</span>
+          </label>
+
+          {/* Collaborators Section */}
+          {flashcard.sharedUsers && flashcard.sharedUsers.length > 0 && (
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Collaborators</h3>
+              <div className="space-y-2">
+                {flashcard.sharedUsers.map((u, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-slate-100 text-sm">{u.email}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 capitalize">{u.role} • {u.status}</div>
+                    </div>
+                    <button onClick={() => removeSharedUser(i)} className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium">Remove</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </Modal>
 
       {/* Sharing Modal (kept but styled) */}
       {showSharingModal && (
@@ -1441,79 +1229,7 @@ export default function FlashcardDetailPage() {
                 </button>
               </div>
 
-              {/* (Re-using existing share UI with modern spacing) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">Access</label>
-                  <select
-                    value={editForm.accessType}
-                    onChange={(e) =>
-                      setEditForm((prev) => ({
-                        ...prev,
-                        accessType: e.target.value as "private" | "public",
-                      }))
-                    }
-                    className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                  >
-                    <option value="private">Private</option>
-                    <option value="public">Public</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">Sharing Mode</label>
-                  <select
-                    value={editForm.sharingMode || ""}
-                    onChange={(e) =>
-                      setEditForm((prev) => ({
-                        ...prev,
-                        sharingMode: e.target.value as
-                          | "restricted"
-                          | "anyone_with_link"
-                          | undefined,
-                      }))
-                    }
-                    className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                  >
-                    <option value="">None</option>
-                    <option value="restricted">Restricted</option>
-                    <option value="anyone_with_link">Anyone with link</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Link option */}
-              {editForm.accessType === "public" &&
-                editForm.sharingMode === "anyone_with_link" && (
-                  <div className="mt-4 sm:mt-6">
-                    <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">
-                      Shareable Link
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                      <input
-                        readOnly
-                        value={
-                          flashcard?.shareableLink
-                            ? `${window.location.origin}/student_page/library/${flashcardId}?token=${flashcard.shareableLink}`
-                            : "No link generated"
-                        }
-                        className="flex-1 p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                      />
-                      <button
-                        onClick={() => {
-                          if (flashcard?.shareableLink)
-                            copyToClipboard(
-                              `${window.location.origin}/student_page/library/${flashcardId}?token=${flashcard.shareableLink}`
-                            );
-                          else generateShareableLink();
-                        }}
-                        className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base font-medium"
-                      >
-                        {flashcard?.shareableLink ? "Copy Link" : "Generate Link"}
-                      </button>
-                    </div>
-                  </div>
-                )}
+              {/* Sharing options removed */}
 
               <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                 <button

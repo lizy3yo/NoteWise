@@ -8,9 +8,11 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   maxWidth?: string;
+  // Optional custom footer. If provided, it will replace the default Close button footer.
+  footer?: React.ReactNode;
 }
 
-export default function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-4xl" }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-4xl", footer }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -73,12 +75,16 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = "ma
 
           {/* Footer */}
           <div className="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
-            >
-              Close
-            </button>
+            {footer ? (
+              footer
+            ) : (
+              <button
+                onClick={onClose}
+                className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       </div>

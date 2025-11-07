@@ -72,15 +72,32 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const [userImage, setUserImage] = useState<string | null>(null); // << new state
   const [currentTime, setCurrentTime] = useState<string>("");
   const { alert, showAlert, showError, showSuccess, showWarning, showInfo, hideAlert } = useAlert();
+  
+  // Use a ref to track if we're already handling an alert to prevent loops
+  const isHandlingAlertRef = useRef(false);
 
   // Listen for global alert events (dispatched by useAlert in other components)
   useEffect(() => {
     const handler = (e: Event) => {
+      // Prevent infinite loop by checking if we're already handling an alert
+      if (isHandlingAlertRef.current) return;
+      
       const ce = e as CustomEvent | any;
       const detail = ce?.detail;
       if (!detail) return;
       const { type, message, title } = detail;
-      if (typeof showAlert === 'function') showAlert(type, message, title);
+      
+      // Set flag to prevent re-entry
+      isHandlingAlertRef.current = true;
+      
+      if (typeof showAlert === 'function') {
+        showAlert(type, message, title);
+      }
+      
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isHandlingAlertRef.current = false;
+      }, 100);
     };
 
     window.addEventListener('notewise:alert', handler as EventListener);
