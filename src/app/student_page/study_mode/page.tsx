@@ -32,6 +32,91 @@ function StudyModeContent() {
   // flashcard options
   const [maxCards, setMaxCards] = useState<number>(20);
 
+  // localStorage keys for persisting options
+  const SUMMARY_OPTIONS_KEY = 'study_mode_summary_options_v1';
+  const FLASHCARD_OPTIONS_KEY = 'study_mode_flashcard_options_v1';
+  // keep loaded values so we can switch the customTitle when toggling createType
+  const loadedSummaryRef = React.useRef<{ summaryType?: string; summaryLength?: string; title?: string } | null>(null);
+  const loadedFlashRef = React.useRef<{ maxCards?: number; title?: string } | null>(null);
+
+  // Load saved options on mount
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem(SUMMARY_OPTIONS_KEY);
+      if (s) {
+        const parsed = JSON.parse(s || '{}');
+        if (parsed.summaryType) setSummaryType(parsed.summaryType);
+        if (parsed.summaryLength) setSummaryLength(parsed.summaryLength);
+        if (parsed.title) {
+          // don't overwrite current customTitle yet; store for switching
+          loadedSummaryRef.current = { summaryType: parsed.summaryType, summaryLength: parsed.summaryLength, title: parsed.title };
+        }
+      }
+    } catch (e) {
+      // ignore localStorage errors
+    }
+    try {
+      const f = localStorage.getItem(FLASHCARD_OPTIONS_KEY);
+      if (f) {
+        const parsed = JSON.parse(f || '{}');
+        if (parsed.maxCards) setMaxCards(Number(parsed.maxCards));
+        if (parsed.title) {
+          loadedFlashRef.current = { maxCards: Number(parsed.maxCards), title: parsed.title };
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // initialize customTitle from whichever matches the currently selected createType
+    try {
+      if (createType === 'summary') {
+        const v = loadedSummaryRef.current?.title;
+        if (v) setCustomTitle(v);
+        else if (loadedFlashRef.current?.title) setCustomTitle(loadedFlashRef.current.title);
+      } else {
+        const v = loadedFlashRef.current?.title;
+        if (v) setCustomTitle(v);
+        else if (loadedSummaryRef.current?.title) setCustomTitle(loadedSummaryRef.current.title);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  // When createType changes, restore the title for that type if we previously loaded one
+  useEffect(() => {
+    try {
+      if (createType === 'summary') {
+        if (loadedSummaryRef.current?.title) setCustomTitle(loadedSummaryRef.current.title as string);
+      } else {
+        if (loadedFlashRef.current?.title) setCustomTitle(loadedFlashRef.current.title as string);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [createType]);
+
+  // Persist summary options when they change
+  useEffect(() => {
+    try {
+      const obj = { summaryType, summaryLength, title: customTitle };
+      localStorage.setItem(SUMMARY_OPTIONS_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // ignore
+    }
+  }, [summaryType, summaryLength, customTitle]);
+
+  // Persist flashcard options when they change
+  useEffect(() => {
+    try {
+      const obj = { maxCards, title: customTitle };
+      localStorage.setItem(FLASHCARD_OPTIONS_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // ignore
+    }
+  }, [maxCards, customTitle]);
+
   // Get userId on component mount
   useEffect(() => {
     async function getUserId() {
