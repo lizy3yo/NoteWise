@@ -157,14 +157,39 @@ export default function PracticeTestsPage() {
           const maybe = await res.json().catch(() => ({} as unknown));
           throw new Error(maybe?.message || `Failed to load flashcards (${res.status})`);
         }
-        const data = (await res.json()) as { flashcards?: FlashcardItem[] };
+
+        // parse JSON safely — guard against HTML error pages returning 200
+        let data: any = {};
+        try {
+          data = await res.json();
+        } catch (parseErr) {
+          try {
+            const text = await res.text();
+            console.warn('practice_tests: flashcards response not JSON — body starts with:', (text || '').slice(0, 200));
+          } catch (tErr) {
+            // ignore
+          }
+          data = {};
+        }
+
         if (!mounted) return;
         setFlashcards(Array.isArray(data?.flashcards) ? data.flashcards : []);
 
         // Fetch summaries
         const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, { cache: "no-store" });
         if (summariesRes.ok) {
-          const summariesData = await summariesRes.json();
+          let summariesData: any = {};
+          try {
+            summariesData = await summariesRes.json();
+          } catch (parseErr) {
+            try {
+              const text = await summariesRes.text();
+              console.warn('practice_tests: summaries response not JSON — body starts with:', (text || '').slice(0,200));
+            } catch (tErr) {
+              // ignore
+            }
+            summariesData = {};
+          }
           if (mounted && summariesData.success) {
             setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
           }
@@ -174,7 +199,18 @@ export default function PracticeTestsPage() {
         try {
           const foldersRes = await fetch(`/api/student_page/folder?userId=${uid}`, { cache: "no-store" });
           if (foldersRes.ok) {
-            const foldersData = await foldersRes.json();
+            let foldersData: any = {};
+            try {
+              foldersData = await foldersRes.json();
+            } catch (parseErr) {
+              try {
+                const text = await foldersRes.text();
+                console.warn('practice_tests: folders response not JSON — body starts with:', (text || '').slice(0,200));
+              } catch (tErr) {
+                // ignore
+              }
+              foldersData = {};
+            }
             if (mounted) {
               setFolders(Array.isArray(foldersData?.folders) ? foldersData.folders : []);
             }
@@ -690,12 +726,6 @@ export default function PracticeTestsPage() {
                       </button>
                     </div>
                   ))}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                  >
-                    + Add more files
-                  </button>
                 </div>
               )}
             </div>

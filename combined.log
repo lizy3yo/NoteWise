@@ -3854,3 +3854,98 @@
 {"timestamp":"2025-11-07T08:37:07.289Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
 {"timestamp":"2025-11-07T08:37:07.289Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-07T08:37:07.647Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:39:00.247Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:00.248Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:00.580Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:39:02.720Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:39:02.732Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:02.732Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:03.195Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:39:03.211Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:03.212Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:14.002Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:14.002Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:39:14.657Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:40:19.224Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:40:19.243Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:40:19.245Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:40:19.841Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T08:40:19.862Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:40:19.863Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:40:22.320Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:40:22.322Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T08:40:22.672Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:10:29.442Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:10:29.455Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:29.456Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:29.904Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:10:29.931Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:29.932Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:33.320Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:33.321Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:33.970Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:10:37.150Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:37.150Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:37.467Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:10:40.694Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:40.695Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:10:41.010Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:08.301Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:08.323Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:08.324Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:08.685Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:08.708Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:08.708Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:21.975Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:21.975Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:22.296Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:32.573Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:32.574Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:32.912Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:49.668Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:49.669Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:50.309Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:55.120Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:55.136Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:55.137Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:55.567Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:11:55.595Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:11:55.596Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:12:01.691Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:12:01.692Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:12:02.013Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:18:01.486Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:18:01.487Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:18:01.853Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:18:10.528Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:18:10.529Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:18:10.864Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:18:20.148Z","level":"info","message":"Practice test generation request","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","source":"upload","flashcardCount":0,"hasText":false}}
+{"timestamp":"2025-11-07T09:18:20.148Z","level":"info","message":"Processing uploaded file for practice test","service":"gc-quest-api","meta":{"fileName":"GCQuest.pdf","fileSize":350757,"fileType":"application/pdf"}}
+{"timestamp":"2025-11-07T09:18:20.338Z","level":"info","message":"Successfully extracted text from PDF","service":"gc-quest-api","meta":{"pages":2,"contentLength":3150}}
+{"timestamp":"2025-11-07T09:18:20.339Z","level":"info","message":"PracticeTestGenerator initialized","service":"gc-quest-api","meta":{"hasPracticeTestKey":true,"hasBackupKey":false,"keyPreview":"AIzaSyArBa...","keyLength":39}}
+{"timestamp":"2025-11-07T09:18:20.340Z","level":"info","message":"Generating practice test with AI","service":"gc-quest-api","meta":{"contentLength":3150,"maxQuestions":20,"difficulty":"medium","includeMultipleChoice":true,"includeWritten":true}}
+{"timestamp":"2025-11-07T09:18:42.803Z","level":"info","message":"AI response received for practice test","service":"gc-quest-api","meta":{"responseLength":13456}}
+{"timestamp":"2025-11-07T09:18:42.804Z","level":"info","message":"Practice test validation passed","service":"gc-quest-api","meta":{"multipleChoiceCount":14,"writtenCount":6,"totalPoints":70}}
+{"timestamp":"2025-11-07T09:18:42.805Z","level":"info","message":"Practice test generation completed successfully","service":"gc-quest-api","meta":{"multipleChoiceCount":14,"writtenCount":6,"totalPoints":70}}
+{"timestamp":"2025-11-07T09:18:42.805Z","level":"info","message":"Practice test generated successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","processingTime":22466,"multipleChoiceCount":14,"writtenCount":6,"totalPoints":70,"subject":"Educational Technology"}}
+{"timestamp":"2025-11-07T09:18:43.216Z","level":"info","message":"Practice test saved to library","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","testId":"690db9730946bec0dc000e7f","title":"GCQuest.pdf - Practice Test","questionCount":20}}
+{"timestamp":"2025-11-07T09:20:41.589Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:20:41.589Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:20:42.223Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:21:26.050Z","level":"info","message":"Test submission recorded","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","submissionId":"690dba150946bec0dc000e96","score":23,"pointsEarned":16,"totalPoints":70}}
+{"timestamp":"2025-11-07T09:21:55.667Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:21:55.668Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:21:56.302Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:22:33.442Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:33.443Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:34.087Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:22:36.769Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:36.770Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:37.087Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:22:44.168Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:22:44.191Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:44.191Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:44.556Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-07T09:22:44.578Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-07T09:22:44.579Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweedd\" - Subject: \"MISSING\"","service":"gc-quest-api"}

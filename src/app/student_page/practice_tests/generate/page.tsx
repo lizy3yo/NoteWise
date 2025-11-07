@@ -49,8 +49,7 @@ function GeneratePracticeTestContent() {
   const [isPublic, setIsPublic] = useState(false); // New state for public/private selection
 
   // Subject/class selection
-  const [subject, setSubject] = useState('');
-  const [userSubjects, setUserSubjects] = useState<string[]>([]);
+  // subject removed from modal per request
 
   // Customization options
   const [maxQuestions, setMaxQuestions] = useState(20);
@@ -65,30 +64,7 @@ function GeneratePracticeTestContent() {
   const sets = searchParams.get('sets');
 
   // Fetch user's enrolled classes to get subjects
-  const fetchUserSubjects = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      
-      const response = await fetch('/api/student_page/class?active=true', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        credentials: 'include'
-      });
-      
-      const data = await response.json();
-      
-      if (data.success && data.data.classes) {
-        const subjects = data.data.classes.map((cls: any) => cls.subject as string);
-        const uniqueSubjects = Array.from(new Set(subjects)) as string[];
-        setUserSubjects(uniqueSubjects);
-      }
-    } catch (error) {
-      console.error('Error fetching user subjects:', error);
-    }
-  };
+  // no subject selection needed here
 
   useEffect(() => {
     // Get userId - try from API first, then localStorage
@@ -116,10 +92,7 @@ function GeneratePracticeTestContent() {
       }
       setUserId(uid);
       
-      // Fetch user's enrolled classes
-      if (uid) {
-        fetchUserSubjects();
-      }
+      // no subject fetch needed for modal
     }
     getUserId();
     
@@ -188,8 +161,7 @@ function GeneratePracticeTestContent() {
         formData.append('includeWritten', includeWritten.toString());
         formData.append('difficulty', difficulty);
         formData.append('timeLimit', timeLimit.toString());
-        if (customTitle) formData.append('title', customTitle);
-        if (subject) formData.append('subject', subject);
+  if (customTitle) formData.append('title', customTitle);
 
         fetchOptions = {
           method: 'POST',
@@ -214,7 +186,7 @@ function GeneratePracticeTestContent() {
           }
           requestBody.source = 'paste';
           requestBody.pastedText = text;
-          if (subject) requestBody.subject = subject;
+          // subject removed from modal per request
         } else if (sets) {
           const flashcardIds = sets.split(',');
           requestBody.source = 'flashcards';
@@ -290,9 +262,14 @@ function GeneratePracticeTestContent() {
 
   const handleViewInLibrary = () => {
     if (!practiceTest) return;
-    
-    // Navigate to library
-    router.push(`/student_page/library?tab=practice_tests&subject=${encodeURIComponent(practiceTest.subject)}`);
+
+    // Navigate to the library page and open the practice_tests tab.
+    // Include subject if available so the library can pre-filter to the related subject.
+    let url = '/student_page/library?tab=practice_tests';
+    if (practiceTest.subject) {
+      url += `&subject=${encodeURIComponent(practiceTest.subject)}`;
+    }
+    router.push(url);
   };
 
 
@@ -333,36 +310,7 @@ function GeneratePracticeTestContent() {
                   />
                 </div>
 
-                {/* Subject/Class Selection - Only show for upload and paste sources */}
-                {(source === 'upload' || source === 'paste') && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Subject/Class <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      required
-                      className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    >
-                      <option value="">Select subject (required)</option>
-                      {userSubjects.length > 0 ? (
-                        userSubjects.map((subj, index) => (
-                          <option key={index} value={subj}>
-                            {subj}
-                          </option>
-                        ))
-                      ) : (
-                        <option disabled>No enrolled classes found</option>
-                      )}
-                    </select>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {userSubjects.length > 0 
-                        ? 'Select the class/subject for this practice test' 
-                        : 'Please enroll in a class first'}
-                    </p>
-                  </div>
-                )}
+                {/* Subject/Class selection removed from modal */}
 
                 {/* Questions */}
                 <div>
@@ -499,18 +447,13 @@ function GeneratePracticeTestContent() {
                   </button>
                   <button
                     onClick={handleGenerate}
-                    disabled={
-                      (!includeMultipleChoice && !includeWritten) ||
-                      ((source === 'upload' || source === 'paste') && !subject)
-                    }
+                    disabled={(!includeMultipleChoice && !includeWritten)}
                     className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all"
                   >
                     Generate Test
                   </button>
                 </div>
-                {((source === 'upload' || source === 'paste') && !subject) && (
-                  <p className="text-sm text-red-600 text-center">Please select a subject/class to continue</p>
-                )}
+                {/* Subject validation removed */}
               </div>
             </div>
           </div>
@@ -622,7 +565,7 @@ function GeneratePracticeTestContent() {
               onClick={handleViewInLibrary}
               className="flex-1 px-8 py-4 rounded-xl border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
             >
-              View in {isPublic ? 'Public' : 'Private'} Library
+              Library
             </button>
           </div>
 
