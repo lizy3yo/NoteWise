@@ -31,7 +31,7 @@ type SummaryItem = {
 
 export default function PracticeTestsPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<"sets" | "notes" | "upload" | "paste" | "drive">("sets");
+  const [tab, setTab] = useState<"sets" | "notes" | "upload" | "paste" | "drive">("upload");
   const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
   const [summaries, setSummaries] = useState<SummaryItem[]>([]);
   const [folders, setFolders] = useState<any[]>([]);
@@ -379,7 +379,7 @@ export default function PracticeTestsPage() {
           <div className="mb-8 bg-transparent">
           <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
             {['upload', 'paste', 'sets', 'notes'].map((t) => {
-              const label = t === 'sets' ? 'Flashcard sets' : t === 'notes' ? 'Study notes sets' : t === 'upload' ? 'Upload files' : 'Paste text';
+              const label = t === 'sets' ? 'Flashcard sets' : t === 'notes' ? 'Summary sets' : t === 'upload' ? 'Upload files' : 'Paste text';
               return (
                 <button
                   key={t}
