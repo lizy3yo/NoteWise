@@ -2588,7 +2588,11 @@ function PrivateLibraryContent() {
                             <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-4 bg-slate-50 dark:bg-slate-900/30">
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-visible">
                                 {uncategorizedFlashcards.map((item) => (
-                                  <div key={`uncat-fav-flash-${item._id}`} onClick={() => router.push(`/student_page/library/${item._id}`)} className="bg-white dark:bg-slate-800 border rounded-xl p-3 cursor-pointer relative">
+                                  <div
+                                    key={`uncat-fav-flash-${item._id}`}
+                                    onClick={() => router.push(`/student_page/library/${item._id}`)}
+                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                  >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
                                       onClick={(e) => { e.stopPropagation(); toggleFavorite(item._id, 'flashcard', item.isFavorite || false); }}
@@ -2621,18 +2625,27 @@ function PrivateLibraryContent() {
                                     )}
                                   </div>
 
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-1 sm:gap-2">
+                                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                       <div className="w-2 h-2 bg-blue-500 rounded-full" />
                                       <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
                                     </div>
                                   </div>
-                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                  <div className="mb-2 sm:mb-3">
+                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                    {item.description && (
+                                      <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                    )}
+                                  </div>
                                 </div>
                               ))}
 
                               {uncategorizedPracticeTests.map((test) => (
-                                <div key={`uncat-fav-test-${test._id}`} onClick={() => router.push(`/student_page/practice_tests/${test._id}`)} className="bg-white dark:bg-slate-800 border rounded-xl p-3 cursor-pointer relative">
+                                <div
+                                  key={`uncat-fav-test-${test._id}`}
+                                  onClick={() => router.push(`/student_page/practice_tests/${test._id}`)}
+                                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
                                       onClick={(e) => { e.stopPropagation(); toggleFavorite(test._id, 'practice_test', test.isFavorite || false); }}
@@ -2665,18 +2678,27 @@ function PrivateLibraryContent() {
                                     )}
                                   </div>
 
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-1 sm:gap-2">
+                                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                       <div className="w-2 h-2 bg-green-500 rounded-full" />
                                       <span className="text-xs sm:text-sm font-medium text-green-500">Practice Test • {test.totalPoints} pts</span>
                                     </div>
                                   </div>
-                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{test.title}</h4>
+                                  <div className="mb-2 sm:mb-3">
+                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{test.title}</h4>
+                                    {test.description && (
+                                      <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{test.description}</p>
+                                    )}
+                                  </div>
                                 </div>
                               ))}
 
                               {uncategorizedSummaries.map((summary) => (
-                                <div key={`uncat-fav-sum-${summary._id}`} onClick={() => router.push(`/student_page/summaries/${summary._id}`)} className="bg-white dark:bg-slate-800 border rounded-xl p-3 cursor-pointer relative">
+                                <div
+                                  key={`uncat-fav-sum-${summary._id}`}
+                                  onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
+                                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
                                       onClick={(e) => { e.stopPropagation(); toggleFavorite(summary._id, 'summary', summary.isFavorite || false); }}
@@ -2709,13 +2731,15 @@ function PrivateLibraryContent() {
                                     )}
                                   </div>
 
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-1 sm:gap-2">
+                                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                       <div className="w-2 h-2 bg-purple-500 rounded-full" />
                                       <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
                                     </div>
                                   </div>
-                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                  <div className="mb-2 sm:mb-3">
+                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                  </div>
                                 </div>
                               ))}
                             </div>
