@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2"; // added import
 import { useAuth } from "@/hooks/useAuth";
+import { useAlert } from "@/hooks/useAlert";
 import { authManager } from "@/utils/auth";
 
 type FlashcardCard = {
@@ -23,6 +24,7 @@ type Flashcard = {
 
 export default function FlashcardOnlyPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { showSuccess, showError } = useAlert();
   const [flashcard, setFlashcard] = useState<Flashcard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,14 +41,14 @@ export default function FlashcardOnlyPage() {
   }, [starredIds]);
   // Options modal / settings (UI only)
   const [showOptions, setShowOptions] = useState(false);
-  const [trackProgress, setTrackProgress] = useState(true);
+  // trackProgress setting removed (UI and function removed)
   const [studyStarredOnly, setStudyStarredOnly] = useState(false);
-  const [sidePreference, setSidePreference] = useState<"term" | "definition">("term");
+  // sidePreference (Term/Definition) removed per request
   const [showBothSides, setShowBothSides] = useState(false);
-  const [keyboardShortcutsOpen, setKeyboardShortcutsOpen] = useState(false);
   const [shuffle, setShuffle] = useState(false);
   const [uid, setUid] = useState<string | null>(null); // <-- added: current user id for progress API
   const [progressLoaded, setProgressLoaded] = useState(false); // prevent init overwrite of loaded server state
+  const progressLoadAttempted = React.useRef(false); // track if we've tried to load progress (set synchronously)
   const router = useRouter();
   const params = useParams();
   const flashcardId = params.flashcardId as string;
@@ -90,6 +92,12 @@ export default function FlashcardOnlyPage() {
         const data = (await response.json()) as { flashcard: Flashcard };
         if (!mounted) return;
         setFlashcard(data.flashcard);
+        // Apply persisted starred cards ordering after flashcard is loaded
+        try {
+          await applyPersistedCardFavorites(data.flashcard, finalUid);
+        } catch (e) {
+          // ignore
+        }
       } catch (e: unknown) {
         if (!mounted) return;
         const msg = e instanceof Error ? e.message : "Failed to load flashcard.";
@@ -102,10 +110,84 @@ export default function FlashcardOnlyPage() {
     return () => { mounted = false; };
   }, [flashcardId, authLoading, isAuthenticated, user]);
 
+  // Read persisted favorite card timestamps and server progress, then apply starredIds and reorder cards
+  async function applyPersistedCardFavorites(loadedFlashcard: Flashcard, uidStr?: string) {
+    try {
+      const uidToUse = uidStr || uid;
+
+      // Try server progress first
+      if (uidToUse) {
+        try {
+          const pr = await fetch(`/api/student_page/flashcard/${loadedFlashcard._id}/progress?userId=${uidToUse}`, { cache: 'no-store' });
+          if (pr.ok) {
+            const prog = await pr.json().catch(() => ({}));
+            const progressData = prog?.progress || prog;
+            const starredIdsArray = progressData?.flashcards?.starredIds || progressData?.starredIds;
+            if (starredIdsArray && Array.isArray(starredIdsArray)) {
+              const sv = new Set<string>(starredIdsArray);
+              setStarredIds(sv);
+              
+              // Try to get timestamps from localStorage for proper ordering (newest first)
+              let starredOrder = starredIdsArray;
+              try {
+                const key = `notewise.flashcard.cardFavoriteTimestamps.${loadedFlashcard._id}.${uidToUse}`;
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                  const map = JSON.parse(raw) as Record<string, number>;
+                  const entries = Object.entries(map)
+                    .filter(([id]) => sv.has(id))
+                    .sort((a, b) => b[1] - a[1]); // newest first
+                  const orderedIds = entries.map(e => e[0]);
+                  // Include any starred IDs that don't have timestamps at the end
+                  const remainingIds = starredIdsArray.filter((id: string) => !orderedIds.includes(id));
+                  starredOrder = [...orderedIds, ...remainingIds];
+                }
+              } catch (e) {
+                // ignore, use server order as fallback
+              }
+              
+              // reorder cards so starred ones come first in timestamp order
+              const remaining = loadedFlashcard.cards.filter(c => !sv.has(c._id));
+              const starredCards = starredOrder.map((id: string) => loadedFlashcard.cards.find(c => c._id === id)).filter(Boolean) as FlashcardCard[];
+              const newCards = [...starredCards, ...remaining];
+              setFlashcard(prev => prev ? { ...prev, cards: newCards } : prev);
+              return;
+            }
+          }
+        } catch (e) {
+          // fall through to localStorage
+        }
+      }
+
+      // Fallback to localStorage timestamps
+      try {
+        const key = `notewise.flashcard.cardFavoriteTimestamps.${loadedFlashcard._id}.${uidToUse}`;
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const map = JSON.parse(raw) as Record<string, number>;
+          const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
+          const favIds = entries.map(e => e[0]);
+          setStarredIds(new Set(favIds));
+          const favSet = new Set(favIds);
+          const favCards = favIds.map(id => loadedFlashcard.cards.find(c => c._id === id)).filter(Boolean) as FlashcardCard[];
+          const remaining = loadedFlashcard.cards.filter(c => !favSet.has(c._id));
+          const newCards = [...favCards, ...remaining];
+          setFlashcard(prev => prev ? { ...prev, cards: newCards } : prev);
+        }
+      } catch (e) {
+        // ignore
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   // initialize session queue when flashcard loads or when starred/study options change
   useEffect(() => {
     if (!flashcard) return;
-    // if progress was loaded from server, do not overwrite the persisted sessionQueue
+    // if progress load was attempted, wait for it to finish
+    if (progressLoadAttempted.current && !progressLoaded) return;
+    // if progress was loaded from server, do not overwrite the persisted sessionQueue  
     if (progressLoaded) return;
     const total = flashcard.cards.length;
     setInitialTotal(total);
@@ -117,13 +199,13 @@ export default function FlashcardOnlyPage() {
       indices = indices.filter(i => starredIds.has(flashcard.cards[i]._id));
     }
 
-    // NOTE: do not auto-shuffle when the toggle changes. user must press "Shuffle now".
+  // NOTE: toggling shuffle via the header control applies it immediately.
     setSessionQueue(indices);
     setViewerPos(0);
     setIsShowingAnswer(false);
     // keep starredIds as-is (separate feature)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flashcard, studyStarredOnly, shuffle, starredIdsKey, progressLoaded]);
+  }, [flashcard, studyStarredOnly, shuffle, starredIdsKey]);
 
   const currentCard = flashcard?.cards?.[sessionQueue[viewerPos]];
 
@@ -155,12 +237,69 @@ export default function FlashcardOnlyPage() {
       } else {
         next.add(id);
       }
-      // persist immediately
+      // persist immediately to server
       if (uid) saveProgress({ flashcards: { starredIds: Array.from(next) } });
+
+      // also persist per-card favorite timestamps to localStorage so the detail page can read ordering
+      try {
+        const key = `notewise.flashcard.cardFavoriteTimestamps.${flashcardId}.${uid}`;
+        const raw = localStorage.getItem(key);
+        const map = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+        const now = Date.now();
+        // if the id is present in next set, ensure timestamp exists, otherwise remove it
+        if (next.has(id)) map[id] = now;
+        else delete map[id];
+        localStorage.setItem(key, JSON.stringify(map));
+        // broadcast to other listeners (detail page, other tabs)
+        try {
+          if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+            const bc = new BroadcastChannel(`notewise.flashcard.${flashcardId}.starred`);
+            bc.postMessage({ starredIds: Array.from(next) });
+            bc.close();
+          }
+        } catch (e) {
+          // ignore
+        }
+      } catch (e) {
+        // ignore localstorage errors
+      }
+
+      // Reorder cards so that all starred cards are at the front, ordered by timestamp (most recent first)
+      setFlashcard((prev) => {
+        if (!prev) return prev;
+        // read timestamps (best-effort)
+        const key = `notewise.flashcard.cardFavoriteTimestamps.${flashcardId}.${uid}`;
+        let tsMap: Record<string, number> = {};
+        try {
+          const raw = localStorage.getItem(key);
+          tsMap = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+        } catch (e) {
+          tsMap = {};
+        }
+
+        // collect starred ids present in nextSet and sort by timestamp desc
+        const starredEntries = Object.entries(tsMap).filter(([k]) => next.has(k));
+        starredEntries.sort((a, b) => (b[1] - a[1]));
+        const starredIdsOrdered = starredEntries.map((e) => e[0]);
+
+        // In case timestamps are missing for some ids (edge cases), include any remaining starred ids
+        const remainingStarred = Array.from(next).filter((s) => !starredIdsOrdered.includes(s));
+        const finalStarredOrder = [...starredIdsOrdered, ...remainingStarred];
+
+        const starredCards = finalStarredOrder
+          .map((sid) => prev.cards.find((c) => c._id === sid))
+          .filter(Boolean) as FlashcardCard[];
+
+        const remaining = prev.cards.filter((c) => !next.has(c._id));
+        const newCards = [...starredCards, ...remaining];
+
+        return { ...prev, cards: newCards };
+      });
+
       // If user is studying "starred only", immediately update the session to reflect the new starred set.
       if (studyStarredOnly && flashcard) {
         const indices = flashcard.cards.map((_, i) => i).filter(i => next.has(flashcard.cards[i]._id));
-        // do NOT auto-shuffle here; user must press "Shuffle now"
+        // do NOT auto-shuffle here; indices will be shuffled only if the shuffle pref is enabled (header control applies it immediately)
         setSessionQueue(indices);
         setViewerPos(0);
         setIsShowingAnswer(false);
@@ -168,6 +307,103 @@ export default function FlashcardOnlyPage() {
       return next;
     });
   };
+
+  // Listen for starred changes from other pages/tabs via BroadcastChannel and storage events
+  useEffect(() => {
+    if (typeof window === 'undefined' || !flashcard || !uid) return;
+    const channelName = `notewise.flashcard.${flashcardId}.starred`;
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel(channelName);
+        bc.onmessage = (ev) => {
+          try {
+            const data = ev.data as { starredIds?: string[] } | null;
+            if (data && Array.isArray(data.starredIds)) {
+              const nextSet = new Set(data.starredIds);
+              setStarredIds(nextSet);
+
+              // Reorder cards to reflect the new starred set
+              setFlashcard((prev) => {
+                if (!prev) return prev;
+
+                // Read timestamps to maintain proper ordering
+                const key = `notewise.flashcard.cardFavoriteTimestamps.${flashcardId}.${uid}`;
+                let tsMap: Record<string, number> = {};
+                try {
+                  const raw = localStorage.getItem(key);
+                  tsMap = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+                } catch (e) {
+                  tsMap = {};
+                }
+
+                // Collect starred ids and sort by timestamp desc
+                const starredEntries = Object.entries(tsMap).filter(([k]) => nextSet.has(k));
+                starredEntries.sort((a, b) => (b[1] - a[1]));
+                const starredIdsOrdered = starredEntries.map((e) => e[0]);
+
+                // Include any remaining starred ids without timestamps
+                const remainingStarred = Array.from(nextSet).filter((s) => !starredIdsOrdered.includes(s));
+                const finalStarredOrder = [...starredIdsOrdered, ...remainingStarred];
+
+                const starredCards = finalStarredOrder
+                  .map((sid) => prev.cards.find((c) => c._id === sid))
+                  .filter(Boolean) as FlashcardCard[];
+
+                const remaining = prev.cards.filter((c) => !nextSet.has(c._id));
+                const newCards = [...starredCards, ...remaining];
+
+                return { ...prev, cards: newCards };
+              });
+            }
+          } catch (e) {
+            // ignore
+          }
+        };
+      }
+    } catch (e) {
+      bc = null;
+    }
+
+    const storageHandler = (e: StorageEvent) => {
+      const key = `notewise.flashcard.cardFavoriteTimestamps.${flashcardId}.${uid}`;
+      if (e.key !== key) return;
+      try {
+        if (!e.newValue) {
+          setStarredIds(new Set());
+          setFlashcard((prev) => prev ? { ...prev, cards: prev.cards } : prev);
+          return;
+        }
+        const map = JSON.parse(e.newValue) as Record<string, number>;
+        const nextSet = new Set(Object.keys(map));
+        setStarredIds(nextSet);
+
+        // Reorder cards based on localStorage update
+        setFlashcard((prev) => {
+          if (!prev) return prev;
+
+          const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
+          const favIds = entries.map(e => e[0]);
+          const favSet = new Set(favIds);
+          const favCards = favIds.map(id => prev.cards.find(c => c._id === id)).filter(Boolean) as FlashcardCard[];
+          const remaining = prev.cards.filter(c => !favSet.has(c._id));
+          const newCards = [...favCards, ...remaining];
+
+          return { ...prev, cards: newCards };
+        });
+      } catch (err) {
+        // ignore
+      }
+    };
+    window.addEventListener('storage', storageHandler);
+
+    return () => {
+      window.removeEventListener('storage', storageHandler);
+      try { bc && bc.close(); } catch (e) { /* ignore */ }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flashcardId, uid, flashcard]);
 
   // Add new state for rating feedback
   const [selectedRating, setSelectedRating] = useState<"again" | "hard" | "good" | "easy" | null>(null);
@@ -181,6 +417,7 @@ export default function FlashcardOnlyPage() {
   const [hardIds, setHardIds] = useState<Set<string>>(new Set());
   const [easyIds, setEasyIds] = useState<Set<string>>(new Set());
   const [showCompletion, setShowCompletion] = useState(false);
+  const [completionPersisted, setCompletionPersisted] = useState(false); // track if we loaded completion from server
 
   // Updated rateCard function to include visual feedback and instant progression
   const rateCard = (rating: "again" | "hard" | "good" | "easy") => {
@@ -197,16 +434,28 @@ export default function FlashcardOnlyPage() {
     // disable flip transition while we adjust the queue and viewer
     setDisableFlipTransition(true);
 
-    // track rating stats (counts and per-card sets). We count total reviews, not unique.
+    // track rating stats (counts and per-card sets). We compute a snapshot synchronously
+    // so we can persist the exact values immediately (avoids stale state issues).
     const cardId = currentCard?._id;
-    setRatingCounts(prev => ({
-      again: prev.again + (rating === "again" ? 1 : 0),
-      hard: prev.hard + (rating === "hard" ? 1 : 0),
-      good: prev.good + (rating === "good" ? 1 : 0),
-      easy: prev.easy + (rating === "easy" ? 1 : 0),
-      total: prev.total + 1,
-    }));
+    const newRatingCounts = {
+      again: ratingCounts.again + (rating === "again" ? 1 : 0),
+      hard: ratingCounts.hard + (rating === "hard" ? 1 : 0),
+      good: ratingCounts.good + (rating === "good" ? 1 : 0),
+      easy: ratingCounts.easy + (rating === "easy" ? 1 : 0),
+      total: (ratingCounts.total || 0) + 1,
+    };
+    setRatingCounts(newRatingCounts);
+
+    // Build deterministic arrays for persisted sets (snapshot current + new)
+    const newAgainIdsArr = Array.from(againIds);
+    const newHardIdsArr = Array.from(hardIds);
+    const newEasyIdsArr = Array.from(easyIds);
     if (cardId) {
+      if (rating === "again" && !newAgainIdsArr.includes(cardId)) newAgainIdsArr.push(cardId);
+      if (rating === "hard" && !newHardIdsArr.includes(cardId)) newHardIdsArr.push(cardId);
+      if (rating === "easy" && !newEasyIdsArr.includes(cardId)) newEasyIdsArr.push(cardId);
+
+      // Also update local Sets for UI continuity
       setAgainIds(s => { const n = new Set(s); if (rating === "again") n.add(cardId); return n; });
       setHardIds(s => { const n = new Set(s); if (rating === "hard") n.add(cardId); return n; });
       setEasyIds(s => { const n = new Set(s); if (rating === "easy") n.add(cardId); return n; });
@@ -248,6 +497,67 @@ export default function FlashcardOnlyPage() {
       // if no more cards, show completion
       if (next.length === 0) {
         setShowCompletion(true);
+        
+        // Log completion activity and show success message
+        (async () => {
+          try {
+            if (uid && flashcard) {
+              const cardsStudied = initialTotal || flashcard.cards.length;
+              const studiedFavorites = studyStarredOnly;
+              
+              // Persist completion state to server so it survives page reload
+              const completionData = {
+                showCompletion: true,
+                initialTotal: initialTotal || flashcard.cards.length, // Save the initial total
+                ratingCounts: newRatingCounts,
+                againIds: newAgainIdsArr,
+                hardIds: newHardIdsArr,
+                easyIds: newEasyIdsArr,
+                completedAt: new Date().toISOString(),
+              };
+              
+              // Persist to localStorage immediately as a fast-fail fallback so the UI
+              // can restore completion even if the server save is delayed or fails.
+              try {
+                const key = `notewise.flashcard.completion.${flashcardId}.${uid}`;
+                if (typeof window !== 'undefined') localStorage.setItem(key, JSON.stringify(completionData));
+              } catch (e) {
+                // ignore localStorage write errors
+              }
+
+              // Save completion state
+              await saveProgress({ 
+                sessionQueue: next, 
+                viewerPos: newPos,
+                completion: completionData
+              });
+              
+              // Log to history via API
+              await authManager.makeAuthenticatedRequest('/api/student_page/log-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  userId: uid,
+                  type: 'flashcard.study_complete',
+                  action: studiedFavorites ? 'Studied favorites' : 'Studied flashcard set',
+                  meta: {
+                    flashcardId: flashcard._id,
+                    flashcardTitle: flashcard.title,
+                    cardsStudied,
+                    studiedFavorites,
+                    ratingCounts: completionData.ratingCounts
+                  },
+                  progress: 100
+                })
+              });
+
+              // Show success popup: keep title, replace subtitle with concise praise
+              showSuccess('Good Job', '🎉 Session Complete');
+            }
+          } catch (e) {
+            console.warn('Failed to log study completion:', e);
+          }
+        })();
       }
 
       return next;
@@ -289,15 +599,18 @@ export default function FlashcardOnlyPage() {
   const saveTimer = React.useRef<number | null>(null);
   async function saveProgress(payload: Record<string, unknown>) {
     if (!uid || !flashcardId) return;
+    console.log("💾 SAVING PROGRESS:", JSON.stringify(payload, null, 2));
     try {
-      await fetch(`/api/student_page/flashcard/${flashcardId}/progress?userId=${uid}`, {
+      const response = await fetch(`/api/student_page/flashcard/${flashcardId}/progress?userId=${uid}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const result = await response.json();
+      console.log("✅ SAVE RESPONSE:", result);
     } catch (err) {
       // silent fail; server logging handles it
-      console.warn("Failed to save progress", err);
+      console.error("❌ Failed to save progress", err);
     }
   }
 
@@ -306,32 +619,100 @@ export default function FlashcardOnlyPage() {
     let mounted = true;
     async function loadProgress() {
       if (!uid || !flashcard) return;
+      
+      console.log("🔄 LOADING PROGRESS for flashcard:", flashcardId, "user:", uid);
+      
+      // CRITICAL: Set BOTH ref and state IMMEDIATELY to block init effect from running
+      progressLoadAttempted.current = true;
+      setProgressLoaded(true);
+      
+      // Fast-path: if we have a locally persisted completion (saved as a fallback
+      // when the user finished the session), restore it immediately so the UI
+      // stays on the completion screen even if the server save hasn't completed.
+      try {
+        const key = `notewise.flashcard.completion.${flashcardId}.${uid}`;
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const localComp = JSON.parse(raw);
+            console.log('📁 Restoring completion from localStorage', localComp);
+            if (localComp) {
+              setShowCompletion(true);
+              setCompletionPersisted(true);
+              if (typeof localComp.initialTotal === 'number') setInitialTotal(localComp.initialTotal);
+              if (localComp.ratingCounts) setRatingCounts(localComp.ratingCounts);
+              if (Array.isArray(localComp.againIds)) setAgainIds(new Set(localComp.againIds));
+              if (Array.isArray(localComp.hardIds)) setHardIds(new Set(localComp.hardIds));
+              if (Array.isArray(localComp.easyIds)) setEasyIds(new Set(localComp.easyIds));
+              // Restore sessionQueue to the saved value (may be empty)
+              if (Array.isArray(localComp.sessionQueue)) setSessionQueue(localComp.sessionQueue);
+              if (typeof localComp.viewerPos === 'number') setViewerPos(localComp.viewerPos);
+            }
+          }
+        }
+      } catch (e) {
+        // ignore errors reading localStorage
+      }
+
       try {
         const res = await fetch(`/api/student_page/flashcard/${flashcardId}/progress?userId=${uid}`, { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.log("⚠️ Load failed:", res.status);
+          return;
+        }
         const json = await res.json().catch(() => null);
         const progress = json?.progress;
+        console.log("📥 LOADED PROGRESS:", JSON.stringify(progress, null, 2));
         if (!mounted || !progress) return;
+        
+        // Check if there's a saved completion state
+        if (progress.completion && progress.completion.showCompletion) {
+          console.log("🎉 RESTORING COMPLETION STATE");
+          setShowCompletion(true);
+          setCompletionPersisted(true);
+          
+          // Restore the initial total so progress bar shows correctly
+          if (typeof progress.completion.initialTotal === "number") {
+            console.log("📊 Restoring initialTotal:", progress.completion.initialTotal);
+            setInitialTotal(progress.completion.initialTotal);
+          }
+          
+          // Restore rating counts and card sets
+          if (progress.completion.ratingCounts) {
+            console.log("📊 Restoring rating counts:", progress.completion.ratingCounts);
+            setRatingCounts(progress.completion.ratingCounts);
+          }
+          if (Array.isArray(progress.completion.againIds)) {
+            setAgainIds(new Set(progress.completion.againIds));
+          }
+          if (Array.isArray(progress.completion.hardIds)) {
+            setHardIds(new Set(progress.completion.hardIds));
+          }
+          if (Array.isArray(progress.completion.easyIds)) {
+            setEasyIds(new Set(progress.completion.easyIds));
+          }
+        }
+        
         // apply persisted prefs / starred / session state
         if (progress.flashcards && Array.isArray(progress.flashcards.starredIds)) setStarredIds(new Set(progress.flashcards.starredIds));
         if (progress.flashcards && progress.flashcards.prefs) {
-          setTrackProgress(!!progress.flashcards.prefs.trackProgress);
+          // 'sidePreference' and 'trackProgress' preferences removed; only keep remaining prefs
           setShuffle(!!progress.flashcards.prefs.shuffle);
           setStudyStarredOnly(!!progress.flashcards.prefs.studyStarredOnly);
-          if (progress.flashcards.prefs.sidePreference === "term" || progress.flashcards.prefs.sidePreference === "definition") {
-            setSidePreference(progress.flashcards.prefs.sidePreference);
-          }
           setShowBothSides(!!progress.flashcards.prefs.showBothSides);
         }
-        if (Array.isArray(progress.sessionQueue) && progress.sessionQueue.length) {
-          setSessionQueue(progress.sessionQueue);
+        // Restore sessionQueue: if completion is set, restore even if empty; otherwise only if non-empty
+        if (Array.isArray(progress.sessionQueue)) {
+          if (progress.completion?.showCompletion || progress.sessionQueue.length > 0) {
+            console.log("🔢 Restoring sessionQueue:", progress.sessionQueue);
+            setSessionQueue(progress.sessionQueue);
+          }
         }
         if (typeof progress.viewerPos === "number") setViewerPos(progress.viewerPos);
-        // mark that server progress was applied so the init effect does not stomp it
-        setProgressLoaded(true);
+        // progressLoaded was already set at the start of this function
       } catch (err) {
         // ignore load errors
-        console.warn("Failed to load progress", err);
+        console.error("❌ Failed to load progress", err);
       }
     }
     loadProgress();
@@ -343,17 +724,25 @@ export default function FlashcardOnlyPage() {
     if (!uid) return;
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
-      saveProgress({ flashcards: { prefs: { trackProgress, shuffle, studyStarredOnly, sidePreference, showBothSides } } });
+      // Persist prefs; 'sidePreference' removed
+      saveProgress({ flashcards: { prefs: { shuffle, studyStarredOnly, showBothSides } } });
       saveTimer.current = null;
     }, 700);
     return () => { if (saveTimer.current) window.clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackProgress, shuffle, studyStarredOnly, sidePreference, showBothSides, uid]);
+  }, [shuffle, studyStarredOnly, showBothSides, uid]);
 
   // Removed debounced persistence for sessionQueue/viewerPos as they are saved immediately in rateCard and other functions
   // --- end Progress API integration --------------------------------------------
 
-  if (isLoading) return <LoadingTemplate2 title="Loading flashcards" subtitle="Preparing your session..." compact={false} />;
+  if (isLoading) return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex items-center justify-center p-6">
+      <div className="text-center">
+        <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" aria-hidden="true" />
+        <p className="text-gray-500 dark:text-slate-400">Loading your flashcards...</p>
+      </div>
+    </div>
+  );
   if (error) return <div className="p-6 text-red-600">{error}</div>;
   if (!flashcard) return <div className="p-6">Flashcard not found</div>;
 
@@ -394,7 +783,20 @@ export default function FlashcardOnlyPage() {
     setIsShowingAnswer(false);
     resetRatingStats();
     setShowCompletion(false);
-    if (uid) await saveProgress({ sessionQueue: indices, viewerPos: 0 });
+    setCompletionPersisted(false);
+    
+    // Clear completion state from server so it doesn't show on reload
+    if (uid) await saveProgress({ 
+      sessionQueue: indices, 
+      viewerPos: 0,
+      completion: null // Clear completion state
+    });
+    try {
+      const key = `notewise.flashcard.completion.${flashcardId}.${uid}`;
+      if (typeof window !== 'undefined') localStorage.removeItem(key);
+    } catch (e) {
+      // ignore
+    }
   };
 
   const reviewOnlyHardAgain = async () => {
@@ -409,7 +811,20 @@ export default function FlashcardOnlyPage() {
     setIsShowingAnswer(false);
     // keep rating stats for continuity, but hide completion if there is something to review
     setShowCompletion(indices.length === 0);
-    if (uid) await saveProgress({ sessionQueue: indices, viewerPos: 0 });
+    setCompletionPersisted(false);
+    
+    // Clear completion state from server when starting a new review
+    if (uid) await saveProgress({ 
+      sessionQueue: indices, 
+      viewerPos: 0,
+      completion: indices.length === 0 ? undefined : null // Only clear if we have cards to review
+    });
+    try {
+      const key = `notewise.flashcard.completion.${flashcardId}.${uid}`;
+      if (typeof window !== 'undefined') localStorage.removeItem(key);
+    } catch (e) {
+      // ignore
+    }
   };
 
   const gotoNextDeck = () => {
@@ -510,7 +925,7 @@ export default function FlashcardOnlyPage() {
                     <div className="h-full flex flex-col gap-3 sm:gap-4 lg:gap-6">
                       {/* Front / top */}
                       <div className={`w-full flex-1 rounded-xl sm:rounded-2xl flex items-center justify-center p-4 sm:p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(true, null)}`}>
-                        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Front</div>
+                        {/* Front label removed */}
                         <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words">{currentCard?.question ?? "No question"}</div>
                       </div>
 
@@ -556,7 +971,7 @@ export default function FlashcardOnlyPage() {
                       >
                         {/* Front (question) */}
                         <div className={`absolute inset-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none [backface-visibility:hidden] ${getBgClass(true, null)}`}>
-                          <div className="absolute top-2 right-2 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Front</div>
+                          {/* Front label removed */}
                           <div className="w-full flex flex-col items-center">
                             <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-snug break-words">{currentCard?.question ?? "No question"}</div>
                             <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Press <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Space</span> or click to flip</div>
@@ -630,14 +1045,7 @@ export default function FlashcardOnlyPage() {
                     <span className="hidden sm:inline">{starredIds.has(currentCard?._id || "") ? "Starred" : "Star"}</span>
                   </button>
 
-                  {/* Only render the header "Track progress" pill when the option is enabled in Options */}
-                  {trackProgress && (
-                    <div className="hidden md:flex items-center gap-2 text-sm">
-                      <span className="px-2 py-1 rounded font-medium transition bg-gradient-to-br from-teal-600 to-teal-600 text-white shadow-sm">
-                        Track progress
-                      </span>
-                    </div>
-                  )}
+                  {/* Track progress pill removed per request */}
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-end">
@@ -657,17 +1065,15 @@ export default function FlashcardOnlyPage() {
                   >
                     <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]" />
                   </button>
-                  {shuffle && (
-                    <button
-                      onClick={goRandom}
-                      className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-sky-500 text-white hover:scale-105 transition"
-                      title="Shuffle to random card"
-                    >
-                      <svg width="14" height="14" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M3 4l17 17" />
-                      </svg>
-                    </button>
-                  )}
+                  <button
+                    onClick={goRandom}
+                    className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-sky-500 text-white hover:scale-105 transition"
+                    title="Shuffle to random card"
+                  >
+                    <svg width="14" height="14" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M3 4l17 17" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </>
@@ -680,9 +1086,9 @@ export default function FlashcardOnlyPage() {
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowOptions(false)} />
 
             {/* center modal, allow scrolling when viewport is small */}
-            <div className="relative w-full max-w-5xl max-h-[95vh] bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl overflow-auto grid grid-cols-1 lg:grid-cols-[1fr_300px]">
+            <div className="relative w-full max-w-4xl max-h-[95vh] bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl overflow-auto grid grid-cols-1 lg:grid-cols-[1fr_220px] items-start">
               {/* Left: settings */}
-              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="p-4 sm:p-6 h-full flex flex-col gap-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg sm:text-xl font-semibold">Options</h2>
@@ -695,14 +1101,8 @@ export default function FlashcardOnlyPage() {
                   </button>
                 </div>
 
-                <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-                  <SettingRow
-                    title="Track progress"
-                    desc="Sort cards to track what you know"
-                    checked={trackProgress}
-                    onToggle={() => setTrackProgress(v => !v)}
-                    accent="green"
-                  />
+                <div className="grid gap-2">
+                  {/* "Track progress" setting removed */}
 
                   <SettingRow
                     title="Study starred only"
@@ -722,7 +1122,7 @@ export default function FlashcardOnlyPage() {
                           setIsShowingAnswer(false);
                         }
                         // Save immediately to ensure persistence, including all current prefs
-                        if (uid) saveProgress({ flashcards: { prefs: { trackProgress, shuffle, studyStarredOnly: next, sidePreference, showBothSides } } });
+                        if (uid) saveProgress({ flashcards: { prefs: { shuffle, studyStarredOnly: next, showBothSides } } });
                         return next;
                       });
                     }}
@@ -730,33 +1130,14 @@ export default function FlashcardOnlyPage() {
                   />
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <div className="font-medium">Front</div>
-                    <div className="mt-2 flex gap-2">
-                      <button onClick={() => setSidePreference("term")} className={`px-3 py-1 rounded ${sidePreference === "term" ? "bg-emerald-600 text-white" : "bg-slate-200 dark:bg-slate-700"}`}>Term</button>
-                      <button onClick={() => setSidePreference("definition")} className={`px-3 py-1 rounded ${sidePreference === "definition" ? "bg-emerald-600 text-white" : "bg-slate-200 dark:bg-slate-700"}`}>Definition</button>
-                    </div>
-                  </div>
-
+                <div className="grid gap-2">
                   <div className="flex flex-col gap-3">
                     <ToggleRow label="Show both sides" desc="Reveal question and answer together" checked={showBothSides} onChange={() => setShowBothSides(v => !v)} />
-                    <div>
-                      <ToggleRow label="Shuffle cards" desc="Enable shuffle (press 'Shuffle now' to apply)" checked={shuffle} onChange={() => setShuffle(v => !v)} />
-                      <div className="mt-2">
-                        <button
-                          onClick={shuffleNow}
-                          disabled={!shuffle || !flashcard}
-                          className={`px-3 py-1 rounded ${!shuffle ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-sky-500 text-white hover:brightness-110"}`}
-                        >
-                          Shuffle now
-                        </button>
-                      </div>
-                    </div>
+                    {/* Shuffle control moved to the header for quicker access; removed from modal. */}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 mt-auto">
                   <button
                     onClick={async () => {
                       const total = flashcard?.cards.length || 0;
@@ -765,7 +1146,7 @@ export default function FlashcardOnlyPage() {
                       if (studyStarredOnly && flashcard) {
                         indices = indices.filter(i => starredIds.has(flashcard.cards[i]._id));
                       }
-                      // do NOT auto-shuffle on restart; user must press Shuffle now
+                      // do NOT auto-shuffle on restart; shuffle will only be applied when the shuffle pref is enabled (header control applies immediately)
                       setSessionQueue(indices);
                       setViewerPos(0);
                       setIsShowingAnswer(false);
@@ -786,13 +1167,9 @@ export default function FlashcardOnlyPage() {
                         setProgressLoaded(true);
                       }
                     }}
-                    className="px-4 py-2 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                    className="px-3 py-1.5 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
                   >
                     Restart Flashcards
-                  </button>
-
-                  <button onClick={() => setKeyboardShortcutsOpen(s => !s)} className="px-4 py-2 rounded-md bg-slate-100 dark:bg-slate-700">
-                    {keyboardShortcutsOpen ? "Hide keyboard shortcuts" : "Keyboard shortcuts"}
                   </button>
 
                   <div className="ml-auto text-xs text-slate-400">Changes apply immediately</div>
@@ -801,10 +1178,10 @@ export default function FlashcardOnlyPage() {
               </div>
 
               {/* Right: preview / summary */}
-              <div className="p-6 border-l border-slate-100 dark:border-slate-700 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-800">
+              <div className="p-2 sm:p-3 border-l border-slate-100 dark:border-slate-700 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-800">
                 <div className="text-sm font-medium mb-2">Session preview</div>
 
-                <div className="rounded-lg p-4 mb-4 bg-white dark:bg-slate-900 shadow-inner">
+                <div className="rounded-lg p-2 mb-3 bg-white dark:bg-slate-900 shadow-inner">
                   <div className="text-xs text-slate-500 mb-2">Progress</div>
                   <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
                     <div className="h-full bg-gradient-to-r from-green-400 to-emerald-500" style={{ width: `${progress}%` }} />
@@ -815,9 +1192,9 @@ export default function FlashcardOnlyPage() {
                   </div>
                 </div>
 
-                <div className="rounded-lg p-4 bg-slate-50 dark:bg-slate-800">
+                <div className="rounded-lg p-2 bg-slate-50 dark:bg-slate-800">
                   <div className="text-xs text-slate-500 mb-2">Current card</div>
-                  <div className="h-28 flex items-center justify-center rounded-md bg-white dark:bg-slate-900 text-center px-3">
+                  <div className="h-24 flex items-center justify-center rounded-md bg-white dark:bg-slate-900 text-center px-3">
                     <div className="text-sm">{currentCard?.question ?? "No question"}</div>
                   </div>
 
@@ -826,13 +1203,7 @@ export default function FlashcardOnlyPage() {
                   </div>
                 </div>
 
-                {keyboardShortcutsOpen && (
-                  <div className="mt-4 text-xs text-slate-400 bg-slate-100 dark:bg-slate-900 p-3 rounded">
-                    <div><strong>Space</strong> — Flip</div>
-                    <div><strong>← / →</strong> — Prev / Next</div>
-                    <div className="mt-2">You can also restart the session from the left panel.</div>
-                  </div>
-                )}
+                
               </div>
             </div>
           </div>
@@ -859,11 +1230,12 @@ export default function FlashcardOnlyPage() {
     if (studyStarredOnly) {
       indices = indices.filter(i => starredIds.has(flashcard.cards[i]._id));
     }
-    indices = shuffleArray(indices);
-    setSessionQueue(indices);
-    setViewerPos(0);
-    setIsShowingAnswer(false);
-    if (uid) saveProgress({ flashcards: { prefs: { shuffle: true } }, sessionQueue: indices, viewerPos: 0 });
+  indices = shuffleArray(indices);
+  setSessionQueue(indices);
+  setViewerPos(0);
+  setIsShowingAnswer(false);
+  // Persist only the session state (do not mark a persistent "shuffle enabled" pref)
+  if (uid) saveProgress({ sessionQueue: indices, viewerPos: 0 });
   }
 }
 

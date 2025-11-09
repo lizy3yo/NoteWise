@@ -5,7 +5,7 @@ import { useAlert } from "@/hooks/useAlert";
 
 function StudyModeContent() {
   const router = useRouter();
-  const [tab, setTab] = useState<"paste" | "upload">("paste");
+  const [tab, setTab] = useState<"paste" | "upload">("upload");
   // create type: summary | flashcards
   const [createType, setCreateType] = useState<'summary' | 'flashcards'>('summary');
 
@@ -394,7 +394,7 @@ function StudyModeContent() {
             <div className="text-sm text-gray-400 sm:text-right">
               <span className="sm:hidden">Characters: </span>
               {pasteText.length}/{MAX_CHARS}
-              <span className="hidden sm:inline"> characters</span>
+              <span className="hidden sm:inline"> characters </span>
             </div>
           </div>
         </div>
@@ -402,7 +402,7 @@ function StudyModeContent() {
         {/* Input Method Tabs */}
         <div className="mb-6">
           <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-full sm:w-fit">
-            {["paste", "upload"].map((t) => (
+            {["upload", "paste"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t as any)}

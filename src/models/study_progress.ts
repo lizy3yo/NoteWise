@@ -74,6 +74,22 @@ export interface IStudyProgressTest {
   questionAllowedModes?: ('multiple-choice' | 'written')[];
 }
 
+export interface IStudyProgressCompletion {
+  showCompletion: boolean;
+  initialTotal: number;
+  ratingCounts: {
+    again: number;
+    hard: number;
+    good: number;
+    easy: number;
+    total: number;
+  };
+  againIds: string[];
+  hardIds: string[];
+  easyIds: string[];
+  completedAt: string;
+}
+
 export interface IStudyProgress extends Document {
   user: Types.ObjectId;
   flashcard: Types.ObjectId;
@@ -81,6 +97,7 @@ export interface IStudyProgress extends Document {
   learn: IStudyProgressLearn;
   match: IStudyProgressMatch;
   test: IStudyProgressTest;
+  completion?: IStudyProgressCompletion | null;
   sessionQueue: number[];
   viewerPos: number;
   lastSessionStartedAt: Date | null;
@@ -155,6 +172,23 @@ const StudyProgressSchema = new Schema({
     score: { type: Number, default: 0 },
     done: { type: Boolean, default: false },
     testMode: { type: String, enum: ['multiple-choice', 'written', 'mixed'], default: 'multiple-choice' }, // Added testMode
+  },
+  
+  // flashcard study session completion state
+  completion: {
+    showCompletion: { type: Boolean, default: false },
+    initialTotal: { type: Number, default: 0 },
+    ratingCounts: {
+      again: { type: Number, default: 0 },
+      hard: { type: Number, default: 0 },
+      good: { type: Number, default: 0 },
+      easy: { type: Number, default: 0 },
+      total: { type: Number, default: 0 }
+    },
+    againIds: { type: [String], default: [] },
+    hardIds: { type: [String], default: [] },
+    easyIds: { type: [String], default: [] },
+    completedAt: { type: String, default: null }
   },
   
   // viewer/session

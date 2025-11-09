@@ -48,26 +48,28 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
     console.log("=== API PATCH REQUEST ===");
     console.log("Received body:", JSON.stringify(body, null, 2));
 
-    // Allowed top-level keys. Include learn/match/test and flashcards so namespace updates are permitted.
-    const allowed = ["starredIds", "prefs", "sessionQueue", "viewerPos", "learn", "match", "test", "lastSessionStartedAt", "flashcards"];
+    // Allowed top-level keys. Include learn/match/test/flashcards/completion so namespace updates are permitted.
+    const allowed = ["starredIds", "prefs", "sessionQueue", "viewerPos", "learn", "match", "test", "completion", "lastSessionStartedAt", "flashcards"];
     const setObj: any = {};
 
     for (const key of allowed) {
       if (body[key] === undefined) continue;
 
-      // If the client sent an object for nested subdocuments (learn/match/test/flashcards),
-      // set its subfields individually (e.g. flashcards.starredIds -> 'flashcards.starredIds')
-      // to avoid replacing the whole subdoc unintentionally.
+      // Special-case: treat 'completion' as an atomic subdocument when it's an object.
+      // This avoids subtle nested-merge bugs and ensures the full completion payload
+      // the client sends is persisted as-is.
+      if (key === 'completion' && body[key] && typeof body[key] === 'object' && !Array.isArray(body[key])) {
+        setObj[key] = body[key];
+        continue;
+      }
+
+      // If the client sent an object for other nested subdocuments (learn/match/test/flashcards),
+      // set its subfields individually to avoid replacing the whole subdoc unintentionally.
       if ((key === "learn" || key === "match" || key === "test" || key === "flashcards") &&
           body[key] && typeof body[key] === "object" && !Array.isArray(body[key])) {
         for (const [subKey, val] of Object.entries(body[key])) {
-          // Special handling for nested objects to preserve their structure
-          if ((subKey === "cardOptions" || subKey === "pref") && val && typeof val === "object" && !Array.isArray(val)) {
-            console.log(`Preserving nested structure for ${key}.${subKey}:`, val);
-            setObj[`${key}.${subKey}`] = val;
-          } else {
-            setObj[`${key}.${subKey}`] = val;
-          }
+          // preserve nested object structure for known nested objects like cardOptions/pref/ratingCounts
+          setObj[`${key}.${subKey}`] = val;
         }
       } else {
         // For prefs/sessionQueue/viewerPos/starredIds/lastSessionStartedAt replace as-is

@@ -8,6 +8,7 @@ import {
   usePathname,
 } from "next/navigation";
 import api from "@/lib/api";
+import { useAlert } from '@/hooks/useAlert';
 import {
   Settings,
   FileStack,
@@ -18,7 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
-import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2"; // added import
+// Using the library-style inline spinner instead of the full-page LoadingTemplate2
 import PrimaryActionButton from "@/components/ui/buttons/PrimaryActionButton";
 import { Chip } from "@/components/ui/chip";
 import Modal from "@/components/ui/Modal";
@@ -53,6 +54,7 @@ type Flashcard = {
   publicRole?: "viewer" | "editor";
   sharedUsers?: SharedUser[];
   shareableLink?: string;
+  isFavorite?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -70,6 +72,8 @@ export default function FlashcardDetailPage() {
   const [viewerIndex, setViewerIndex] = useState<number>(0);
   const [isShowingAnswer, setIsShowingAnswer] = useState<boolean>(false);
   const [starredIds, setStarredIds] = useState<Set<string>>(new Set());
+  // Local-storage key prefix for per-card favorite timestamps (used to keep ordering across reloads)
+  const CARD_FAV_TS_KEY = (fcId?: string, uid?: string | null) => `notewise.flashcard.cardFavoriteTimestamps.${fcId || flashcardId}.${uid || userId || 'anon'}`;
   const [trackProgress, setTrackProgress] = useState<boolean>(false);
   const [openMenuCardId, setOpenMenuCardId] = useState<string | null>(null);
 
@@ -78,6 +82,43 @@ export default function FlashcardDetailPage() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const flashcardId = params.flashcardId as string;
+
+  const { showSuccess, showError } = useAlert();
+
+  // Confirmation modal state (library-style)
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    cancelText?: string;
+    isDangerous?: boolean;
+  }>({
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    isDangerous: false,
+  });
+
+  const showConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    options?: { confirmText?: string; cancelText?: string; isDangerous?: boolean }
+  ) => {
+    setConfirmModalConfig({
+      title,
+      message,
+      onConfirm,
+      confirmText: options?.confirmText || 'Confirm',
+      cancelText: options?.cancelText || 'Cancel',
+      isDangerous: options?.isDangerous || false,
+    });
+    setShowConfirmModal(true);
+  };
 
   // Color-coded icon classes for each tab (only Flashcards kept)
   const tabIconColor = (label: string, isActive: boolean) => {
@@ -166,6 +207,12 @@ export default function FlashcardDetailPage() {
         if (!isMounted) return;
 
         setFlashcard(data.flashcard);
+        // apply persisted starred/order after flashcard is loaded
+        try {
+          applyPersistedCardFavorites(data.flashcard, uid);
+        } catch (e) {
+          // ignore
+        }
         setEditForm({
           title: data.flashcard.title,
           description: data.flashcard.description || "",
@@ -195,6 +242,174 @@ export default function FlashcardDetailPage() {
     };
   }, [flashcardId]);
 
+  // Listen for starred changes from other pages/tabs (e.g., flashcard study page) via BroadcastChannel and storage events
+  useEffect(() => {
+    if (typeof window === 'undefined' || !flashcard || !userId) return;
+    const channelName = `notewise.flashcard.${flashcardId}.starred`;
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel(channelName);
+        bc.onmessage = (ev) => {
+          try {
+            const data = ev.data as { starredIds?: string[] } | null;
+            if (data && Array.isArray(data.starredIds)) {
+              const nextSet = new Set(data.starredIds);
+              setStarredIds(nextSet);
+              
+              // Reorder cards to reflect the new starred set
+              setFlashcard((prev) => {
+                if (!prev) return prev;
+                
+                // Read timestamps to maintain proper ordering
+                const key = CARD_FAV_TS_KEY(prev._id, userId || undefined);
+                let tsMap: Record<string, number> = {};
+                try {
+                  const raw = localStorage.getItem(key);
+                  tsMap = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+                } catch (e) {
+                  tsMap = {};
+                }
+
+                // Collect starred ids and sort by timestamp desc
+                const starredEntries = Object.entries(tsMap).filter(([k]) => nextSet.has(k));
+                starredEntries.sort((a, b) => (b[1] - a[1]));
+                const starredIdsOrdered = starredEntries.map((e) => e[0]);
+
+                // Include any remaining starred ids without timestamps
+                const remainingStarred = Array.from(nextSet).filter((s) => !starredIdsOrdered.includes(s));
+                const finalStarredOrder = [...starredIdsOrdered, ...remainingStarred];
+
+                const starredCards = finalStarredOrder
+                  .map((sid) => prev.cards.find((c) => c._id === sid))
+                  .filter(Boolean) as FlashcardCard[];
+
+                const remaining = prev.cards.filter((c) => !nextSet.has(c._id));
+                const newCards = [...starredCards, ...remaining];
+
+                return { ...prev, cards: newCards };
+              });
+            }
+          } catch (e) {
+            // ignore
+          }
+        };
+      }
+    } catch (e) {
+      bc = null;
+    }
+
+    const storageHandler = (e: StorageEvent) => {
+      const key = CARD_FAV_TS_KEY(flashcardId, userId || undefined);
+      if (e.key !== key) return;
+      try {
+        if (!e.newValue) {
+          setStarredIds(new Set());
+          setFlashcard((prev) => prev ? { ...prev, cards: prev.cards } : prev);
+          return;
+        }
+        const map = JSON.parse(e.newValue) as Record<string, number>;
+        const nextSet = new Set(Object.keys(map));
+        setStarredIds(nextSet);
+        
+        // Reorder cards based on localStorage update
+        setFlashcard((prev) => {
+          if (!prev) return prev;
+          
+          const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
+          const favIds = entries.map(e => e[0]);
+          const favSet = new Set(favIds);
+          const favCards = favIds.map(id => prev.cards.find(c => c._id === id)).filter(Boolean) as FlashcardCard[];
+          const remaining = prev.cards.filter(c => !favSet.has(c._id));
+          const newCards = [...favCards, ...remaining];
+          
+          return { ...prev, cards: newCards };
+        });
+      } catch (err) {
+        // ignore
+      }
+    };
+    window.addEventListener('storage', storageHandler);
+
+    return () => {
+      window.removeEventListener('storage', storageHandler);
+      try { bc && bc.close(); } catch (e) { /* ignore */ }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flashcardId, userId, flashcard]);
+
+  // Read persisted favorite card timestamps and server progress, then apply starredIds and reorder cards
+  async function applyPersistedCardFavorites(loadedFlashcard: Flashcard, uidStr?: string) {
+    try {
+      const uidToUse = uidStr || userId;
+
+      // Try server progress first
+      if (uidToUse) {
+        try {
+          const pr = await fetch(`/api/student_page/flashcard/${loadedFlashcard._id}/progress?userId=${uidToUse}`, { cache: 'no-store' });
+          if (pr.ok) {
+            const prog = await pr.json().catch(() => ({}));
+            const progressData = prog?.progress || prog;
+            const starredIdsArray = progressData?.flashcards?.starredIds || progressData?.starredIds;
+            if (starredIdsArray && Array.isArray(starredIdsArray)) {
+              const sv = new Set<string>(starredIdsArray);
+              setStarredIds(sv);
+              
+              // Try to get timestamps from localStorage for proper ordering (newest first)
+              let starredOrder = starredIdsArray;
+              try {
+                const key = CARD_FAV_TS_KEY(loadedFlashcard._id, uidToUse);
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                  const map = JSON.parse(raw) as Record<string, number>;
+                  const entries = Object.entries(map)
+                    .filter(([id]) => sv.has(id))
+                    .sort((a, b) => b[1] - a[1]); // newest first
+                  const orderedIds = entries.map(e => e[0]);
+                  // Include any starred IDs that don't have timestamps at the end
+                  const remainingIds = starredIdsArray.filter((id: string) => !orderedIds.includes(id));
+                  starredOrder = [...orderedIds, ...remainingIds];
+                }
+              } catch (e) {
+                // ignore, use server order as fallback
+              }
+              
+              // reorder cards so starred ones come first in timestamp order
+              const remaining = loadedFlashcard.cards.filter(c => !sv.has(c._id));
+              const starredCards = starredOrder.map((id: string) => loadedFlashcard.cards.find(c => c._id === id)).filter(Boolean) as FlashcardCard[];
+              const newCards = [...starredCards, ...remaining];
+              setFlashcard(prev => prev ? { ...prev, cards: newCards } : prev);
+              return;
+            }
+          }
+        } catch (e) {
+          // fall through to localStorage
+        }
+      }
+
+      // Fallback to localStorage timestamps
+      try {
+        const raw = localStorage.getItem(CARD_FAV_TS_KEY(loadedFlashcard._id, uidToUse));
+        if (raw) {
+          const map = JSON.parse(raw) as Record<string, number>;
+          const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
+          const favIds = entries.map(e => e[0]);
+          setStarredIds(new Set(favIds));
+          const favSet = new Set(favIds);
+          const favCards = favIds.map(id => loadedFlashcard.cards.find(c => c._id === id)).filter(Boolean) as FlashcardCard[];
+          const remaining = loadedFlashcard.cards.filter(c => !favSet.has(c._id));
+          const newCards = [...favCards, ...remaining];
+          setFlashcard(prev => prev ? { ...prev, cards: newCards } : prev);
+        }
+      } catch (e) {
+        // ignore
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   const currentCard =
     flashcard?.cards?.[
       Math.min(viewerIndex, Math.max((flashcard?.cards?.length || 1) - 1, 0))
@@ -209,14 +424,146 @@ export default function FlashcardDetailPage() {
     );
     setIsShowingAnswer(false);
   };
-  const toggleStar = (id?: string) => {
+  const toggleStar = async (id?: string) => {
     if (!id) return;
-    setStarredIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+
+    // Build the next starred set deterministically from current state
+    const isCurrentlyStarred = starredIds.has(id);
+    const nextSet = new Set(starredIds);
+    if (isCurrentlyStarred) nextSet.delete(id);
+    else nextSet.add(id);
+
+    // Optimistic UI update for starred set
+    setStarredIds(nextSet);
+    try {
+      showSuccess(!isCurrentlyStarred ? 'Added to starred' : 'Removed from starred');
+    } catch (e) {
+      // ignore alert errors
+    }
+
+    // Persist starred timestamps to localStorage (so ordering survives reloads)
+    try {
+      const key = CARD_FAV_TS_KEY(flashcardId, userId || undefined);
+      const raw = localStorage.getItem(key);
+      const map = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+      const now = Date.now();
+      if (isCurrentlyStarred) {
+        // removing the star
+        delete map[id];
+      } else {
+        // adding the star
+        map[id] = now;
+      }
+      localStorage.setItem(key, JSON.stringify(map));
+      // broadcast change so other open pages/tabs (and the Flashcard-only page) update immediately
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel(`notewise.flashcard.${flashcardId}.starred`);
+          bc.postMessage({ starredIds: Array.from(nextSet) });
+          bc.close();
+        }
+      } catch (e) {
+        // ignore
+      }
+    } catch (e) {
+      // ignore localstorage errors
+    }
+
+    // Reorder cards so that all starred cards are at the front, ordered by timestamp (most recent first)
+    setFlashcard((prev) => {
+      if (!prev) return prev;
+      // read timestamps (best-effort)
+      const key = CARD_FAV_TS_KEY(prev._id, userId || undefined);
+      let tsMap: Record<string, number> = {};
+      try {
+        const raw = localStorage.getItem(key);
+        tsMap = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+      } catch (e) {
+        tsMap = {};
+      }
+
+      // collect starred ids present in nextSet and sort by timestamp desc
+      const starredEntries = Object.entries(tsMap).filter(([k]) => nextSet.has(k));
+      starredEntries.sort((a, b) => (b[1] - a[1]));
+      const starredIdsOrdered = starredEntries.map((e) => e[0]);
+
+      // In case timestamps are missing for some ids (edge cases), include any remaining starred ids
+      const remainingStarred = Array.from(nextSet).filter((s) => !starredIdsOrdered.includes(s));
+      const finalStarredOrder = [...starredIdsOrdered, ...remainingStarred];
+
+      const starredCards = finalStarredOrder
+        .map((sid) => prev.cards.find((c) => c._id === sid))
+        .filter(Boolean) as FlashcardCard[];
+
+      const remaining = prev.cards.filter((c) => !nextSet.has(c._id));
+      const newCards = [...starredCards, ...remaining];
+
+      // ensure the viewer shows the start (so newly-favorited or next favorite is visible)
+      setViewerIndex(0);
+
+      return { ...prev, cards: newCards };
     });
+
+    // attempt to persist to server progress endpoint (best-effort)
+    try {
+      const curSet = Array.from(nextSet);
+      await fetch(`/api/student_page/flashcard/${flashcardId}/progress?userId=${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flashcards: { starredIds: curSet } }),
+      });
+    } catch (e) {
+      // ignore server errors
+    }
+  };
+
+  // Toggle favorite for the whole flashcard set (mirrors library behavior)
+  const toggleFavorite = async () => {
+    if (!userId || !flashcard) return;
+
+    const currentFavorite = flashcard.isFavorite || false;
+    const newFavoriteState = !currentFavorite;
+
+    // optimistic update for immediate UI feedback
+    setFlashcard((prev) => (prev ? { ...prev, isFavorite: newFavoriteState } : prev));
+
+    // persist favorite timestamp locally so ordering survives reloads (matches library behavior)
+    try {
+      const key = 'notewise.favoriteTimestamps.flashcard';
+      const raw = localStorage.getItem(key);
+      const map = raw ? JSON.parse(raw) as Record<string, number> : {};
+      if (newFavoriteState) map[flashcard._id] = Date.now(); else delete map[flashcard._id];
+      localStorage.setItem(key, JSON.stringify(map));
+    } catch (e) {
+      // ignore local storage errors
+    }
+
+    try {
+      const res = await fetch(`/api/student_page/flashcard/${flashcard._id}?userId=${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFavorite: newFavoriteState }),
+      });
+
+      if (!res.ok) {
+        const maybe = await res.json().catch(() => null);
+        const message =
+          maybe && typeof maybe === "object" && "message" in maybe
+            ? String((maybe as { message?: unknown }).message)
+            : `Failed to toggle favorite (${res.status})`;
+        throw new Error(message);
+      }
+
+      // Prefer the server response (in case it normalizes/changes anything)
+      const data = (await res.json()) as { flashcard: Flashcard };
+      setFlashcard(data.flashcard);
+      showSuccess(newFavoriteState ? 'Added to favorites' : 'Removed from favorites');
+    } catch (e: unknown) {
+      console.error("Failed to toggle favorite:", e);
+      // revert optimistic update on error
+      setFlashcard((prev) => (prev ? { ...prev, isFavorite: currentFavorite } : prev));
+      showError(e instanceof Error ? e.message : 'Failed to toggle favorite');
+    }
   };
 
   const handleEdit = async () => {
@@ -258,52 +605,53 @@ export default function FlashcardDetailPage() {
       const data = (await res.json()) as { flashcard: Flashcard };
       setFlashcard(data.flashcard);
       setIsEditing(false);
+      showSuccess('Flashcard set updated');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to update flashcard.");
+      showError(e instanceof Error ? e.message : 'Failed to update flashcard');
     }
   };
 
   const handleDelete = async () => {
     if (!flashcard || !userId) return;
+    showConfirm(
+      'Delete Flashcard',
+      'Are you sure you want to delete this flashcard? This action cannot be undone.',
+      async () => {
+        setIsDeleting(true);
+        try {
+          const res = await fetch(
+            `/api/student_page/flashcard/${flashcardId}?userId=${userId}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-    if (
-      !confirm(
-        "Are you sure you want to delete this flashcard? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+          if (!res.ok) {
+            const maybe: unknown = await res.json().catch(() => null);
+            const message =
+              maybe &&
+              typeof maybe === "object" &&
+              "message" in maybe &&
+              typeof (maybe as { message?: unknown }).message === "string"
+                ? String((maybe as { message?: unknown }).message)
+                : `Failed to delete flashcard (${res.status})`;
+            throw new Error(message);
+          }
 
-    setIsDeleting(true);
-    try {
-      const res = await fetch(
-        `/api/student_page/flashcard/${flashcardId}?userId=${userId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          showSuccess('Flashcard set deleted');
+          router.push("/student_page/library");
+        } catch (e: unknown) {
+          setError(e instanceof Error ? e.message : "Failed to delete flashcard.");
+          setIsDeleting(false);
+          showError(e instanceof Error ? e.message : 'Failed to delete flashcard');
         }
-      );
-
-      if (!res.ok) {
-        const maybe: unknown = await res.json().catch(() => null);
-        const message =
-          maybe &&
-          typeof maybe === "object" &&
-          "message" in maybe &&
-          typeof (maybe as { message?: unknown }).message === "string"
-            ? String((maybe as { message?: unknown }).message)
-            : `Failed to delete flashcard (${res.status})`;
-        throw new Error(message);
-      }
-
-      // Redirect back to library
-      router.push("/student_page/library");
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to delete flashcard.");
-      setIsDeleting(false);
-    }
+      },
+      { confirmText: 'Delete', isDangerous: true }
+    );
   };
 
   const handleTagChange = (value: string) => {
@@ -350,8 +698,10 @@ export default function FlashcardDetailPage() {
       setCardForm({ question: "", answer: "", image: "" });
       setIsAddingCard(false);
       setEditingCardId(null);
+      showSuccess('Card added');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to add card.");
+      showError(e instanceof Error ? e.message : 'Failed to add card');
     }
   };
 
@@ -390,46 +740,52 @@ export default function FlashcardDetailPage() {
       setFlashcard(data.flashcard);
       setCardForm({ question: "", answer: "", image: "" });
       setEditingCardId(null);
+      showSuccess('Card updated');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to update card.");
+      showError(e instanceof Error ? e.message : 'Failed to update card');
     }
   };
 
   const handleDeleteCard = async (cardId: string) => {
     if (!flashcard || !userId) return;
+    showConfirm(
+      'Delete Card',
+      'Are you sure you want to delete this card? This action cannot be undone.',
+      async () => {
+        try {
+          const res = await fetch(
+            `/api/student_page/flashcard/${flashcardId}/card/${cardId}?userId=${userId}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-    if (!confirm("Are you sure you want to delete this card?")) {
-      return;
-    }
+          if (!res.ok) {
+            const maybe: unknown = await res.json().catch(() => null);
+            const message =
+              maybe &&
+              typeof maybe === "object" &&
+              "message" in maybe &&
+              typeof (maybe as { message?: unknown }).message === "string"
+                ? String((maybe as { message?: unknown }).message)
+                : `Failed to delete card (${res.status})`;
+            throw new Error(message);
+          }
 
-    try {
-      const res = await fetch(
-        `/api/student_page/flashcard/${flashcardId}/card/${cardId}?userId=${userId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          const data = (await res.json()) as { flashcard: Flashcard };
+          setFlashcard(data.flashcard);
+          showSuccess('Card deleted');
+        } catch (e: unknown) {
+          setError(e instanceof Error ? e.message : "Failed to delete card.");
+          showError(e instanceof Error ? e.message : 'Failed to delete card');
         }
-      );
-
-      if (!res.ok) {
-        const maybe: unknown = await res.json().catch(() => null);
-        const message =
-          maybe &&
-          typeof maybe === "object" &&
-          "message" in maybe &&
-          typeof (maybe as { message?: unknown }).message === "string"
-            ? String((maybe as { message?: unknown }).message)
-            : `Failed to delete card (${res.status})`;
-        throw new Error(message);
-      }
-
-      const data = (await res.json()) as { flashcard: Flashcard };
-      setFlashcard(data.flashcard);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to delete card.");
-    }
+      },
+      { confirmText: 'Delete', isDangerous: true }
+    );
   };
 
   const startEditingCard = (card: FlashcardCard) => {
@@ -581,11 +937,12 @@ export default function FlashcardDetailPage() {
 
   if (isLoading) {
     return (
-      <LoadingTemplate2
-        title="Loading flashcard"
-        subtitle="Fetching flashcard data…"
-        compact={false}
-      />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" aria-hidden="true" />
+          <p className="text-gray-500 dark:text-slate-400">Loading your flashcard...</p>
+        </div>
+      </div>
     );
   }
 
@@ -625,7 +982,7 @@ export default function FlashcardDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -652,6 +1009,21 @@ export default function FlashcardDetailPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={toggleFavorite}
+              aria-label={flashcard.isFavorite ? "Remove from favorites" : "Add to favorites"}
+              title={flashcard.isFavorite ? "Remove from favorites" : "Add to favorites"}
+              className={`p-2 sm:p-2.5 rounded-xl transition-all inline-flex items-center ${
+                flashcard.isFavorite
+                  ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 hover:bg-yellow-200 dark:hover:bg-yellow-900/30'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/10 border border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill={flashcard.isFavorite ? 'currentColor' : 'none'} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </button>
+
             <button
               onClick={() => setIsEditing(true)}
               aria-label="Settings"
@@ -941,7 +1313,24 @@ export default function FlashcardDetailPage() {
                   key={card._id}
                   className="relative group bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 hover:border-teal-600/30 dark:hover:border-[#04C40A]/30 hover:shadow-lg transition-all"
                 >
-                  <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  {/* per-card star (thumbnail) - placed top-right next to menu */}
+                  <div className="absolute top-3 sm:top-4 right-14 sm:right-14 z-20">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleStar(card._id); }}
+                      aria-label={starredIds.has(card._id) ? 'Unfavorite card' : 'Favorite card'}
+                      title={starredIds.has(card._id) ? 'Unfavorite' : 'Favorite'}
+                      className={`p-1.5 sm:p-2 rounded-lg transition-all inline-flex items-center ${
+                        starredIds.has(card._id)
+                          ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800'
+                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:text-yellow-500'
+                      }`}
+                    >
+                      <svg className="w-4 h-4 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill={starredIds.has(card._id) ? 'currentColor' : 'none'} stroke="currentColor" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4 pr-16 sm:pr-18">
                     <div className="flex items-center justify-center flex-shrink-0">
                       <Chip
                         variant="badge"
@@ -1032,6 +1421,53 @@ export default function FlashcardDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal (library-style) */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowConfirmModal(false)}></div>
+          <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">{confirmModalConfig.title}</h3>
+              <button
+                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 p-1"
+                onClick={() => setShowConfirmModal(false)}
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
+              {confirmModalConfig.message}
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
+              >
+                {confirmModalConfig.cancelText}
+              </button>
+              <button
+                onClick={() => {
+                  confirmModalConfig.onConfirm();
+                  setShowConfirmModal(false);
+                }}
+                className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                  confirmModalConfig.isDangerous
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-teal-600 text-white hover:bg-teal-700'
+                }`}
+              >
+                {confirmModalConfig.confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Card Edit Modal (converted from right-side drawer to Modal for library consistency) */}
       <Modal

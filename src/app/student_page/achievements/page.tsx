@@ -19,6 +19,7 @@ export default function AchievementsPage() {
     const { user, isLoading: authLoading } = useAuth();
     const [flashcards, setFlashcards] = useState<any[]>([]);
     const [summaries, setSummaries] = useState<any[]>([]);
+    const [activities, setActivities] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [studyStreak, setStudyStreak] = useState<number>(0);
     const [checklist, setChecklist] = useState<Record<string, boolean>>({});
@@ -105,9 +106,10 @@ export default function AchievementsPage() {
 
             const userId = encodeURIComponent(user._id as string);
             try {
-                const [flashcardsRes, summariesRes] = await Promise.allSettled([
+                const [flashcardsRes, summariesRes, activitiesRes] = await Promise.allSettled([
                     fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' }),
-                    fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' })
+                    fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' }),
+                    fetch(`/api/student_page/history?userId=${userId}`, { credentials: 'include' })
                 ]);
 
                 if (mounted) {
@@ -123,6 +125,13 @@ export default function AchievementsPage() {
                         setSummaries(Array.isArray(data?.summaries) ? data.summaries : []);
                     } else {
                         setSummaries([]);
+                    }
+
+                    if (activitiesRes.status === 'fulfilled' && activitiesRes.value.ok) {
+                        const data = await activitiesRes.value.json().catch(() => null);
+                        setActivities(Array.isArray(data?.activities) ? data.activities : []);
+                    } else {
+                        setActivities([]);
                     }
                     
                 }
@@ -178,12 +187,16 @@ export default function AchievementsPage() {
         const weeklyReviews = sparkline.reduce((s, n) => s + n, 0);
         const recentCount = recentCompletions.length;
 
+        // Count study completion activities
+        const studyCompletions = activities.filter(a => a.type === 'flashcard.study_complete').length;
+        const favoritesStudied = activities.filter(a => a.type === 'flashcard.study_complete' && a.meta?.studiedFavorites).length;
+
         const a: Achievement[] = [
             { id: 1, title: 'First Steps', description: 'Created your first flashcard set', icon: '🎯', earned: totalFlashcards >= 1 },
             { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: studyStreak >= 7, progress: studyStreak, total: 7 },
             { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', progress: totalFlashcards, total: 10, earned: totalFlashcards >= 10 },
             { id: 4, title: 'Perfect Score', description: 'Got 100% on a practice test', icon: '⭐', progress: practiceTestsCompleted, total: 1, earned: practiceTestsCompleted >= 1 },
-            { id: 5, title: 'Deck Finisher', description: 'Finish 5 different flashcard sets', icon: '🏁', progress: finishedSets, total: 5, earned: finishedSets >= 5 },
+            { id: 5, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', progress: studyCompletions, total: 5, earned: studyCompletions >= 5 },
             { id: 6, title: 'Streak Holder', description: 'Keep a study streak for 14 days', icon: '📅', progress: studyStreak, total: 14, earned: studyStreak >= 14 },
 
             // additional achievements (7-20)
@@ -195,15 +208,15 @@ export default function AchievementsPage() {
             { id: 12, title: 'Review Pro', description: 'Review 200 flashcards', icon: '⚡', progress: totalReviewed, total: 200, earned: totalReviewed >= 200 },
             { id: 13, title: 'Marathoner', description: 'Study streak of 30 days', icon: '🏃‍♀️', progress: studyStreak, total: 30, earned: studyStreak >= 30 },
             { id: 14, title: 'Active Week', description: 'Study 7 times in the last 7 days', icon: '📆', progress: weeklyReviews, total: 7, earned: weeklyReviews >= 7 },
-            { id: 15, title: 'Recent Achiever', description: 'Complete 3 sets recently', icon: '�', progress: recentCount, total: 3, earned: recentCount >= 3 },
+            { id: 15, title: 'Session Master', description: 'Complete 10 study sessions', icon: '🎓', progress: studyCompletions, total: 10, earned: studyCompletions >= 10 },
             { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', progress: totalCards, total: 100, earned: totalCards >= 100 },
             { id: 17, title: 'Card Hoarder', description: 'Add 500 cards total', icon: '📦', progress: totalCards, total: 500, earned: totalCards >= 500 },
-            { id: 18, title: 'Consistent Learner', description: 'Have 4 weekly active streaks', icon: '🔒', progress: Math.min(4, Math.floor(studyStreak / 7)), total: 4, earned: studyStreak >= 28 },
+            { id: 18, title: 'Favorites Fan', description: 'Study favorites 3 times', icon: '⭐', progress: favoritesStudied, total: 3, earned: favoritesStudied >= 3 },
             { id: 19, title: 'Centurion', description: 'Create 100 flashcard sets', icon: '💯', progress: totalFlashcards, total: 100, earned: totalFlashcards >= 100 },
-            { id: 20, title: 'Legacy Builder', description: '50 practice tests completed', icon: '🏅', progress: practiceTestsCompleted, total: 50, earned: practiceTestsCompleted >= 50 }
+            { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', progress: studyCompletions, total: 50, earned: studyCompletions >= 50 }
         ];
         return a;
-    }, [flashcards, totalFlashcards, totalSummaries, totalReviewed, practiceTestsCompleted, studyStreak, recentCompletions, sparkline]);
+    }, [flashcards, totalFlashcards, totalSummaries, totalReviewed, practiceTestsCompleted, studyStreak, recentCompletions, sparkline, activities]);
 
     const earnedCount = achievements.filter(a => a.earned).length;
 

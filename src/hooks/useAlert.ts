@@ -32,20 +32,21 @@ export const useAlert = () => {
         // Use a flag to prevent infinite loops
         try {
             if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
-                // Check if this event is already being dispatched
-                if (!(window as any).__alertEventDispatching) {
-                    (window as any).__alertEventDispatching = true;
-                    const ev = new CustomEvent('notewise:alert', { detail: { type, message, title } });
-                    window.dispatchEvent(ev);
-                    // Reset flag after event dispatch completes
-                    setTimeout(() => {
-                        (window as any).__alertEventDispatching = false;
-                    }, 0);
-                }
+                 // Dispatch the alert event asynchronously so calling showAlert during render
+                // doesn't synchronously trigger other components' state updates (avoids
+                // "setState in render" React errors). Use setTimeout to schedule after
+                // the current call stack completes.
+                const ev = new CustomEvent('notewise:alert', { detail: { type, message, title } });
+                setTimeout(() => {
+                    try {
+                        window.dispatchEvent(ev);
+                    } catch (err) {
+                        // ignore dispatch errors
+                    }
+                }, 0);
             }
         } catch (e) {
             // ignore if CustomEvent isn't supported
-            (window as any).__alertEventDispatching = false;
         }
     }, []);
 
