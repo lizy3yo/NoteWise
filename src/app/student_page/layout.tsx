@@ -798,6 +798,42 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         </span>
                       )}
                     </Link>
+                    {/* Achievements - moved here so it's visible in the main sidebar quick-access */}
+                    <Link
+                      href="/student_page/achievements"
+                      className={`flex items-center ${!isExpanded
+                        ? "justify-center w-full p-2.5 mx-0"
+                        : "gap-4 px-5 py-2.5 mx-4"
+                        } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
+                        } ${pathname === "/student_page/achievements"
+                          ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
+                          : ""
+                        }`}
+                      title={!isExpanded ? "Achievements" : ""}
+                    >
+                      <svg
+                        className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${pathname === "/student_page/achievements"
+                          ? "text-teal-600 dark:text-slate-200"
+                          : ""
+                          }`}
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                        />
+                      </svg>
+                      {isExpanded && (
+                        <span className="whitespace-nowrap">Achievements</span>
+                      )}
+                    </Link>
+
                     {/* Unified History link (shows all activity: summaries, flashcards, practice tests) */}
                     <div className="mt-1">
                       {/* header removed: keep only the History link to avoid duplicate label */}
@@ -949,27 +985,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         <span>My Profile</span>
                       </Link>
 
-                      <Link
-                        href="/student_page/achievements"
-                        className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"
-                      >
-                        <svg
-                          className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
-                          width="18"
-                          height="18"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                          />
-                        </svg>
-                        <span>Achievements</span>
-                      </Link>
+                      {/* Achievements link removed from profile dropdown - now in sidebar quick-access */}
 
                       <Link
                         href="/student_page/settings"
