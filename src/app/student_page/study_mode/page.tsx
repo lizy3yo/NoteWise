@@ -207,31 +207,9 @@ function StudyModeContent() {
     console.log('Adding files:', Array.from(newFiles).map(f => ({ name: f.name, size: f.size, type: f.type })));
     const fileArray = Array.from(newFiles);
 
-    // If creating a summary, only allow simple text files that the summary API supports.
-    if (createType === 'summary') {
-      const supported = fileArray.filter((f) => {
-        const n = f.name.toLowerCase();
-        return n.endsWith('.txt');
-      });
+    // clear previous generation errors when we have valid files
+    hideAlert();
 
-      if (supported.length === 0) {
-        // Show a helpful client-side error instead of sending unsupported files to the API.
-        showError('Summary uploads currently support only .txt files. Please paste text or use a .txt file.', 'Unsupported file type');
-        return;
-      }
-
-      // clear previous generation errors when we have valid files
-      hideAlert();
-
-      setFiles((prev) => {
-        const updated = [...prev, ...supported].slice(0, 20);
-        console.log('Files state updated:', updated.length, 'files');
-        return updated;
-      });
-      return;
-    }
-
-    // Default behaviour for flashcards or other upload types
     setFiles((prev) => {
       const updated = [...prev, ...fileArray].slice(0, 20);
       console.log('Files state updated:', updated.length, 'files');
@@ -555,25 +533,15 @@ function StudyModeContent() {
                   className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-8 sm:py-12 lg:py-16 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-gray-800 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]"
                 >
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {createType === 'summary' ? (
-                      <>
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">TXT</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">DOC</div>
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PDF</div>
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PPT</div>
-                      </>
-                    )}
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">DOC</div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PDF</div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">TXT</div>
                   </div>
                   <div className="text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">
                     {createType === 'flashcards' ? 'Upload files for AI processing' : 'Drag notes, slides, or readings here'}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                    {createType === 'flashcards'
-                      ? 'PDF, Word, PowerPoint, Text files (max 10MB) - Processed with advanced AI'
-                      : 'Only .txt files are supported for summary uploads'}
+                    PDF, Word, Text files (max 10MB) - Processed with advanced AI
                   </div>
                   <div className="mt-3">
                     <button
@@ -586,7 +554,7 @@ function StudyModeContent() {
                       ref={fileInputRef}
                       onChange={handleFileInput}
                       type="file"
-                      accept={createType === 'summary' ? '.txt' : '.pdf,.docx,.pptx,.txt,.md,.doc'}
+                      accept=".pdf,.docx,.txt,.md,.doc"
                       className="hidden"
                       multiple
                     />

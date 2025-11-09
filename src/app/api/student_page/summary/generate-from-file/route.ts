@@ -10,30 +10,105 @@ async function extractTextFromFile(file: File): Promise<string> {
   const fileType = file.type;
   const fileName = file.name.toLowerCase();
   
-  if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
+  // Handle text files
+  if (fileType === 'text/plain' || fileName.endsWith('.txt') || fileName.endsWith('.md')) {
     return await file.text();
   }
   
-  // CSV files are no longer supported for summaries
-  if (fileType === 'text/csv' || fileName.endsWith('.csv')) {
-    throw new Error('CSV files are not supported for summaries. Please use .txt files or paste the text directly.');
+  // Handle PDF files
+  if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+    try {
+      logger.info('Attempting to extract text from PDF');
+      const pdfParse = (await import('pdf-parse')).default;
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const pdfData = await pdfParse(buffer);
+      
+      if (pdfData.text && pdfData.text.trim().length > 0) {
+        logger.info('Successfully extracted text from PDF', { 
+          contentLength: pdfData.text.length,
+          pages: pdfData.numpages
+        });
+        return pdfData.text;
+      }
+      throw new Error('No text content found in PDF');
+    } catch (error) {
+      logger.error('PDF extraction failed:', error);
+      throw new Error('Failed to extract text from PDF. The PDF may be image-based or corrupted.');
+    }
   }
   
-  // For other file types, we'll need to implement proper extraction
-  // For now, we'll throw an error for unsupported types
-  if (fileName.endsWith('.pdf')) {
-    throw new Error('PDF files are not yet supported. Please copy and paste the text content instead.');
+  // Handle Word documents
+  if (fileType === 'application/msword' || 
+      fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
+    try {
+      logger.info('Attempting to extract text from Word document');
+      const mammoth = (await import('mammoth')).default;
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const result = await mammoth.extractRawText({ buffer });
+      
+      if (result.value && result.value.trim().length > 0) {
+        logger.info('Successfully extracted text from Word document', { 
+          contentLength: result.value.length
+        });
+        return result.value;
+      }
+      throw new Error('No text content found in Word document');
+    } catch (error) {
+      logger.error('Word document extraction failed:', error);
+      throw new Error('Failed to extract text from Word document. The file may be corrupted.');
+    }
   }
   
-  if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
-    throw new Error('Word documents are not yet supported. Please copy and paste the text content instead.');
+  // Handle PowerPoint files  
+  if (fileType === 'application/vnd.ms-powerpoint' ||
+      fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+      fileName.endsWith('.ppt') || fileName.endsWith('.pptx')) {
+    try {
+      logger.info('Attempting to extract text from PowerPoint');
+      
+      if (fileName.endsWith('.pptx')) {
+        // Use adm-zip to extract text from PPTX
+        const AdmZip = (await import('adm-zip')).default;
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const zip = new AdmZip(buffer);
+        const zipEntries = zip.getEntries();
+        
+        let extractedText = '';
+        zipEntries.forEach((entry: any) => {
+          if (entry.entryName.match(/ppt\/slides\/slide\d+\.xml/)) {
+            const content = entry.getData().toString('utf8');
+            const matches = content.match(/<a:t>([^<]+)<\/a:t>/g);
+            if (matches) {
+              matches.forEach((match: string) => {
+                const text = match.replace(/<\/?a:t>/g, '');
+                extractedText += text + ' ';
+              });
+            }
+          }
+        });
+        
+        if (extractedText.trim().length > 0) {
+          logger.info('Successfully extracted text from PowerPoint', { 
+            contentLength: extractedText.length
+          });
+          return extractedText.trim();
+        }
+        throw new Error('No text content found in PowerPoint');
+      } else {
+        // Old .ppt format not supported
+        throw new Error('Old PowerPoint format (.ppt) not supported. Please use .pptx or convert to PDF');
+      }
+    } catch (error) {
+      logger.error('PowerPoint extraction failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to extract text from PowerPoint');
+    }
   }
   
-  if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx')) {
-    throw new Error('PowerPoint files are not yet supported. Please copy and paste the text content instead.');
-  }
-  
-  throw new Error(`Unsupported file type: ${fileType}. Please use .txt files, or copy and paste the content.`);
+  throw new Error(`Unsupported file type. Supported formats: PDF (.pdf), Word (.doc, .docx), PowerPoint (.pptx), Text (.txt, .md)`);
 }
 
 export async function POST(request: NextRequest) {

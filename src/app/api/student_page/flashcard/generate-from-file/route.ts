@@ -107,7 +107,6 @@ export async function POST(request: NextRequest) {
 
     // For text files, extract content directly. For binary files, try to extract or use placeholder
     let textContent: string = '';
-    let useZapierOnly = false;
 
     if (file.type.includes('text') || file.type.includes('txt')) {
       // For text files, we can extract content directly
@@ -120,8 +119,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (error) {
-        logger.warn('Failed to extract text from text file, will use Zapier only', { error });
-        useZapierOnly = true;
+        logger.warn('Failed to extract text from text file', { error });
       }
     } else if (file.type.includes('pdf') || file.type.includes('application/pdf')) {
       // For PDF files, try to extract text directly using pdf-parse
@@ -143,22 +141,76 @@ export async function POST(request: NextRequest) {
           contentLength: textContent.length,
           pages: pdfData.numpages
         });
-        
-        // If we have good text content, don't use Zapier only
-        if (textContent.length > 100) {
-          useZapierOnly = false;
-        }
       } catch (error) {
         logger.warn('Failed to extract text from PDF directly', { error });
       }
-      
-      // If PDF text extraction failed, use Zapier only
-      useZapierOnly = true;
-      logger.info('PDF detected, will use Zapier for text extraction', { fileType: file.type });
+    } else if (file.type.includes('word') || 
+               file.type.includes('application/msword') ||
+               file.type.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
+               file.name.toLowerCase().endsWith('.doc') || 
+               file.name.toLowerCase().endsWith('.docx')) {
+      // For Word documents, extract text using mammoth
+      try {
+        logger.info('Attempting to extract text from Word document');
+        
+        const mammoth = (await import('mammoth')).default;
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const result = await mammoth.extractRawText({ buffer });
+        textContent = result.value;
+        
+        logger.info('Successfully extracted text from Word document', { 
+          contentLength: textContent.length
+        });
+      } catch (error) {
+        logger.warn('Failed to extract text from Word document', { error });
+      }
+    } else if (file.type.includes('presentation') ||
+               file.type.includes('application/vnd.ms-powerpoint') ||
+               file.type.includes('application/vnd.openxmlformats-officedocument.presentationml.presentation') ||
+               file.name.toLowerCase().endsWith('.ppt') || 
+               file.name.toLowerCase().endsWith('.pptx')) {
+      // For PowerPoint files, we'll try to extract text
+      try {
+        logger.info('Attempting to extract text from PowerPoint');
+        
+        // For PPTX files, we can use a simple XML parsing approach
+        if (file.name.toLowerCase().endsWith('.pptx')) {
+          const AdmZip = (await import('adm-zip')).default;
+          const arrayBuffer = await file.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const zip = new AdmZip(buffer);
+          const zipEntries = zip.getEntries();
+          
+          let extractedText = '';
+          zipEntries.forEach((entry: any) => {
+            if (entry.entryName.match(/ppt\/slides\/slide\d+\.xml/)) {
+              const content = entry.getData().toString('utf8');
+              // Extract text between <a:t> tags
+              const matches = content.match(/<a:t>([^<]+)<\/a:t>/g);
+              if (matches) {
+                matches.forEach((match: string) => {
+                  const text = match.replace(/<\/?a:t>/g, '');
+                  extractedText += text + ' ';
+                });
+              }
+            }
+          });
+          
+          textContent = extractedText.trim();
+          logger.info('Successfully extracted text from PowerPoint', { 
+            contentLength: textContent.length
+          });
+        } else {
+          // For .ppt files (older format), suggest converting to PDF
+          logger.warn('Old PowerPoint format (.ppt) detected - extraction not fully supported');
+          throw new Error('For best results, please convert .ppt files to .pptx or PDF format');
+        }
+      } catch (error) {
+        logger.warn('Failed to extract text from PowerPoint', { error });
+      }
     } else {
-      // For other binary files (DOCX, etc.), we need external processing
-      useZapierOnly = true;
-      logger.info('Binary file detected, using Zapier for text extraction', { fileType: file.type });
+      logger.info('Unrecognized file type, attempting basic text extraction', { fileType: file.type });
     }
 
     // Process the extracted text content
