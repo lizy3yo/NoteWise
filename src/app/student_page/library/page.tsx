@@ -1187,10 +1187,13 @@ function PrivateLibraryContent() {
       <div className="mb-8 bg-transparent">
         <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
           {(['favorites', 'flashcards', 'study_notes', 'practice_tests', 'folders'] as const).map((tab) => {
-            const label = tab
-              .split('_')
-              .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
-              .join(' ');
+            // Show a user-friendly label for the tabs. Keep the internal tab key unchanged.
+            const label = tab === 'study_notes'
+              ? 'Summaries'
+              : tab
+                .split('_')
+                .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
+                .join(' ');
             return (
               <button
                 key={tab}

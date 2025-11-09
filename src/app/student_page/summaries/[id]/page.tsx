@@ -153,10 +153,10 @@ export default function SummaryViewPage() {
             // Update the displayed summary
             setSummary(data.summary);
             setShowResummarizeModal(false);
-            showSuccess('Summary resummarized successfully');
+            showSuccess('Summary rewritten successfully');
         } catch (err) {
-            console.error('Error resummarizing summary:', err);
-            showError(err instanceof Error ? err.message : 'Failed to resummarize');
+            console.error('Rewrite failed:', err);
+            showError(err instanceof Error ? err.message : 'Failed to rewrite');
         } finally {
             setResummarizeLoading(false);
         }
@@ -285,7 +285,7 @@ export default function SummaryViewPage() {
                             onClick={() => setShowResummarizeModal(true)}
                             className="px-6 py-3 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors font-medium"
                         >
-                            Resummarize
+                            Rewrite
                         </button>
                         <button
                             onClick={openDeleteConfirm}
@@ -369,7 +369,7 @@ export default function SummaryViewPage() {
                         <div className="absolute inset-0 bg-black/50" onClick={() => { if (!resummarizeLoading) setShowResummarizeModal(false); }}></div>
                         <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Resummarize Summary</h3>
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Rewrite Summary</h3>
                                 <button
                                     className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 p-1"
                                     onClick={() => { if (!resummarizeLoading) setShowResummarizeModal(false); }}
@@ -398,7 +398,7 @@ export default function SummaryViewPage() {
                                     className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${resummarizeLoading ? 'opacity-60 cursor-not-allowed' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
                                     disabled={resummarizeLoading}
                                 >
-                                    {resummarizeLoading ? 'Resummarizing...' : 'Resummarize'}
+                                    {resummarizeLoading ? 'Rewriting...' : 'Rewrite'}
                                 </button>
                             </div>
                         </div>
