@@ -376,9 +376,9 @@ export default function PracticeTestsPage() {
           <p className="text-gray-600 dark:text-gray-400">Choose sets or upload materials to create tailored practice questions.</p>
         </div>
 
-        <div className="mb-8 bg-transparent">
+          <div className="mb-8 bg-transparent">
           <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
-            {['sets', 'notes', 'upload', 'paste'].map((t) => {
+            {['upload', 'paste', 'sets', 'notes'].map((t) => {
               const label = t === 'sets' ? 'Flashcard sets' : t === 'notes' ? 'Study notes sets' : t === 'upload' ? 'Upload files' : 'Paste text';
               return (
                 <button
@@ -522,6 +522,11 @@ export default function PracticeTestsPage() {
                             return (
                               <div
                                 key={item._id}
+                                onClick={() => toggleSelect(item._id)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelect(item._id); } }}
+                                aria-pressed={selected}
                                 className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all relative`}
                               >
                                 <div className="flex items-start justify-between mb-4">
@@ -607,6 +612,11 @@ export default function PracticeTestsPage() {
                             return (
                               <div
                                 key={item._id}
+                                onClick={() => toggleSelect(item._id)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelect(item._id); } }}
+                                aria-pressed={selected}
                                 className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all relative`}
                               >
                                 <div className="flex items-start justify-between mb-4">

@@ -98,13 +98,6 @@ The frontend is served by Next.js at http://localhost:3000 by default. API route
 - AI helper utilities for generating flashcards/summaries (in `src/lib/ai`)
 - Cloudinary integration for image uploads
 
-🚧 In development / planned
-
-- Full spaced repetition scheduling engine
-- Adaptive learning algorithm and personalized study recommendations
-- Study session analytics dashboard and progress tracking
-- Admin dashboard for user & content management
-
 📄 License
 -----------
 This project uses source files containing Apache 2.0 headers in several files. Treat the code as Apache-2.0 licensed unless otherwise specified by file headers or a LICENSE file.
