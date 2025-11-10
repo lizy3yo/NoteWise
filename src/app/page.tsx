@@ -6,6 +6,7 @@ import Modal from "@/components/ui/Modal";
 import TermsOfService from "@/components/legal/TermsOfService";
 import PrivacyPolicy from "@/components/legal/PrivacyPolicy";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import Chatbot from "@/components/chatbot/Chatbot";
 import "./home.css";
 
 export default function Home() {
@@ -766,6 +767,9 @@ export default function Home() {
       >
         <PrivacyPolicy />
       </Modal>
+
+      {/* Chatbot */}
+      <Chatbot isAuthenticated={false} />
     </div>
   );
 }

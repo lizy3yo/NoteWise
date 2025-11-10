@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -1215,6 +1216,9 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* Chatbot */}
+      <Chatbot isAuthenticated={true} />
     </div>
   );
 }
