@@ -34,9 +34,9 @@ function StudyModeContent() {
   // localStorage keys for persisting options
   const SUMMARY_OPTIONS_KEY = 'study_mode_summary_options_v1';
   const FLASHCARD_OPTIONS_KEY = 'study_mode_flashcard_options_v1';
-  // keep loaded values so we can switch the customTitle when toggling createType
-  const loadedSummaryRef = React.useRef<{ summaryType?: string; summaryLength?: string; title?: string } | null>(null);
-  const loadedFlashRef = React.useRef<{ maxCards?: number; title?: string } | null>(null);
+  // keep loaded values for options (we no longer persist/restore the custom title)
+  const loadedSummaryRef = React.useRef<{ summaryType?: string; summaryLength?: string } | null>(null);
+  const loadedFlashRef = React.useRef<{ maxCards?: number } | null>(null);
 
   // Load saved options on mount
   useEffect(() => {
@@ -46,10 +46,8 @@ function StudyModeContent() {
         const parsed = JSON.parse(s || '{}');
         if (parsed.summaryType) setSummaryType(parsed.summaryType);
         if (parsed.summaryLength) setSummaryLength(parsed.summaryLength);
-        if (parsed.title) {
-          // don't overwrite current customTitle yet; store for switching
-          loadedSummaryRef.current = { summaryType: parsed.summaryType, summaryLength: parsed.summaryLength, title: parsed.title };
-        }
+        // store option values but do NOT restore titles
+        loadedSummaryRef.current = { summaryType: parsed.summaryType, summaryLength: parsed.summaryLength };
       }
     } catch (e) {
       // ignore localStorage errors
@@ -59,62 +57,34 @@ function StudyModeContent() {
       if (f) {
         const parsed = JSON.parse(f || '{}');
         if (parsed.maxCards) setMaxCards(Number(parsed.maxCards));
-        if (parsed.title) {
-          loadedFlashRef.current = { maxCards: Number(parsed.maxCards), title: parsed.title };
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // initialize customTitle from whichever matches the currently selected createType
-    try {
-      if (createType === 'summary') {
-        const v = loadedSummaryRef.current?.title;
-        if (v) setCustomTitle(v);
-        else if (loadedFlashRef.current?.title) setCustomTitle(loadedFlashRef.current.title);
-      } else {
-        const v = loadedFlashRef.current?.title;
-        if (v) setCustomTitle(v);
-        else if (loadedSummaryRef.current?.title) setCustomTitle(loadedSummaryRef.current.title);
+        loadedFlashRef.current = { maxCards: Number(parsed.maxCards) };
       }
     } catch (e) {
       // ignore
     }
   }, []);
 
-  // When createType changes, restore the title for that type if we previously loaded one
-  useEffect(() => {
-    try {
-      if (createType === 'summary') {
-        if (loadedSummaryRef.current?.title) setCustomTitle(loadedSummaryRef.current.title as string);
-      } else {
-        if (loadedFlashRef.current?.title) setCustomTitle(loadedFlashRef.current.title as string);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, [createType]);
+  // We intentionally do NOT auto-restore titles when switching create type so users can enter a new title.
 
   // Persist summary options when they change
   useEffect(() => {
     try {
-      const obj = { summaryType, summaryLength, title: customTitle };
+      const obj = { summaryType, summaryLength };
       localStorage.setItem(SUMMARY_OPTIONS_KEY, JSON.stringify(obj));
     } catch (e) {
       // ignore
     }
-  }, [summaryType, summaryLength, customTitle]);
+  }, [summaryType, summaryLength]);
 
   // Persist flashcard options when they change
   useEffect(() => {
     try {
-      const obj = { maxCards, title: customTitle };
+      const obj = { maxCards };
       localStorage.setItem(FLASHCARD_OPTIONS_KEY, JSON.stringify(obj));
     } catch (e) {
       // ignore
     }
-  }, [maxCards, customTitle]);
+  }, [maxCards]);
 
   // Get userId on component mount
   useEffect(() => {

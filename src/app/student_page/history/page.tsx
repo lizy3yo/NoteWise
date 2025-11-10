@@ -380,9 +380,24 @@ export default function HistoryPage() {
                   const resolvedType = resolveActivityType(act);
                   // debug: show resolved type in console when needed
                   // console.debug('Activity resolved type', act._id, resolvedType);
-
                   const Icon = getActivityIcon(resolvedType);
                   const colorClass = activityColors[resolvedType] || 'text-slate-600 bg-slate-50 dark:bg-slate-800';
+
+                  // Extra derived display data for flashcard events
+                  const isStudyComplete = resolvedType.startsWith('flashcard.study_complete');
+                  const isFlashcardUpdate = resolvedType.startsWith('flashcard.update');
+
+                  // Study-complete: try multiple possible meta shapes
+                  const studiedCount = act.meta?.cardCount ?? (Array.isArray(act.meta?.cardIds) ? act.meta.cardIds.length : undefined);
+                  const correctCount = act.meta?.correctCount ?? act.meta?.correct ?? undefined;
+                  const totalCount = act.meta?.total ?? (studiedCount ?? undefined);
+                  const percent = (typeof correctCount === 'number' && typeof totalCount === 'number' && totalCount > 0)
+                    ? Math.round((correctCount / totalCount) * 100)
+                    : undefined;
+
+                  // Update: list updated fields or present changes array with before/after
+                  const updatedFields = act.meta?.updatedFields ?? (Array.isArray(act.meta?.changes) ? act.meta.changes.map((c: any) => c.field || c.key).filter(Boolean) : undefined);
+                  const changes = Array.isArray(act.meta?.changes) ? act.meta.changes : undefined;
                   
                   return (
                     <div
@@ -406,6 +421,7 @@ export default function HistoryPage() {
                                 </p>
                               )}
                               <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                {/* Existing explicit meta badges */}
                                 {act.meta?.cardCount !== undefined && (
                                   <span className="flex items-center gap-1">
                                     <BookOpen className="w-3 h-3" />
@@ -429,7 +445,39 @@ export default function HistoryPage() {
                                     {act.meta.subject}
                                   </span>
                                 )}
+
+                                {/* Added: readable details for flashcard study completions */}
+                                {isStudyComplete && (studiedCount !== undefined || correctCount !== undefined) && (
+                                  <span className="flex items-center gap-2">
+                                    <BookOpen className="w-3 h-3" />
+                                    <span>
+                                      {studiedCount ?? totalCount ?? '1'} card{(studiedCount ?? totalCount ?? 1) > 1 ? 's' : ''}
+                                      {typeof correctCount === 'number' ? ` · ${correctCount} correct${typeof percent === 'number' ? ` (${percent}%)` : ''}` : ''}
+                                    </span>
+                                  </span>
+                                )}
+
+                                {/* Added: readable details for flashcard updates */}
+                                {isFlashcardUpdate && updatedFields && updatedFields.length > 0 && (
+                                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">
+                                    Updated: {updatedFields.join(', ')}
+                                  </span>
+                                )}
                               </div>
+
+                              {/* If changes array present, show a compact before/after list */}
+                              {isFlashcardUpdate && Array.isArray(changes) && changes.length > 0 && (
+                                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                  {changes.map((c: any, i: number) => (
+                                    <div key={i} className="mb-1">
+                                      <span className="font-medium">{c.field ?? c.key ?? 'field'}</span>
+                                      {c.before !== undefined || c.after !== undefined ? (
+                                        <span className="ml-2">{String(c.before ?? '')} → {String(c.after ?? '')}</span>
+                                      ) : null}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             
                             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
