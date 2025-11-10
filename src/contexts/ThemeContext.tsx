@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Get saved theme from localStorage
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     const initialTheme = savedTheme && ['light', 'dark', 'system'].includes(savedTheme) ? savedTheme : 'system';
-    
+
     setTheme(initialTheme);
     setMounted(true);
   }, []);
@@ -32,15 +32,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const updateResolvedTheme = () => {
       let newResolvedTheme: 'light' | 'dark';
-      
+
       if (theme === 'system') {
         newResolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       } else {
         newResolvedTheme = theme;
       }
-      
+
       setResolvedTheme(newResolvedTheme);
-      
+
       // Update document class
       const root = document.documentElement;
       if (newResolvedTheme === 'dark') {
@@ -48,7 +48,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       } else {
         root.classList.remove('dark');
       }
-      
+
       // Save to localStorage
       localStorage.setItem('theme', theme);
     };
