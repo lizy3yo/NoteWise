@@ -147,43 +147,58 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET endpoint to retrieve submission details
+// GET endpoint to retrieve submission details or list of submissions
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const submissionId = searchParams.get('submissionId');
     const userId = searchParams.get('userId');
-
-    if (!submissionId) {
-      return NextResponse.json(
-        { success: false, error: 'Submission ID is required' },
-        { status: 400 }
-      );
-    }
+    const limit = parseInt(searchParams.get('limit') || '10');
 
     await connectToDatabase();
 
-    const submission = await PracticeTestSubmission.findById(submissionId).lean() as any;
+    // If submissionId is provided, return single submission
+    if (submissionId) {
+      const submission = await PracticeTestSubmission.findById(submissionId).lean() as any;
 
-    if (!submission) {
-      return NextResponse.json(
-        { success: false, error: 'Submission not found' },
-        { status: 404 }
-      );
+      if (!submission) {
+        return NextResponse.json(
+          { success: false, error: 'Submission not found' },
+          { status: 404 }
+        );
+      }
+
+      // Verify user owns this submission
+      if (userId && submission.userId !== userId) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 403 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        submission
+      });
     }
 
-    // Verify user owns this submission
-    if (userId && submission.userId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
-      );
+    // If userId is provided, return list of submissions for that user
+    if (userId) {
+      const submissions = await PracticeTestSubmission.find({ userId })
+        .sort({ completedAt: -1 })
+        .limit(limit)
+        .lean();
+
+      return NextResponse.json({
+        success: true,
+        submissions
+      });
     }
 
-    return NextResponse.json({
-      success: true,
-      submission
-    });
+    return NextResponse.json(
+      { success: false, error: 'Either submissionId or userId is required' },
+      { status: 400 }
+    );
 
   } catch (error: any) {
     logger.error('Failed to retrieve submission:', {

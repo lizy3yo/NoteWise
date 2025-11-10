@@ -8,26 +8,60 @@ import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2";
 import { useSession } from "next-auth/react";
 
 interface DashboardStats {
-  totalUploads: number;
   totalFlashcards: number;
+  totalSummaries: number;
+  totalTests: number;
+  totalFolders: number;
   studyStreak: number;
-  studyProgress: number;
+  averageTestScore: number;
+  totalStudyTime: number;
   recentActivity: string;
+}
+
+interface Activity {
+  _id: string;
+  type: string;
+  action: string;
+  meta?: any;
+  createdAt: string;
+}
+
+interface TestSubmission {
+  _id: string;
+  practiceTestId: string;
+  score: number;
+  completedAt: string;
+  timeSpent: number;
+}
+
+interface StudyProgress {
+  flashcard: string;
+  lastSessionStartedAt: string;
+  learn?: {
+    masteredIds: string[];
+    incorrectIds: string[];
+  };
 }
 
 export default function UserDashboard() {
   const { isLoading: authLoading, user } = useAuth();
   const { data: session } = useSession();
   const [stats, setStats] = useState<DashboardStats>({
-    totalUploads: 0,
     totalFlashcards: 0,
+    totalSummaries: 0,
+    totalTests: 0,
+    totalFolders: 0,
     studyStreak: 0,
-    studyProgress: 0,
+    averageTestScore: 0,
+    totalStudyTime: 0,
     recentActivity: "No recent activity"
   });
   const [loadingStats, setLoadingStats] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Array<{_id: string; title: string; type: string}>>([]);
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [recentTests, setRecentTests] = useState<TestSubmission[]>([]);
+  const [weeklyActivity, setWeeklyActivity] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
 
   // Resolve first name from several sources
   const fromAuth =
@@ -65,151 +99,129 @@ export default function UserDashboard() {
   const firstName = fromAuth || fromSession || fromLocal || "Student";
 
   useEffect(() => {
-    // Load dashboard stats from available endpoints when user is present.
-    // If endpoints are unavailable or the request fails, fall back to hardcoded/localStorage values.
     let mounted = true;
 
     async function loadStats() {
       setLoadingStats(true);
       setStatsError(null);
 
-      // local fallback values
-      const fallback: DashboardStats = {
-        totalUploads: 5,
-        totalFlashcards: 10,
-        studyStreak: 0,
-        studyProgress: 0,
-        recentActivity: 'No recent activity'
-      };
-
       try {
-        // If we have a logged-in user, try to fetch real data in parallel
         if (user && user._id) {
           const userId = encodeURIComponent(user._id as string);
 
-          const flashcardsPromise = fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' });
-          const foldersPromise = fetch(`/api/student_page/folder?userId=${userId}`, { credentials: 'include' });
-          const testsPromise = fetch(`/api/student_page/practice-test?userId=${userId}`, { credentials: 'include' });
-          const summariesPromise = fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' });
-
-          const [flashcardsRes, foldersRes, testsRes, summariesRes] = await Promise.allSettled([
-            flashcardsPromise,
-            foldersPromise,
-            testsPromise,
-            summariesPromise,
+          // Fetch all data in parallel
+          const [flashcardsRes, foldersRes, testsRes, summariesRes, historyRes, submissionsRes] = await Promise.allSettled([
+            fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' }),
+            fetch(`/api/student_page/folder?userId=${userId}`, { credentials: 'include' }),
+            fetch(`/api/student_page/practice-test?userId=${userId}`, { credentials: 'include' }),
+            fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' }),
+            fetch(`/api/student_page/history?userId=${userId}&limit=10`, { credentials: 'include' }),
+            fetch(`/api/student_page/practice-test/submit?userId=${userId}`, { credentials: 'include' })
           ]);
 
-          let totalFlashcards = 0;
-          let totalFolders = 0;
-          let totalTests = 0;
-          let recentActivity = fallback.recentActivity;
           let fetchedFlashcards: any[] = [];
           let fetchedFolders: any[] = [];
           let fetchedTests: any[] = [];
           let fetchedSummaries: any[] = [];
+          let fetchedActivities: Activity[] = [];
+          let fetchedSubmissions: TestSubmission[] = [];
 
+          // Process flashcards
           if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.ok) {
             const data = await flashcardsRes.value.json().catch(() => null);
-            const flashcards = (data && data.flashcards) || [];
-            fetchedFlashcards = Array.isArray(flashcards) ? flashcards : [];
-            totalFlashcards = fetchedFlashcards.length;
-            if (fetchedFlashcards[0]) {
-              recentActivity = `Last: ${fetchedFlashcards[0].title || 'Updated a flashcard'}`;
-            }
+            fetchedFlashcards = Array.isArray(data?.flashcards) ? data.flashcards : [];
           }
 
+          // Process folders
           if (foldersRes.status === 'fulfilled' && foldersRes.value.ok) {
             const data = await foldersRes.value.json().catch(() => null);
-            const folders = (data && (data.folders || data.folders)) || data?.folders || [];
-            fetchedFolders = Array.isArray(folders) ? folders : [];
-            totalFolders = fetchedFolders.length;
+            fetchedFolders = Array.isArray(data?.folders) ? data.folders : [];
           }
 
+          // Process tests
           if (testsRes.status === 'fulfilled' && testsRes.value.ok) {
             const data = await testsRes.value.json().catch(() => null);
-            const tests = (data && data.practiceTests) || [];
-            fetchedTests = Array.isArray(tests) ? tests : [];
-            totalTests = fetchedTests.length;
-            if (fetchedTests[0]) {
-              recentActivity = `Saved test: ${fetchedTests[0].title}`;
-            }
+            fetchedTests = Array.isArray(data?.practiceTests) ? data.practiceTests : [];
           }
 
+          // Process summaries
           if (summariesRes.status === 'fulfilled' && summariesRes.value.ok) {
             const data = await summariesRes.value.json().catch(() => null);
-            const s = (data && data.summaries) || data?.summaries || [];
-            fetchedSummaries = Array.isArray(s) ? s : [];
+            fetchedSummaries = Array.isArray(data?.summaries) ? data.summaries : [];
           }
 
-          // Build favorites list from fetched items (flashcards, folders, tests, summaries)
-          try {
-            const favs: Array<{_id: string; title: string; type: string}> = [];
-            fetchedFolders.forEach((f: any) => {
-              if (f.isFavorite) favs.push({ _id: f._id, title: f.title || 'Folder', type: 'folder' });
-            });
-            fetchedFlashcards.forEach((f: any) => {
-              if (f.isFavorite) favs.push({ _id: f._id, title: f.title || 'Flashcards', type: 'flashcard' });
-            });
-            fetchedTests.forEach((t: any) => {
-              if (t.isFavorite) favs.push({ _id: t._id, title: t.title || 'Practice Test', type: 'practice_test' });
-            });
-            fetchedSummaries.forEach((s: any) => {
-              if (s.isFavorite) favs.push({ _id: s._id, title: s.title || 'Summary', type: 'summary' });
-            });
-
-            // Keep most recent favorites first — try to preserve server ordering
-            setFavorites(favs.slice(0, 8));
-          } catch (e) {
-            // ignore
-            setFavorites([]);
+          // Process activity history
+          if (historyRes.status === 'fulfilled' && historyRes.value.ok) {
+            const data = await historyRes.value.json().catch(() => null);
+            fetchedActivities = Array.isArray(data?.activities) ? data.activities : [];
           }
 
-          // totalUploads: best-effort aggregated metric (flashcards + practice tests)
-          const totalUploads = totalFlashcards + totalTests;
+          // Process test submissions
+          if (submissionsRes.status === 'fulfilled' && submissionsRes.value.ok) {
+            const data = await submissionsRes.value.json().catch(() => null);
+            fetchedSubmissions = Array.isArray(data?.submissions) ? data.submissions : [];
+          }
 
-          // Try reading lightweight progress info from localStorage as a fallback
-          let studyStreak = 0;
-          let studyProgress = 0;
-          try {
-            if (typeof window !== 'undefined') {
-              const s = localStorage.getItem('studyStreak');
-              const p = localStorage.getItem('studyProgress');
-              if (s) studyStreak = Number(s) || 0;
-              if (p) studyProgress = Number(p) || 0;
-            }
-          } catch {}
+          // Calculate stats
+          const totalFlashcards = fetchedFlashcards.length;
+          const totalSummaries = fetchedSummaries.length;
+          const totalTests = fetchedTests.length;
+          const totalFolders = fetchedFolders.length;
+
+          // Calculate average test score
+          const averageTestScore = fetchedSubmissions.length > 0
+            ? Math.round(fetchedSubmissions.reduce((sum, sub) => sum + sub.score, 0) / fetchedSubmissions.length)
+            : 0;
+
+          // Calculate total study time (from test submissions)
+          const totalStudyTime = Math.round(
+            fetchedSubmissions.reduce((sum, sub) => sum + (sub.timeSpent || 0), 0) / 60
+          ); // Convert to minutes
+
+          // Calculate study streak (days with activity in the last 7 days)
+          const studyStreak = calculateStudyStreak(fetchedActivities);
+
+          // Calculate weekly activity
+          const weekly = calculateWeeklyActivity(fetchedActivities);
+
+          // Build favorites
+          const favs: Array<{_id: string; title: string; type: string}> = [];
+          fetchedFolders.forEach((f: any) => {
+            if (f.isFavorite) favs.push({ _id: f._id, title: f.title || 'Folder', type: 'folder' });
+          });
+          fetchedFlashcards.forEach((f: any) => {
+            if (f.isFavorite) favs.push({ _id: f._id, title: f.title || 'Flashcards', type: 'flashcard' });
+          });
+          fetchedTests.forEach((t: any) => {
+            if (t.isFavorite) favs.push({ _id: t._id, title: t.title || 'Practice Test', type: 'practice_test' });
+          });
+          fetchedSummaries.forEach((s: any) => {
+            if (s.isFavorite) favs.push({ _id: s._id, title: s.title || 'Summary', type: 'summary' });
+          });
+
+          // Get recent activity message
+          const recentActivity = fetchedActivities.length > 0
+            ? formatActivityMessage(fetchedActivities[0])
+            : "No recent activity";
 
           if (mounted) {
             setStats({
-              totalUploads: totalUploads || fallback.totalUploads,
-              totalFlashcards: totalFlashcards || fallback.totalFlashcards,
+              totalFlashcards,
+              totalSummaries,
+              totalTests,
+              totalFolders,
               studyStreak,
-              studyProgress,
-              recentActivity: recentActivity || fallback.recentActivity,
+              averageTestScore,
+              totalStudyTime,
+              recentActivity
             });
-          }
-        } else {
-          // Not signed in: try localStorage or show fallback
-          let fromLocal: any = null;
-          try {
-            if (typeof window !== 'undefined') {
-              const raw = localStorage.getItem('user');
-              if (raw) fromLocal = JSON.parse(raw);
-            }
-          } catch {}
-
-          if (mounted) {
-            setStats({
-              totalUploads: fallback.totalUploads,
-              totalFlashcards: fallback.totalFlashcards,
-              studyStreak: 0,
-              studyProgress: 0,
-              recentActivity: fromLocal?.recentActivity || fallback.recentActivity,
-            });
+            setFavorites(favs.slice(0, 8));
+            setRecentActivities(fetchedActivities.slice(0, 5));
+            setRecentTests(fetchedSubmissions.slice(0, 3));
+            setWeeklyActivity(weekly);
           }
         }
       } catch (err: any) {
-        // Non-fatal: keep fallback values but surface error state
         console.warn('Failed to fetch dashboard stats:', err);
         setStatsError(err?.message || 'Failed to load dashboard data');
       } finally {
@@ -224,6 +236,95 @@ export default function UserDashboard() {
     };
   }, [user]);
 
+  // Helper functions
+  function calculateStudyStreak(activities: Activity[]): number {
+    if (activities.length === 0) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const uniqueDays = new Set<string>();
+    activities.forEach(activity => {
+      const activityDate = new Date(activity.createdAt);
+      activityDate.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysDiff < 7) {
+        uniqueDays.add(activityDate.toISOString());
+      }
+    });
+    
+    return uniqueDays.size;
+  }
+
+  function calculateWeeklyActivity(activities: Activity[]): number[] {
+    const weekly = [0, 0, 0, 0, 0, 0, 0];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    activities.forEach(activity => {
+      const activityDate = new Date(activity.createdAt);
+      activityDate.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysDiff < 7) {
+        weekly[6 - daysDiff]++;
+      }
+    });
+    
+    return weekly;
+  }
+
+  function formatActivityMessage(activity: Activity): string {
+    const actionMap: Record<string, string> = {
+      'flashcard.create': 'Created flashcard set',
+      'flashcard.study': 'Studied flashcards',
+      'summary.create': 'Generated summary',
+      'practice_test.create': 'Created practice test',
+      'practice_test.complete': 'Completed practice test',
+      'folder.create': 'Created folder'
+    };
+    
+    return actionMap[activity.type] || activity.action || 'Recent activity';
+  }
+
+  function getActivityIcon(type: string) {
+    if (type.includes('flashcard')) {
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      );
+    } else if (type.includes('summary')) {
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      );
+    } else if (type.includes('test')) {
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      );
+    }
+    return (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    );
+  }
+
+  function getTimeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+  }
+
   if (authLoading) {
     return <LoadingTemplate2 title="Loading dashboard..." />;
   }
@@ -235,7 +336,9 @@ export default function UserDashboard() {
         <header className="greet-block" aria-label="Welcome">
           <h1 className="greet-title text-gray-900 dark:text-white">{`Welcome Back, ${firstName}!`}</h1>
           <p className="greet-sub text-gray-600 dark:text-gray-400">
-            Ready to continue your learning journey?
+            {stats.studyStreak > 0 
+              ? `You're on a ${stats.studyStreak}-day study streak! Keep it up!` 
+              : "Ready to start your learning journey?"}
           </p>
         </header>
 
@@ -243,23 +346,6 @@ export default function UserDashboard() {
         <div className="dashboard-grid">
           <div className="col-span-12">
             <div className="summary-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {/* Total Uploads Card */}
-              <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Uploads</p>
-                    <p className="metric-value text-2xl font-bold text-gray-900 dark:text-white">
-                      {stats.totalUploads}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               {/* Flashcards Card */}
               <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
@@ -269,7 +355,7 @@ export default function UserDashboard() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Flashcards</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Flashcard Sets</p>
                     <p className="metric-value text-2xl font-bold text-gray-900 dark:text-white">
                       {stats.totalFlashcards}
                     </p>
@@ -277,36 +363,52 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              {/* Study Streak Card */}
+              {/* Summaries Card */}
               <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg className="w-7 h-7 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                  <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Study Streak</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Summaries</p>
                     <p className="metric-value text-2xl font-bold text-gray-900 dark:text-white">
-                      {stats.studyStreak} <span className="text-base font-medium text-gray-500 dark:text-gray-400">days</span>
+                      {stats.totalSummaries}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Progress Card */}
+              {/* Practice Tests Card */}
               <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-7 h-7 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Progress</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Practice Tests</p>
                     <p className="metric-value text-2xl font-bold text-gray-900 dark:text-white">
-                      {stats.studyProgress}%
+                      {stats.totalTests}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Average Score Card */}
+              <div className="metric-card panel p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Avg Test Score</p>
+                    <p className="metric-value text-2xl font-bold text-gray-900 dark:text-white">
+                      {stats.averageTestScore}<span className="text-base font-medium text-gray-500 dark:text-gray-400">%</span>
                     </p>
                   </div>
                 </div>
@@ -315,144 +417,203 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Recent Activity and Quick Actions Section */}
+        {/* Recent Activity and Stats Section */}
         <div className="dashboard-grid">
           <div className="col-span-8">
-            <div className="panel panel-padded-lg h-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Recent Activity</h2>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="w-8 h-8 bg-teal-100 dark:bg-teal-800 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-teal-600 dark:text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+            <div className="panel panel-padded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="section-title text-gray-900 dark:text-white">Recent Activity</h2>
+                <Link href="/student_page/history" className="text-sm text-teal-600 dark:text-teal-400 hover:underline">
+                  View All
+                </Link>
+              </div>
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {recentActivities.length > 0 ? (
+                  recentActivities.map((activity) => (
+                    <div key={activity._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="w-8 h-8 bg-teal-100 dark:bg-teal-800 rounded-full flex items-center justify-center text-teal-600 dark:text-teal-300">
+                        {getActivityIcon(activity.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {formatActivityMessage(activity)}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {getTimeAgo(activity.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p className="text-sm">No recent activity</p>
+                    <p className="text-xs mt-1">Start studying to see your activity here</p>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{stats.recentActivity}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
-                  </div>
-                </div>
+                )}
+              </div>
+            </div>
 
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Uploaded Chemistry notes</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Completed Math quiz</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
-                  </div>
-                </div>
+            {/* Weekly Activity Chart */}
+            <div className="panel panel-padded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Weekly Activity</h2>
+              <div className="flex items-end justify-between gap-2 h-32">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                  const count = weeklyActivity[index];
+                  const maxCount = Math.max(...weeklyActivity, 1);
+                  const height = (count / maxCount) * 100;
+                  return (
+                    <div key={day} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-lg relative" style={{ height: '100px' }}>
+                        <div 
+                          className="absolute bottom-0 w-full bg-gradient-to-t from-teal-500 to-teal-400 dark:from-teal-600 dark:to-teal-500 rounded-t-lg transition-all duration-300"
+                          style={{ height: `${height}%` }}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{day}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500">{count}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           <div className="col-span-4">
-            {/* Favorites Shortcuts Panel - separated into folders and items */}
+            {/* Quick Stats */}
             <div className="panel panel-padded-lg mb-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <h2 className="section-title mb-3 text-gray-900 dark:text-white">Favorites</h2>
-              <div className="space-y-3">
-                {/* Split favorites into folders and other items */}
-                {(() => {
-                  const folderFavs = favorites.filter(f => f.type === 'folder');
-                  const itemFavs = favorites.filter(f => f.type !== 'folder');
-                  if (folderFavs.length === 0 && itemFavs.length === 0) {
-                    return (
-                      <div className="p-3 text-sm text-gray-600 dark:text-gray-400">No favorites yet. Mark items as favorites in your library to see shortcuts here.</div>
-                    );
-                  }
+              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Quick Stats</h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Study Streak</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.studyStreak} days</p>
+                    </div>
+                  </div>
+                </div>
 
-                  return (
-                    <>
-                      {folderFavs.length > 0 && (
-                        <div>
-                          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Folders</h3>
-                          <div className="space-y-1">
-                            {folderFavs.map(f => (
-                              <Link key={f._id} href={`/student_page/library?tab=favorites`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors no-underline">
-                                <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-900/10 rounded-md flex items-center justify-center flex-shrink-0">
-                                  <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                                  </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.title}</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Folder</p>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Study Time</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.totalStudyTime} min</p>
+                    </div>
+                  </div>
+                </div>
 
-                      {itemFavs.length > 0 && (
-                        <div>
-                          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Items</h3>
-                          <div className="space-y-1">
-                            {itemFavs.map(f => (
-                              <Link key={f._id} href={`/student_page/library?tab=favorites`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors no-underline">
-                                <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center flex-shrink-0">
-                                  {/* Flashcard */}
-                                  {f.type === 'flashcard' && (
-                                    <svg className="w-4 h-4 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                      <rect x="3" y="6" width="14" height="10" rx="2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <rect x="7" y="9" width="14" height="10" rx="2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  )}
-
-                                  {/* Practice test (clipboard/list) */}
-                                  {f.type === 'practice_test' && (
-                                    <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                      <path d="M9 2h6a2 2 0 012 2v16a2 2 0 01-2 2H9a2 2 0 01-2-2V4a2 2 0 012-2z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M9 8h6M9 12h6M9 16h4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  )}
-
-                                  {/* Summary (document) */}
-                                  {f.type === 'summary' && (
-                                    <svg className="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                      <path d="M7 3h7l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V3z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M7 13h10M7 9h6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.title}</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{f.type.replace('_', ' ')}</p>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="pt-2">
-                        <Link href="/student_page/library?tab=favorites" className="text-sm text-teal-600 dark:text-teal-300 hover:underline">View all favorites</Link>
-                      </div>
-                    </>
-                  );
-                })()}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Folders</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.totalFolders}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Quick Actions panel removed per request */}
+            {/* Recent Test Scores */}
+            <div className="panel panel-padded-lg mb-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Recent Test Scores</h2>
+              <div className="space-y-3">
+                {recentTests.length > 0 ? (
+                  recentTests.map((test) => (
+                    <div key={test._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Test #{test.practiceTestId.slice(-6)}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(test.completedAt)}</p>
+                      </div>
+                      <div className={`text-lg font-bold ${
+                        test.score >= 90 ? 'text-green-600 dark:text-green-400' :
+                        test.score >= 70 ? 'text-blue-600 dark:text-blue-400' :
+                        test.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-red-600 dark:text-red-400'
+                      }`}>
+                        {test.score}%
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                    <p className="text-sm">No tests completed yet</p>
+                    <Link href="/student_page/practice_tests" className="text-xs text-teal-600 dark:text-teal-400 hover:underline mt-2 inline-block">
+                      Take your first test
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Favorites Shortcuts Panel */}
+            <div className="panel panel-padded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <h2 className="section-title mb-3 text-gray-900 dark:text-white">Favorites</h2>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {favorites.length > 0 ? (
+                  favorites.map(f => (
+                    <Link key={f._id} href={`/student_page/library?tab=favorites`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors no-underline">
+                      <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center flex-shrink-0">
+                        {f.type === 'folder' && (
+                          <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                          </svg>
+                        )}
+                        {f.type === 'flashcard' && (
+                          <svg className="w-4 h-4 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="6" width="14" height="10" rx="2" strokeWidth="1.5" />
+                            <rect x="7" y="9" width="14" height="10" rx="2" strokeWidth="1.5" />
+                          </svg>
+                        )}
+                        {f.type === 'practice_test' && (
+                          <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M9 2h6a2 2 0 012 2v16a2 2 0 01-2 2H9a2 2 0 01-2-2V4a2 2 0 012-2z" strokeWidth="1.5" />
+                            <path d="M9 8h6M9 12h6M9 16h4" strokeWidth="1.5" />
+                          </svg>
+                        )}
+                        {f.type === 'summary' && (
+                          <svg className="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M7 3h7l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V3z" strokeWidth="1.5" />
+                            <path d="M7 13h10M7 9h6" strokeWidth="1.5" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{f.type.replace('_', ' ')}</p>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                    <p className="text-sm">No favorites yet</p>
+                    <p className="text-xs mt-1">Mark items in your library</p>
+                  </div>
+                )}
+              </div>
+              {favorites.length > 0 && (
+                <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
+                  <Link href="/student_page/library?tab=favorites" className="text-sm text-teal-600 dark:text-teal-400 hover:underline">
+                    View all favorites →
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-
       </div>
     </div>
   );
