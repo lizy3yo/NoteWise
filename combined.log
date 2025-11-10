@@ -5513,3 +5513,14 @@
 {"timestamp":"2025-11-10T22:19:07.712Z","level":"info","message":"ChatbotService initialized","service":"gc-quest-api","meta":{"hasApiKey":true,"keyLength":39,"keyPreview":"AIzaSyAznNJrWdIAwvHb..."}}
 {"timestamp":"2025-11-10T22:19:07.714Z","level":"info","message":"Processing chat message","service":"gc-quest-api","meta":{"isAuthenticated":true,"hasUserId":true,"messageLength":27,"hasUploadedContent":false}}
 {"timestamp":"2025-11-10T22:19:16.715Z","level":"info","message":"Chatbot response generated","service":"gc-quest-api","meta":{"responseLength":876}}
+{"timestamp":"2025-11-10T22:22:28.957Z","level":"info","message":"Chatbot request received","service":"gc-quest-api","meta":{"isAuthenticated":true,"userId":"6909c974005584cb94bb2922","messageLength":5,"hasUploadedContent":false,"hasGenerationParams":false}}
+{"timestamp":"2025-11-10T22:22:28.958Z","level":"info","message":"ChatbotService initialized","service":"gc-quest-api","meta":{"hasApiKey":true,"keyLength":39,"keyPreview":"AIzaSyAznNJrWdIAwvHb..."}}
+{"timestamp":"2025-11-10T22:22:28.959Z","level":"info","message":"Processing chat message","service":"gc-quest-api","meta":{"isAuthenticated":true,"hasUserId":true,"messageLength":5,"hasUploadedContent":false}}
+{"timestamp":"2025-11-10T22:22:37.376Z","level":"info","message":"Chatbot response generated","service":"gc-quest-api","meta":{"responseLength":317}}
+{"timestamp":"2025-11-10T22:23:07.043Z","level":"info","message":"Chatbot request received","service":"gc-quest-api","meta":{"isAuthenticated":true,"userId":"6909c974005584cb94bb2922","messageLength":3,"hasUploadedContent":false,"hasGenerationParams":false}}
+{"timestamp":"2025-11-10T22:23:07.044Z","level":"info","message":"ChatbotService initialized","service":"gc-quest-api","meta":{"hasApiKey":true,"keyLength":39,"keyPreview":"AIzaSyAznNJrWdIAwvHb..."}}
+{"timestamp":"2025-11-10T22:23:07.044Z","level":"info","message":"Processing chat message","service":"gc-quest-api","meta":{"isAuthenticated":true,"hasUserId":true,"messageLength":3,"hasUploadedContent":false}}
+{"timestamp":"2025-11-10T22:23:14.253Z","level":"info","message":"Chatbot response generated","service":"gc-quest-api","meta":{"responseLength":371}}
+{"timestamp":"2025-11-10T22:24:39.729Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 6909c974005584cb94bb2922","service":"gc-quest-api"}
+{"timestamp":"2025-11-10T22:24:39.730Z","level":"info","message":"  Flashcard 1: \"What is Ui and UX and the difference betweed\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-10T22:24:40.419Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"6909c974005584cb94bb2922","count":5,"subject":null,"isPublic":null}}

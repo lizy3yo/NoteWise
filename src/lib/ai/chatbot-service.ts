@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logger } from '@/lib/winston';
 import { ChatbotContextService, UserContext } from './chatbot-context-service';
+import { containsProfanity, findProfanity } from './profanity-filter';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -53,7 +54,21 @@ export class ChatbotService {
     }
 
     async chat(userMessage: string, options: ChatbotOptions): Promise<ChatbotResponse> {
+        // Reject messages containing vulgar/prohibited language early
+        if (containsProfanity(userMessage)) {
+            const matches = findProfanity(userMessage);
+            logger.warn('Chat message blocked due to profanity', { matches });
+            throw new Error('Message contains prohibited language');
+        }
+
         const { isAuthenticated, userId, conversationHistory = [], uploadedContent, uploadedFileName } = options;
+
+        // Also check uploaded content at the service level as an additional safety net
+        if (containsProfanity(uploadedContent)) {
+            const matches = findProfanity(uploadedContent);
+            logger.warn('Uploaded content blocked due to profanity', { matches, userId });
+            throw new Error('Uploaded content contains prohibited language');
+        }
 
         try {
             logger.info('Processing chat message', {

@@ -3,6 +3,7 @@ import { logger } from '@/lib/winston';
 import { connectToDatabase } from '@/lib/mongoose';
 import { authenticate } from '@/lib/middleware/authenticate';
 import { ChatbotService } from '@/lib/ai/chatbot-service';
+import { containsProfanity, findProfanity } from '@/lib/ai/profanity-filter';
 
 // ChatMessage type definition
 export interface ChatMessage {
@@ -30,6 +31,20 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { message, conversationHistory, uploadedContent, uploadedFileName, generationParams } = body;
+
+    // Basic profanity check: block requests containing vulgar words
+    const messageProfanity = findProfanity(message);
+    if (messageProfanity.length > 0) {
+      logger.warn('Blocked chat request due to profanity in message', { matches: messageProfanity });
+      return NextResponse.json({ error: 'Message contains prohibited language' }, { status: 400 });
+    }
+
+    // Also check uploaded content if present
+    const uploadedProfanity = findProfanity(uploadedContent);
+    if (uploadedProfanity.length > 0) {
+      logger.warn('Blocked chat request due to profanity in uploaded content', { matches: uploadedProfanity });
+      return NextResponse.json({ error: 'Uploaded content contains prohibited language' }, { status: 400 });
+    }
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
