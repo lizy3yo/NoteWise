@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { connectToDatabase } from "@/lib/mongoose";
 import { logger } from "@/lib/winston";
 import StudyProgress, { IStudyProgress } from "@/models/study_progress";
+import Flashcard from '@/models/flashcard';
 
 export const GET = async (request: NextRequest, { params }: { params: Promise<{ flashcardId: string }> }) => {
   // ensure params is awaited (Next.js may provide a promise-like params)
@@ -84,35 +85,83 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
     }
 
     await connectToDatabase();
-    
+
     // Special handling for cardOptions merging
-    let updateOperation: any = { $set: setObj };
-    
-    // If we're updating cardOptions, we need to merge rather than replace
     if (setObj['learn.cardOptions']) {
       const cardOptionsToMerge = setObj['learn.cardOptions'];
       console.log("Processing cardOptions merge:", cardOptionsToMerge);
       delete setObj['learn.cardOptions']; // Remove from $set
-      
       // Create individual $set operations for each cardOption
       for (const [cardId, options] of Object.entries(cardOptionsToMerge)) {
         console.log(`Setting learn.cardOptions.${cardId}:`, options);
         setObj[`learn.cardOptions.${cardId}`] = options;
       }
     }
-    
+
+    // Determine an incoming completedAt timestamp (ISO string). If the client provided
+    // a completion.completedAt or lastSessionStartedAt use that, otherwise use now.
+    const incomingCompletedAtRaw = body?.completion?.completedAt || body?.lastSessionStartedAt || new Date().toISOString();
+    const incomingCompletedAtIso = (new Date(incomingCompletedAtRaw)).toISOString();
+
+    // Build an atomic update that uses $max for completion.completedAt so that multiple
+    // concurrent requests will only advance the stored completedAt to the latest value.
+    // We will examine the PREVIOUS document (returned by findOneAndUpdate with new:false)
+    // to detect whether this operation actually moved the timestamp forward — only then
+    // should we increment the Flashcard repetitionCount.
+    const updateOperation: any = {};
+    if (Object.keys(setObj).length > 0) updateOperation.$set = setObj;
+    // Always attempt to $max the completedAt (string ISO) so the DB holds the latest timestamp.
+    updateOperation.$max = { 'completion.completedAt': incomingCompletedAtIso };
+
     console.log("Final updateOperation:", JSON.stringify(updateOperation, null, 2));
-    
-    console.log("=== EXECUTING DATABASE UPDATE ===");
+    console.log("=== EXECUTING ATOMIC DATABASE UPDATE ===");
     console.log("Query:", { user: userId, flashcard: flashcardId });
     console.log("Update operation:", updateOperation);
-    
-    const updated: any = await StudyProgress.findOneAndUpdate(
+
+    // Run the atomic update and get the PREVIOUS document (new: false). If previous is null
+    // then it means there was no doc before; the $max will have set the completedAt on insert.
+    const prevDoc: any = await StudyProgress.findOneAndUpdate(
       { user: userId, flashcard: flashcardId },
       updateOperation,
-      { new: true, upsert: true }
+      { upsert: true, new: false }
     ).lean();
-    
+
+    // Fetch the updated document to return in the response
+    const updated: any = await StudyProgress.findOne({ user: userId, flashcard: flashcardId }).lean();
+
+    // Decide whether to stamp the Flashcard document. We stamp when the incoming completedAt
+    // is newer than the previous recorded completedAt (or there was no previous completedAt).
+    try {
+      const shouldStampFlashcard = Boolean(body?.learn || body?.completion || body?.lastSessionStartedAt);
+
+      const prevCompletedAtRaw = prevDoc?.completion?.completedAt || null;
+      let prevMs: number | null = null;
+      try { prevMs = prevCompletedAtRaw ? new Date(prevCompletedAtRaw).getTime() : null; } catch { prevMs = null; }
+      const incomingMs = new Date(incomingCompletedAtIso).getTime();
+
+      const isNewer = prevMs === null || incomingMs > prevMs;
+
+      if (shouldStampFlashcard && isNewer) {
+        // Determine how many cards to count as reviewed. Prefer explicit counts from the
+        // completion payload, then learn.masteredIds length, otherwise increment by 1.
+        let incBy = 1;
+        if (typeof body?.completion?.initialTotal === 'number') {
+          incBy = Math.max(0, Math.floor(body.completion.initialTotal));
+        } else if (Array.isArray(body?.learn?.masteredIds)) {
+          incBy = body.learn.masteredIds.length;
+        }
+        if (incBy <= 0) incBy = 1;
+
+        await Flashcard.findByIdAndUpdate(flashcardId, {
+          $set: { lastReviewed: new Date(incomingCompletedAtIso) },
+          $inc: { repetitionCount: incBy }
+        }).exec();
+      }
+    } catch (err) {
+      console.warn('Failed to update Flashcard lastReviewed/repetitionCount', err);
+      // Don't fail the whole request if this secondary update fails
+    }
+
     console.log("✅ Database update successful");
     console.log("Updated document:", JSON.stringify(updated, null, 2));
     return NextResponse.json({ progress: updated }, { status: 200 });

@@ -77,6 +77,18 @@ export default function SummaryViewPage() {
 
             if (data.success && data.summary) {
                 setSummary(data.summary);
+                // best-effort: check recent activities to see if this summary was already marked read
+                try {
+                    const histRes = await fetch(`/api/student_page/history?userId=${encodeURIComponent(uid)}&limit=200`);
+                    if (histRes.ok) {
+                        const histJson = await histRes.json().catch(() => null);
+                        const acts = Array.isArray(histJson?.activities) ? histJson.activities : [];
+                        const found = acts.find((a: any) => (a.type || '').toString().toLowerCase().includes('summary.read') && a.meta?.summaryId === id);
+                        if (found) setHasRead(true);
+                    }
+                } catch (e) {
+                    // ignore history check errors — non-fatal
+                }
             } else {
                 setError(data.error || 'Summary not found');
             }
@@ -130,6 +142,19 @@ export default function SummaryViewPage() {
 
     const [showResummarizeModal, setShowResummarizeModal] = useState<boolean>(false);
     const [resummarizeLoading, setResummarizeLoading] = useState<boolean>(false);
+    // whether the current user has already marked this summary as read
+    const [hasRead, setHasRead] = useState<boolean>(false);
+    const [markReadLoading, setMarkReadLoading] = useState<boolean>(false);
+    // Confirmation modal for actions (re-used from library style)
+    const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+    const [confirmModalConfig, setConfirmModalConfig] = useState<{
+        title: string;
+        message: string;
+        onConfirm: () => void | Promise<void>;
+        confirmText?: string;
+        cancelText?: string;
+        isDangerous?: boolean;
+    }>({ title: '', message: '', onConfirm: () => {}, confirmText: 'Confirm', cancelText: 'Cancel', isDangerous: false });
     const { showSuccess, showError } = useAlert();
 
     const resummarize = async () => {
@@ -282,6 +307,62 @@ export default function SummaryViewPage() {
                             Create Flashcards from This
                         </button>
                         <button
+                            onClick={() => {
+                                if (!userId || !summary) {
+                                    showError('User not found');
+                                    return;
+                                }
+                                if (hasRead) {
+                                    showSuccess('You already marked this summary as read');
+                                    return;
+                                }
+
+                                setConfirmModalConfig({
+                                    title: 'Mark Summary as Read',
+                                    message: 'Mark this summary as read? You can only mark a summary as read once.',
+                                    onConfirm: async () => {
+                                        try {
+                                            setMarkReadLoading(true);
+                                            const res = await fetch('/api/student_page/summary/mark-read', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ userId, summaryId: summary._id, title: summary.title })
+                                            });
+                                            const data = await res.json().catch(() => null);
+                                            if (!res.ok || !data?.success) {
+                                                throw new Error(data?.error || 'Failed to mark read');
+                                            }
+
+                                            setHasRead(true);
+                                            showSuccess('Marked summary as read');
+                                            // notify other tabs/pages to refresh
+                                            try {
+                                                if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                                                    // @ts-ignore
+                                                    const bc = new BroadcastChannel('notewise.activities');
+                                                    bc.postMessage({ type: 'summary.read', summaryId: summary._id });
+                                                    bc.close();
+                                                }
+                                            } catch (e) {}
+                                        } catch (err: any) {
+                                            console.error('Mark read failed', err);
+                                            showError(err?.message || 'Failed to mark read');
+                                        } finally {
+                                            setMarkReadLoading(false);
+                                        }
+                                    },
+                                    confirmText: 'Mark as Read',
+                                    cancelText: 'Cancel',
+                                    isDangerous: false
+                                });
+                                setShowConfirmModal(true);
+                            }}
+                            className={`px-6 py-3 ${hasRead ? 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300' : 'bg-indigo-600 text-white hover:bg-indigo-700'} rounded-lg transition-colors font-medium`}
+                            disabled={markReadLoading || hasRead}
+                        >
+                            {hasRead ? 'Marked as Read' : (markReadLoading ? 'Marking...' : 'Mark as Read')}
+                        </button>
+                        <button
                             onClick={() => setShowResummarizeModal(true)}
                             className="px-6 py-3 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors font-medium"
                         >
@@ -399,6 +480,52 @@ export default function SummaryViewPage() {
                                     disabled={resummarizeLoading}
                                 >
                                     {resummarizeLoading ? 'Rewriting...' : 'Rewrite'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Confirmation Modal (re-used style from Library) */}
+                {showConfirmModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50" onClick={() => setShowConfirmModal(false)}></div>
+                        <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">{confirmModalConfig.title}</h3>
+                                <button
+                                    className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 p-1"
+                                    onClick={() => setShowConfirmModal(false)}
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
+                                {confirmModalConfig.message}
+                            </p>
+
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowConfirmModal(false)}
+                                    className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
+                                >
+                                    {confirmModalConfig.cancelText}
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await Promise.resolve(confirmModalConfig.onConfirm());
+                                        } catch (e) {
+                                            // onConfirm should handle its own errors
+                                        }
+                                        setShowConfirmModal(false);
+                                    }}
+                                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${confirmModalConfig.isDangerous ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-teal-600 text-white hover:bg-teal-700'}`}>
+                                    {confirmModalConfig.confirmText}
                                 </button>
                             </div>
                         </div>

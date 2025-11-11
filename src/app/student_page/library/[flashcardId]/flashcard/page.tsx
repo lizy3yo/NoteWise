@@ -461,107 +461,108 @@ export default function FlashcardOnlyPage() {
       setEasyIds(s => { const n = new Set(s); if (rating === "easy") n.add(cardId); return n; });
     }
 
-    // compute new queue immediately (avoid closure-stale bugs) and persist immediately
-    setSessionQueue(prev => {
-      if (!prev.length) return prev;
-      const currPos = viewerPos;
-      const idx = prev[currPos];
-      const next = prev.slice();
-      next.splice(currPos, 1);
+      // compute new queue immediately (avoid closure-stale bugs) and persist immediately
+      // NOTE: side-effects must not run inside the setState updater because React
+      // may call updater multiple times (Strict Mode/dev). Compute the next queue
+      // synchronously, call setSessionQueue, then run side-effects once.
+      const prev = sessionQueue;
+      if (prev && prev.length) {
+        const currPos = viewerPos;
+        const idx = prev[currPos];
+        const next = prev.slice();
+        next.splice(currPos, 1);
 
-      if (rating === "again") {
-        const insertPos = Math.min(currPos + 1, next.length);
-        next.splice(insertPos, 0, idx);
-      } else if (rating === "hard") {
-        const insertPos = Math.min(currPos + 3, next.length);
-        next.splice(insertPos, 0, idx);
-      } else if (rating === "good") {
-        next.push(idx);
-      }
+        if (rating === "again") {
+          const insertPos = Math.min(currPos + 1, next.length);
+          next.splice(insertPos, 0, idx);
+        } else if (rating === "hard") {
+          const insertPos = Math.min(currPos + 3, next.length);
+          next.splice(insertPos, 0, idx);
+        } else if (rating === "good") {
+          next.push(idx);
+        }
 
-      const newPos = Math.min(currPos, Math.max(next.length - 1, 0));
-      // update viewer and UI immediately
-      setViewerPos(newPos);
-      setIsShowingAnswer(false);
+        const newPos = Math.min(currPos, Math.max(next.length - 1, 0));
+        // update viewer and UI immediately
+        setSessionQueue(next);
+        setViewerPos(newPos);
+        setIsShowingAnswer(false);
 
-      // persist immediately to server (best-effort)
-      if (uid) {
-        try {
-          saveProgress({ sessionQueue: next, viewerPos: newPos });
-        } catch (e) {
-          // ignore but keep console for diagnostics
-          console.warn(e);
+        // persist immediately to server (best-effort)
+        if (uid) {
+          try {
+            saveProgress({ sessionQueue: next, viewerPos: newPos });
+          } catch (e) {
+            // ignore but keep console for diagnostics
+            console.warn(e);
+          }
+        }
+
+        // if no more cards, show completion (run side-effects once)
+        if (next.length === 0) {
+          setShowCompletion(true);
+
+          (async () => {
+            try {
+              if (uid && flashcard) {
+                const cardsStudied = initialTotal || flashcard.cards.length;
+                const studiedFavorites = studyStarredOnly;
+
+                // Persist completion state to server so it survives page reload
+                const completionData = {
+                  showCompletion: true,
+                  initialTotal: initialTotal || flashcard.cards.length, // Save the initial total
+                  ratingCounts: newRatingCounts,
+                  againIds: newAgainIdsArr,
+                  hardIds: newHardIdsArr,
+                  easyIds: newEasyIdsArr,
+                  completedAt: new Date().toISOString(),
+                };
+
+                // Persist to localStorage immediately as a fast-fail fallback so the UI
+                // can restore completion even if the server save is delayed or fails.
+                try {
+                  const key = `notewise.flashcard.completion.${flashcardId}.${uid}`;
+                  if (typeof window !== 'undefined') localStorage.setItem(key, JSON.stringify(completionData));
+                } catch (e) {
+                  // ignore localStorage write errors
+                }
+
+                // Save completion state
+                await saveProgress({
+                  sessionQueue: next,
+                  viewerPos: newPos,
+                  completion: completionData
+                });
+
+                // Log to history via API
+                await authManager.makeAuthenticatedRequest('/api/student_page/log-activity', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    userId: uid,
+                    type: 'flashcard.study_complete',
+                    action: studiedFavorites ? 'Studied favorites' : 'Studied flashcard set',
+                    meta: {
+                      flashcardId: flashcard._id,
+                      flashcardTitle: flashcard.title,
+                      cardsStudied,
+                      studiedFavorites,
+                      ratingCounts: completionData.ratingCounts
+                    },
+                    progress: 100
+                  })
+                });
+
+                // Show success popup: keep title, replace subtitle with concise praise
+                showSuccess('Good Job', '🎉 Session Complete');
+              }
+            } catch (e) {
+              console.warn('Failed to log study completion:', e);
+            }
+          })();
         }
       }
-
-      // if no more cards, show completion
-      if (next.length === 0) {
-        setShowCompletion(true);
-        
-        // Log completion activity and show success message
-        (async () => {
-          try {
-            if (uid && flashcard) {
-              const cardsStudied = initialTotal || flashcard.cards.length;
-              const studiedFavorites = studyStarredOnly;
-              
-              // Persist completion state to server so it survives page reload
-              const completionData = {
-                showCompletion: true,
-                initialTotal: initialTotal || flashcard.cards.length, // Save the initial total
-                ratingCounts: newRatingCounts,
-                againIds: newAgainIdsArr,
-                hardIds: newHardIdsArr,
-                easyIds: newEasyIdsArr,
-                completedAt: new Date().toISOString(),
-              };
-              
-              // Persist to localStorage immediately as a fast-fail fallback so the UI
-              // can restore completion even if the server save is delayed or fails.
-              try {
-                const key = `notewise.flashcard.completion.${flashcardId}.${uid}`;
-                if (typeof window !== 'undefined') localStorage.setItem(key, JSON.stringify(completionData));
-              } catch (e) {
-                // ignore localStorage write errors
-              }
-
-              // Save completion state
-              await saveProgress({ 
-                sessionQueue: next, 
-                viewerPos: newPos,
-                completion: completionData
-              });
-              
-              // Log to history via API
-              await authManager.makeAuthenticatedRequest('/api/student_page/log-activity', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  userId: uid,
-                  type: 'flashcard.study_complete',
-                  action: studiedFavorites ? 'Studied favorites' : 'Studied flashcard set',
-                  meta: {
-                    flashcardId: flashcard._id,
-                    flashcardTitle: flashcard.title,
-                    cardsStudied,
-                    studiedFavorites,
-                    ratingCounts: completionData.ratingCounts
-                  },
-                  progress: 100
-                })
-              });
-
-              // Show success popup: keep title, replace subtitle with concise praise
-              showSuccess('Good Job', '🎉 Session Complete');
-            }
-          } catch (e) {
-            console.warn('Failed to log study completion:', e);
-          }
-        })();
-      }
-
-      return next;
-    });
 
     // keep the overlay visible for the duration, then hide it and re-enable transitions/buttons
     setTimeout(() => {

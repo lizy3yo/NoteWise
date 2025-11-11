@@ -62,7 +62,27 @@ export default function AchievementsPage() {
             .map(f => ({ _id: f._id, title: f.title, lastReviewed: new Date(f.lastReviewed) }))
             .sort((a, b) => b.lastReviewed.getTime() - a.lastReviewed.getTime());
 
-        setRecentCompletions(finished.slice(0, 20));
+        if (finished.length > 0) {
+            setRecentCompletions(finished.slice(0, 20));
+        } else {
+            // Fallback: build recent completions from activity events when flashcard.lastReviewed isn't available
+            try {
+                const fromActivities = (activities || [])
+                    .filter(a => {
+                        const t = (a.type || a.action || '')?.toString().toLowerCase();
+                        return t.includes('flashcard.study_complete') && (a.createdAt || (a.meta && a.meta.createdAt));
+                    })
+                    .map(a => {
+                        const created = a.createdAt || (a.meta && a.meta.createdAt) || new Date().toISOString();
+                        return { _id: a.meta?.flashcardId || a._id, title: a.meta?.title || 'Study', lastReviewed: new Date(created) };
+                    })
+                    .sort((a, b) => b.lastReviewed.getTime() - a.lastReviewed.getTime());
+
+                setRecentCompletions(fromActivities.slice(0, 20));
+            } catch (e) {
+                setRecentCompletions([]);
+            }
+        }
 
         const dates = finished.map(f => f.lastReviewed);
         const computed = computeStreakFromDates(dates);
@@ -143,22 +163,105 @@ export default function AchievementsPage() {
         }
 
         load();
-        return () => { mounted = false; };
+
+        // Refresh when user returns to the tab or when other tabs broadcast activity updates.
+        let bc: BroadcastChannel | null = null;
+        const visibilityHandler = () => { if (document.visibilityState === 'visible') load(); };
+        const focusHandler = () => { load(); };
+
+        try {
+            if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                // @ts-ignore - BroadcastChannel may not be typed in this environment
+                bc = new BroadcastChannel('notewise.activities');
+                bc.onmessage = () => { load(); };
+            }
+        } catch (e) {
+            bc = null;
+        }
+
+        window.addEventListener('visibilitychange', visibilityHandler);
+        window.addEventListener('focus', focusHandler);
+
+        return () => {
+            mounted = false;
+            window.removeEventListener('visibilitychange', visibilityHandler);
+            window.removeEventListener('focus', focusHandler);
+            try { if (bc) bc.close(); } catch (e) {}
+        };
     }, [user]);
 
     // Derived metrics
     const totalFlashcards = useMemo(() => flashcards.length, [flashcards]);
     const totalSummaries = useMemo(() => summaries.length, [summaries]);
-    const totalReviewed = useMemo(() => {
-        // Sum repetitionCount where available; fallback to 0
-        return flashcards.reduce((sum, fc) => sum + (Number(fc.repetitionCount) || 0), 0);
-    }, [flashcards]);
+
+    // cardsReviewed: number of individual cards reviewed across all flashcard sets.
+    // Prefer server-side repetitionCount on flashcard docs; fall back to summing activity meta values.
+    const cardsReviewed = useMemo(() => {
+        const sum = flashcards.reduce((s, fc) => s + (Number(fc.repetitionCount) || 0), 0);
+        if (sum > 0) return sum;
+
+        try {
+            const actSum = (activities || []).reduce((s, a) => {
+                const t = (a.type || a.action || '')?.toString().toLowerCase();
+                if (t.includes('flashcard.study_complete')) {
+                    // activity meta may include several possible numeric fields
+                    if (typeof a.meta?.cardsStudied === 'number') return s + a.meta.cardsStudied;
+                    if (typeof a.meta?.cardCount === 'number') return s + a.meta.cardCount;
+                    if (Array.isArray(a.meta?.cardIds)) return s + a.meta.cardIds.length;
+                    if (typeof a.meta?.total === 'number') return s + a.meta.total;
+                    if (typeof a.progress === 'number') return s + a.progress;
+                    // otherwise count the event as 1 card reviewed
+                    return s + 1;
+                }
+                return s;
+            }, 0);
+            return actSum;
+        } catch (e) {
+            return 0;
+        }
+    }, [flashcards, activities]);
+
+    // studySessionsCompleted: number of flashcard study sessions (i.e., sets completed)
+    const studySessionsCompleted = useMemo(() => {
+        try {
+            return (activities || []).filter(a => {
+                const t = (a.type || a.action || '')?.toString().toLowerCase();
+                return t.includes('flashcard.study_complete');
+            }).length;
+        } catch (e) {
+            return 0;
+        }
+    }, [activities]);
+
+    // favoritesStudied: how many sessions studied favorites flag was true
+    const favoritesStudied = useMemo(() => {
+        try {
+            return (activities || []).filter(a => {
+                const t = (a.type || a.action || '')?.toString().toLowerCase();
+                return t.includes('flashcard.study_complete') && !!a.meta?.studiedFavorites;
+            }).length;
+        } catch (e) {
+            return 0;
+        }
+    }, [activities]);
 
     // Placeholder: practice tests completed (no direct source in current payloads)
     // Keep zero for now; can be wired to an API or model later.
     const practiceTestsCompleted = useMemo(() => {
         return 0;
     }, [flashcards, summaries]);
+
+    // summarySessionsCompleted: count of summary "read" activities
+    const summarySessionsCompleted = useMemo(() => {
+        try {
+            return (activities || []).filter(a => {
+                const t = (a.type || a.action || '')?.toString().toLowerCase();
+                return t.includes('summary.read') || t.includes('summary.session') || t.includes('summary.completed');
+            }).length;
+        } catch (e) {
+            return 0;
+        }
+    }, [activities]);
 
     // small sparkline data: count flashcards lastReviewed per day for last 7 days
     const sparkline = useMemo(() => {
@@ -187,9 +290,8 @@ export default function AchievementsPage() {
         const weeklyReviews = sparkline.reduce((s, n) => s + n, 0);
         const recentCount = recentCompletions.length;
 
-        // Count study completion activities
-        const studyCompletions = activities.filter(a => a.type === 'flashcard.study_complete').length;
-        const favoritesStudied = activities.filter(a => a.type === 'flashcard.study_complete' && a.meta?.studiedFavorites).length;
+        // Use precomputed session/card metrics
+        const studyCompletions = studySessionsCompleted;
 
         const a: Achievement[] = [
             { id: 1, title: 'First Steps', description: 'Created your first flashcard set', icon: '🎯', earned: totalFlashcards >= 1 },
@@ -202,10 +304,10 @@ export default function AchievementsPage() {
             // additional achievements (7-20)
             { id: 7, title: 'Flashcard Novice', description: 'Create 3 flashcard sets', icon: '📚', progress: totalFlashcards, total: 3, earned: totalFlashcards >= 3 },
             { id: 8, title: 'Flashcard Collector', description: 'Create 25 flashcard sets', icon: '🧩', progress: totalFlashcards, total: 25, earned: totalFlashcards >= 25 },
-            { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', progress: totalSummaries, total: 1, earned: totalSummaries >= 1 },
-            { id: 10, title: 'Summary Scholar', description: 'Read 5 summaries', icon: '📖', progress: totalSummaries, total: 5, earned: totalSummaries >= 5 },
-            { id: 11, title: 'Review Apprentice', description: 'Review 50 flashcards', icon: '🔁', progress: totalReviewed, total: 50, earned: totalReviewed >= 50 },
-            { id: 12, title: 'Review Pro', description: 'Review 200 flashcards', icon: '⚡', progress: totalReviewed, total: 200, earned: totalReviewed >= 200 },
+            { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', progress: summarySessionsCompleted, total: 1, earned: summarySessionsCompleted >= 1 },
+            { id: 10, title: 'Summary Scholar', description: 'Read 5 summaries', icon: '📖', progress: summarySessionsCompleted, total: 5, earned: summarySessionsCompleted >= 5 },
+            { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', progress: cardsReviewed, total: 50, earned: cardsReviewed >= 50 },
+            { id: 12, title: 'Review Pro', description: 'Review 200 cards', icon: '⚡', progress: cardsReviewed, total: 200, earned: cardsReviewed >= 200 },
             { id: 13, title: 'Marathoner', description: 'Study streak of 30 days', icon: '🏃‍♀️', progress: studyStreak, total: 30, earned: studyStreak >= 30 },
             { id: 14, title: 'Active Week', description: 'Study 7 times in the last 7 days', icon: '📆', progress: weeklyReviews, total: 7, earned: weeklyReviews >= 7 },
             { id: 15, title: 'Session Master', description: 'Complete 10 study sessions', icon: '🎓', progress: studyCompletions, total: 10, earned: studyCompletions >= 10 },
@@ -216,7 +318,7 @@ export default function AchievementsPage() {
             { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', progress: studyCompletions, total: 50, earned: studyCompletions >= 50 }
         ];
         return a;
-    }, [flashcards, totalFlashcards, totalSummaries, totalReviewed, practiceTestsCompleted, studyStreak, recentCompletions, sparkline, activities]);
+    }, [flashcards, totalFlashcards, totalSummaries, cardsReviewed, practiceTestsCompleted, studyStreak, recentCompletions, sparkline, activities, studySessionsCompleted]);
 
     const earnedCount = achievements.filter(a => a.earned).length;
 
@@ -299,12 +401,41 @@ export default function AchievementsPage() {
         };
 
         try {
+            // Prevent double-marking: check existing StudyProgress completion first
+            try {
+                const progRes = await fetch(`/api/student_page/flashcard/${fcId}/progress?userId=${userId}`, { credentials: 'include' });
+                if (progRes.ok) {
+                    const progJson = await progRes.json().catch(() => null);
+                    const prog = progJson?.progress || progJson;
+                    const existingCompletedAt = prog?.completion?.completedAt || prog?.lastSessionStartedAt || null;
+                    if (prog?.completion?.showCompletion || existingCompletedAt) {
+                        // Already recorded a completion for this flashcard; avoid sending another PATCH
+                        showSuccess(`"${flashcard.title || 'set'}" is already marked finished`);
+                        // update local UI from server to reflect current state
+                        try {
+                            const refreshed = await fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' });
+                            if (refreshed.ok) {
+                                const json = await refreshed.json().catch(() => null);
+                                setFlashcards(Array.isArray(json?.flashcards) ? json.flashcards : []);
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                        const newStreak = updateStreakOnFinish();
+                        return;
+                    }
+                }
+            } catch (e) {
+                // if progress check fails, proceed with PATCH as before
+                console.warn('Progress check failed, will attempt to mark finished', e);
+            }
+
             const res = await fetch(`/api/student_page/flashcard/${fcId}/progress?userId=${userId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(body)
-            });
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(body)
+                });
             if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
             // update local UI: re-fetch flashcards from server to ensure persistence across sessions
@@ -345,13 +476,13 @@ export default function AchievementsPage() {
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">Your Progress</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">{totalReviewed}</div>
-                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Flashcards reviewed</div>
+                                    <div className="text-2xl sm:text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">{studySessionsCompleted}</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Flashcard sessions completed</div>
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">{totalSummaries}</div>
-                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Summaries read</div>
+                                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">{summarySessionsCompleted}</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Summary sessions completed</div>
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -373,12 +504,12 @@ export default function AchievementsPage() {
                     </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-3">
                         {/* Unlocked achievements */}
                         {unlocked.length > 0 && (
                             <div>
                                 <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Unlocked</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                                     {unlocked.map((achievement) => (
                                         <div key={achievement.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4 sm:p-6 transition-all hover:shadow-lg hover:-translate-y-1 ${achievement.earned ? 'border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
                                             <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
