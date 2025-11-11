@@ -1,7 +1,7 @@
 "use client";
 
 import "./styles.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import useAuth from "@/hooks/useAuth";
 import Link from "next/link";
 import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2";
@@ -32,6 +32,12 @@ interface TestSubmission {
   score: number;
   completedAt: string;
   timeSpent: number;
+  // optional metadata populated when joining with practice test data
+  practiceTestTitle?: string;
+  practiceTest?: {
+    _id?: string;
+    title?: string;
+  };
 }
 
 interface StudyProgress {
@@ -56,10 +62,15 @@ export default function UserDashboard() {
     totalStudyTime: 0,
     recentActivity: "No recent activity"
   });
-  const [loadingStats, setLoadingStats] = useState(false);
+  // Start true to avoid a brief flash of the dashboard content before the
+  // client-side data load begins (prevents the flicker you reported).
+  const [loadingStats, setLoadingStats] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Array<{_id: string; title: string; type: string}>>([]);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  // Keep full fetched data so we can compute achievements accurately (not just the 4 recent items)
+  const [allActivities, setAllActivities] = useState<Activity[]>([]);
+  const [allFlashcards, setAllFlashcards] = useState<any[]>([]);
   const [recentTests, setRecentTests] = useState<TestSubmission[]>([]);
   const [weeklyActivity, setWeeklyActivity] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
 
@@ -216,8 +227,21 @@ export default function UserDashboard() {
               recentActivity
             });
             setFavorites(favs.slice(0, 8));
-            setRecentActivities(fetchedActivities.slice(0, 5));
-            setRecentTests(fetchedSubmissions.slice(0, 3));
+            // Keep full activities in state for achievement calculations, but show the first 4 in the recent list
+            setAllActivities(fetchedActivities);
+            setRecentActivities(fetchedActivities.slice(0, 4));
+            // Keep full flashcards for achievement calculations
+            setAllFlashcards(fetchedFlashcards);
+            // join submissions with fetched practice tests so we can show full titles
+            const submissionsWithTitles = (fetchedSubmissions || []).map((s: any) => {
+              const match = fetchedTests.find((t: any) => String(t._id) === String(s.practiceTestId) || String(t._id) === String(s.practiceTest?._id));
+              return {
+                ...s,
+                practiceTestTitle: s.practiceTestTitle || match?.title || undefined,
+                practiceTest: match ? { _id: match._id, title: match.title } : s.practiceTest || undefined
+              };
+            });
+            setRecentTests(submissionsWithTitles.slice(0, 3));
             setWeeklyActivity(weekly);
           }
         }
@@ -325,8 +349,149 @@ export default function UserDashboard() {
     return date.toLocaleDateString();
   }
 
-  if (authLoading) {
-    return <LoadingTemplate2 title="Loading dashboard..." />;
+  // Map activity types to color classes (used for icon badge backgrounds)
+  function getActivityColorClass(type: string) {
+    const t = (type || '').toString().toLowerCase();
+    if (t.includes('flashcard')) return 'text-teal-600 bg-teal-50 dark:bg-teal-900/20';
+    if (t.includes('summary')) return 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20';
+    if (t.includes('practice') || t.includes('test')) return 'text-amber-600 bg-amber-50 dark:bg-amber-900/20';
+    if (t.includes('folder')) return 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20';
+    if (t.includes('auth') || t.includes('profile')) return 'text-violet-600 bg-violet-50 dark:bg-violet-900/20';
+    return 'text-slate-600 bg-slate-50 dark:bg-slate-900/20';
+  }
+
+  // Achievements derived from real fetched data (allActivities, allFlashcards, recentTests, stats)
+  type AchievementLocal = {
+    id: number;
+    title: string;
+    description: string;
+    icon: string;
+    earned?: boolean;
+    earnedDate?: string | null;
+    progress?: number;
+    total?: number;
+  };
+
+  // helper to find latest activity date matching a predicate
+  function findLatestActivityDate(predicate: (a: Activity) => boolean): string | null {
+    try {
+      const found = allActivities.filter(predicate).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return found.length > 0 ? found[0].createdAt : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const totalCards = useMemo(() => {
+    try {
+      return allFlashcards.reduce((s, f) => s + (Array.isArray(f.cards) ? f.cards.length : 0), 0);
+    } catch {
+      return 0;
+    }
+  }, [allFlashcards]);
+
+  const cardsReviewed = useMemo(() => {
+    try {
+      // Prefer server-side repetitionCount on flashcard docs; fall back to summing activity meta values similar to Achievements page
+      const sum = allFlashcards.reduce((s, fc) => s + (Number(fc.repetitionCount) || 0), 0);
+      if (sum > 0) return sum;
+
+      const actSum = (allActivities || []).reduce((s, a) => {
+        const t = (a.type || a.action || '')?.toString().toLowerCase();
+        if (t.includes('flashcard.study_complete')) {
+          if (typeof a.meta?.cardsStudied === 'number') return s + a.meta.cardsStudied;
+          if (typeof a.meta?.cardCount === 'number') return s + a.meta.cardCount;
+          if (Array.isArray(a.meta?.cardIds)) return s + a.meta.cardIds.length;
+          if (typeof a.meta?.total === 'number') return s + a.meta.total;
+          if (typeof (a as any).progress === 'number') return s + (a as any).progress;
+          return s + 1;
+        }
+        return s;
+      }, 0);
+      return actSum;
+    } catch {
+      return 0;
+    }
+  }, [allFlashcards, allActivities]);
+
+  const studySessionsCompleted = useMemo(() => {
+    try {
+      return (allActivities || []).filter(a => {
+        const t = (a.type || a.action || '')?.toString().toLowerCase();
+        return t.includes('flashcard.study_complete');
+      }).length;
+    } catch {
+      return 0;
+    }
+  }, [allActivities]);
+
+  const summarySessionsCompleted = useMemo(() => {
+    try {
+      return (allActivities || []).filter(a => {
+        const t = (a.type || a.action || '')?.toString().toLowerCase();
+        return t.includes('summary.read') || t.includes('summary.session') || t.includes('summary.completed');
+      }).length;
+    } catch {
+      return 0;
+    }
+  }, [allActivities]);
+
+  const favoritesStudied = useMemo(() => {
+    try {
+      return (allActivities || []).filter(a => {
+        const t = (a.type || a.action || '')?.toString().toLowerCase();
+        return t.includes('flashcard.study_complete') && !!a.meta?.studiedFavorites;
+      }).length;
+    } catch {
+      return 0;
+    }
+  }, [allActivities]);
+
+  // Keep parity with Achievements page which uses placeholder 0 for practice tests until a source exists
+  const practiceTestsCompleted = useMemo(() => {
+    return 0;
+  }, [allActivities, recentTests]);
+
+  const achievements = useMemo<AchievementLocal[]>(() => {
+    const a: AchievementLocal[] = [
+      { id: 1, title: 'First Steps', description: 'Created your first flashcard set', icon: '🎯', earned: stats.totalFlashcards >= 1, earnedDate: stats.totalFlashcards >= 1 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && ((x.action || '').toLowerCase().includes('create') || (x.type || '').includes('create'))) : null },
+      { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: stats.studyStreak >= 7, progress: stats.studyStreak, total: 7, earnedDate: stats.studyStreak >= 7 ? null : null },
+      { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', progress: stats.totalFlashcards, total: 10, earned: stats.totalFlashcards >= 10, earnedDate: stats.totalFlashcards >= 10 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && ((x.action || '').toLowerCase().includes('create') || (x.type || '').includes('create'))) : null },
+      { id: 4, title: 'Perfect Score', description: 'Got 100% on a practice test', icon: '⭐', progress: practiceTestsCompleted, total: 1, earned: recentTests.some(t => t.score === 100), earnedDate: recentTests.filter(t => t.score === 100).sort((a,b)=> new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0]?.completedAt || null },
+      { id: 5, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', progress: studySessionsCompleted, total: 5, earned: studySessionsCompleted >= 5, earnedDate: studySessionsCompleted >= 5 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && ((x.action || '').toLowerCase().includes('study') || x.meta?.sessionFinished)) : null },
+      { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', progress: cardsReviewed, total: 50, earned: cardsReviewed >= 50, earnedDate: cardsReviewed >= 50 ? findLatestActivityDate(x => Number(x.meta?.reviewedCount) > 0) : null },
+      { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', progress: summarySessionsCompleted, total: 1, earned: summarySessionsCompleted >= 1, earnedDate: summarySessionsCompleted >= 1 ? findLatestActivityDate(x => (x.type || '').includes('summary') || (x.action || '').toLowerCase().includes('read')) : null },
+      { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', progress: totalCards, total: 100, earned: totalCards >= 100, earnedDate: totalCards >= 100 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && Boolean(x.createdAt)) : null }
+    ];
+    return a;
+  }, [stats, allActivities, allFlashcards, recentTests, practiceTestsCompleted, cardsReviewed, studySessionsCompleted, summarySessionsCompleted, totalCards]);
+
+  const unlockedAchievements = useMemo(() => {
+    const unlocked = achievements.filter(a => a.earned).map(a => ({ ...a }));
+    // If an earned achievement didn't have an earnedDate try to provide one from activities
+    unlocked.forEach(u => {
+      if (!u.earnedDate) {
+        // coarse fallback: use most recent activity overall
+        u.earnedDate = allActivities.length > 0 ? allActivities.slice().sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime())[0].createdAt : null;
+      }
+    });
+    return unlocked.sort((a, b) => {
+      const ta = a.earnedDate ? new Date(a.earnedDate).getTime() : 0;
+      const tb = b.earnedDate ? new Date(b.earnedDate).getTime() : 0;
+      return tb - ta;
+    }).slice(0, 4);
+  }, [achievements, allActivities]);
+
+  // Show library-style loading UI while auth or dashboard stats are loading.
+  if (authLoading || loadingStats) {
+    return (
+      <LoadingTemplate2
+        title="Loading dashboard..."
+        // use the library/teal accent color so the spinner matches the Library page
+        accentColor="#06B6A4"
+        compact={!!loadingStats}
+      />
+    );
   }
 
   return (
@@ -430,18 +595,22 @@ export default function UserDashboard() {
               <div className="space-y-3 max-h-80 overflow-y-auto">
                 {recentActivities.length > 0 ? (
                   recentActivities.map((activity) => (
-                    <div key={activity._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="w-8 h-8 bg-teal-100 dark:bg-teal-800 rounded-full flex items-center justify-center text-teal-600 dark:text-teal-300">
+                    <div key={activity._id} className="flex items-start gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
+                      <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${getActivityColorClass(activity.type)}`}>
                         {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {formatActivityMessage(activity)}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {getTimeAgo(activity.createdAt)}
-                        </p>
+                        {/* show an optional subtitle if meta contains a title or details */}
+                        {activity.meta?.title ? (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{activity.meta.title}</p>
+                        ) : activity.meta?.summary ? (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{activity.meta.summary}</p>
+                        ) : null}
                       </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{getTimeAgo(activity.createdAt)}</div>
                     </div>
                   ))
                 ) : (
@@ -453,28 +622,32 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            {/* Weekly Activity Chart */}
+            {/* Unlocked Achievements (replaces Weekly Activity) */}
             <div className="panel panel-padded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Weekly Activity</h2>
-              <div className="flex items-end justify-between gap-2 h-32">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                  const count = weeklyActivity[index];
-                  const maxCount = Math.max(...weeklyActivity, 1);
-                  const height = (count / maxCount) * 100;
-                  return (
-                    <div key={day} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-lg relative" style={{ height: '100px' }}>
-                        <div 
-                          className="absolute bottom-0 w-full bg-gradient-to-t from-teal-500 to-teal-400 dark:from-teal-600 dark:to-teal-500 rounded-t-lg transition-all duration-300"
-                          style={{ height: `${height}%` }}
-                        />
+              <h2 className="section-title mb-4 text-gray-900 dark:text-white">Recent Unlocked Achievements</h2>
+              {unlockedAchievements.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {unlockedAchievements.map(a => (
+                    <div key={a.id} className="p-4 bg-gray-50 dark:bg-gray-700 border border-teal-100 dark:border-teal-800 rounded-lg flex items-start gap-3">
+                      <div className="text-2xl flex-shrink-0" aria-hidden>
+                        {a.icon}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{day}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-500">{count}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{a.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{a.description}</p>
+                        <div className="mt-2 text-xs text-teal-600 dark:text-teal-400 font-medium">
+                          ✓ Earned{a.earnedDate ? ` • ${new Date(a.earnedDate).toLocaleDateString()}` : ''}
+                        </div>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <p className="text-sm">No achievements unlocked yet</p>
+                  <p className="text-xs mt-1">Complete activities to earn achievements</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -492,7 +665,7 @@ export default function UserDashboard() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Study Streak</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.studyStreak} days</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.studyStreak} {stats.studyStreak === 1 ? 'day' : 'days'}</p>
                     </div>
                   </div>
                 </div>
@@ -505,8 +678,9 @@ export default function UserDashboard() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Study Time</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.totalStudyTime} min</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Total items</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.totalFlashcards + stats.totalSummaries + stats.totalTests}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{stats.totalFlashcards} flashcards • {stats.totalSummaries} summaries • {stats.totalTests} tests</p>
                     </div>
                   </div>
                 </div>
@@ -532,22 +706,34 @@ export default function UserDashboard() {
               <h2 className="section-title mb-4 text-gray-900 dark:text-white">Recent Test Scores</h2>
               <div className="space-y-3">
                 {recentTests.length > 0 ? (
-                  recentTests.map((test) => (
-                    <div key={test._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Test #{test.practiceTestId.slice(-6)}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(test.completedAt)}</p>
+                  recentTests.map((test) => {
+                    const title = (test.practiceTestTitle && String(test.practiceTestTitle).trim())
+                      || (test.practiceTest && typeof test.practiceTest.title === 'string' && test.practiceTest.title.trim())
+                      || `Test #${String(test.practiceTestId || test._id || '').slice(-6)}`;
+                    const testId = test.practiceTest?._id || test.practiceTestId || null;
+                    const TitleNode = (
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{title}</p>
+                    );
+
+                    return (
+                      <div key={test._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex-1 min-w-0">
+                          {testId ? (
+                            <Link href={`/student_page/practice_tests/${testId}`} className="no-underline hover:underline">{TitleNode}</Link>
+                          ) : TitleNode}
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(test.completedAt)}</p>
+                        </div>
+                        <div className={`text-lg font-bold ${
+                          test.score >= 90 ? 'text-green-600 dark:text-green-400' :
+                          test.score >= 70 ? 'text-blue-600 dark:text-blue-400' :
+                          test.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-red-600 dark:text-red-400'
+                        }`}>
+                          {test.score}%
+                        </div>
                       </div>
-                      <div className={`text-lg font-bold ${
-                        test.score >= 90 ? 'text-green-600 dark:text-green-400' :
-                        test.score >= 70 ? 'text-blue-600 dark:text-blue-400' :
-                        test.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
-                        'text-red-600 dark:text-red-400'
-                      }`}>
-                        {test.score}%
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                     <p className="text-sm">No tests completed yet</p>
