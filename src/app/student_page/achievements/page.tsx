@@ -169,13 +169,16 @@ export default function AchievementsPage() {
         const visibilityHandler = () => { if (document.visibilityState === 'visible') load(); };
         const focusHandler = () => { load(); };
 
-        try {
-            if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-                // @ts-ignore - BroadcastChannel may not be typed in this environment
-                bc = new BroadcastChannel('notewise.activities');
-                bc.onmessage = () => { load(); };
-            }
-        } catch (e) {
+                try {
+                    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                        const BC = (window as any).BroadcastChannel;
+                        if (typeof BC === 'function') {
+                            const instance = new BC('notewise.activities');
+                            bc = instance;
+                            instance.onmessage = () => { load(); };
+                        }
+                    }
+                } catch (e) {
             bc = null;
         }
 

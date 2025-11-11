@@ -338,10 +338,12 @@ export default function SummaryViewPage() {
                                             // notify other tabs/pages to refresh
                                             try {
                                                 if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-                                                    // @ts-ignore
-                                                    const bc = new BroadcastChannel('notewise.activities');
-                                                    bc.postMessage({ type: 'summary.read', summaryId: summary._id });
-                                                    bc.close();
+                                                    const BC = (window as any).BroadcastChannel;
+                                                    if (typeof BC === 'function') {
+                                                        const bc = new BC('notewise.activities');
+                                                        bc.postMessage({ type: 'summary.read', summaryId: summary._id });
+                                                        bc.close();
+                                                    }
                                                 }
                                             } catch (e) {}
                                         } catch (err: any) {
