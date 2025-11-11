@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Bytez from 'bytez.js';
 import { logger } from '@/lib/winston';
 import { ChatbotContextService, UserContext } from './chatbot-context-service';
 import { containsProfanity, findProfanity } from './profanity-filter';
@@ -24,7 +24,7 @@ export interface ChatbotResponse {
 }
 
 export class ChatbotService {
-    private genAI: GoogleGenerativeAI;
+    private genAI: any;
     private currentModel: string;
 
     constructor() {
@@ -45,10 +45,11 @@ export class ChatbotService {
         });
 
         try {
-            this.genAI = new GoogleGenerativeAI(apiKey);
-            this.currentModel = "gemini-2.5-pro"; // Only working model with current key
+            // Initialize Bytez client with the chatbot API key
+            this.genAI = new Bytez(apiKey);
+            this.currentModel = "openai/gpt-4.1"; // Using Bytez with OpenAI GPT-4.1
         } catch (error) {
-            logger.error('Failed to initialize Google AI:', error);
+            logger.error('Failed to initialize Bytez:', error);
             throw new Error('Failed to initialize chatbot service');
         }
     }
@@ -106,99 +107,95 @@ export class ChatbotService {
             // Create prompt
             const prompt = this.createPrompt(systemContext, userMessage, conversationHistory, isAuthenticated);
 
-            // Try multiple models with fallback support
-            // Based on testing: only gemini-2.5-pro works with current API key
-            const modelsToTry = [
-                "gemini-2.5-pro",           // Only working model currently
-            ];
+            // Use Bytez SDK to call model openai/gpt-4.1
+            logger.info('Generating chatbot response with Bytez/OpenAI GPT-4.1');
 
-            console.log('🎯 Attempting to generate response with gemini-2.5-pro...');
+            try {
+                const model = this.genAI.model(this.currentModel);
+                const res: any = await model.run([
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ]);
 
-            let result;
-            let lastError;
-            
-            for (const modelName of modelsToTry) {
-                try {
-                    console.log(`🔄 Trying model: ${modelName}`);
-                    
-                    const model = this.genAI.getGenerativeModel({
-                        model: modelName,
-                        generationConfig: {
-                            temperature: 0.7,
-                            topP: 0.9,
-                            topK: 40,
-                            maxOutputTokens: 1000,
+                if (res?.error) {
+                    throw new Error(`Model error: ${JSON.stringify(res.error)}`);
+                }
+
+                // Normalize output - Bytez returns { output: { role: 'assistant', content: 'text' } }
+                let responseText = '';
+                const output = res?.output;
+                
+                if (!output) {
+                    responseText = '';
+                } else if (typeof output === 'string') {
+                    responseText = output;
+                } else if (typeof output === 'object' && !Array.isArray(output)) {
+                    if (typeof output.content === 'string') {
+                        responseText = output.content;
+                    } else if (typeof output.text === 'string') {
+                        responseText = output.text;
+                    } else if (output.message && typeof output.message.content === 'string') {
+                        responseText = output.message.content;
+                    }
+                } else if (Array.isArray(output)) {
+                    for (const item of output) {
+                        if (!item) continue;
+                        if (typeof item === 'string') responseText += item;
+                        else if (typeof item === 'object') {
+                            if (typeof item.content === 'string') responseText += item.content;
+                            else if (typeof item.text === 'string') responseText += item.text;
+                            else if (Array.isArray(item.content)) {
+                                for (const c of item.content) {
+                                    if (typeof c === 'string') responseText += c;
+                                    else if (typeof c.text === 'string') responseText += c.text;
+                                }
+                            } else if (item.message && typeof item.message.content === 'string') {
+                                responseText += item.message.content;
+                            }
                         }
-                    });
+                    }
+                }
 
-                    result = await model.generateContent(prompt);
-                    console.log(`✅ Success with model: ${modelName}`);
-                    this.currentModel = modelName; // Remember working model
-                    break; // Success! Exit loop
-                    
-                } catch (error: any) {
-                    lastError = error;
-                    console.log(`❌ Failed with ${modelName}:`, error.message.substring(0, 100));
-                    
-                    // If quota exceeded or rate limited, try next model
-                    if (error.message.includes('429') || error.message.includes('quota')) {
-                        console.log(`  ⚠️  Quota/rate limit, trying next model...`);
-                        continue;
+                if (!responseText) {
+                    throw new Error('No response text generated');
+                }
+
+                logger.info('Chatbot response generated', {
+                    responseLength: responseText.length
+                });
+
+                // Generate suggestions based on context
+                const suggestions = this.generateSuggestions(userMessage, isAuthenticated, userContextData);
+
+                return {
+                    message: responseText,
+                    context: isAuthenticated ? 'authenticated' : 'landing',
+                    suggestions
+                };
+
+            } catch (error) {
+                logger.error('Bytez model error:', {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    model: this.currentModel
+                });
+
+                // Provide specific error messages
+                if (error instanceof Error) {
+                    if (error.message.includes('401') || error.message.includes('API key')) {
+                        throw new Error('Invalid API key. Please update your chatbot API key configuration.');
                     }
-                    
-                    // If model not found, try next
-                    if (error.message.includes('404') || error.message.includes('not found')) {
-                        console.log(`  ℹ️  Model not available, trying next...`);
-                        continue;
+                    if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('rate limit')) {
+                        throw new Error('AI service is currently rate-limited. Please try again in a few minutes.');
                     }
-                    
-                    // If model overloaded, try next
                     if (error.message.includes('503') || error.message.includes('overloaded')) {
-                        console.log(`  ⚠️  Service overloaded, trying next...`);
-                        continue;
-                    }
-                    
-                    // If invalid API key, no point trying other models
-                    if (error.message.includes('API_KEY_INVALID') || error.message.includes('API key not found')) {
-                        throw new Error('Invalid API key. Please update your GOOGLE_AI_API_KEY_Chatbot in .env file.');
+                        throw new Error('AI service is temporarily overloaded. Please try again in a moment.');
                     }
                 }
+
+                throw error;
             }
-            
-            if (!result) {
-                // All models failed
-                console.error('❌ All models failed. Last error:', lastError?.message?.substring(0, 200));
-                
-                if (lastError?.message?.includes('429') || lastError?.message?.includes('quota')) {
-                    throw new Error('AI service is currently rate-limited. Please try again in a few minutes.');
-                }
-                
-                if (lastError?.message?.includes('503') || lastError?.message?.includes('overloaded')) {
-                    throw new Error('AI service is temporarily overloaded. Please try again in a moment.');
-                }
-                
-                if (lastError?.message?.includes('404') || lastError?.message?.includes('not found')) {
-                    throw new Error('The AI model is not available. Please contact support to update the configuration.');
-                }
-                
-                throw lastError || new Error('Failed to generate response. Please try again.');
-            }
-
-            const response = await result.response;
-            const responseText = response.text();
-
-            logger.info('Chatbot response generated', {
-                responseLength: responseText.length
-            });
-
-            // Generate suggestions based on context
-            const suggestions = this.generateSuggestions(userMessage, isAuthenticated, userContextData);
-
-            return {
-                message: responseText,
-                context: isAuthenticated ? 'authenticated' : 'landing',
-                suggestions
-            };
 
         } catch (error) {
             logger.error('Chatbot error:', {

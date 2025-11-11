@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Bytez from 'bytez.js';
 import { logger } from '@/lib/winston';
 
 export interface PracticeTestOptions {
@@ -45,7 +45,7 @@ export interface PracticeTestResult {
 }
 
 export class PracticeTestGenerator {
-  private genAI: GoogleGenerativeAI;
+  private genAI: any;
 
   constructor() {
     const apiKey = process.env.GOOGLE_AI_API_KEY_PRACTICE_TEST || process.env.GOOGLE_AI_API_KEY;
@@ -60,7 +60,8 @@ export class PracticeTestGenerator {
       keyLength: apiKey.length
     });
     
-    this.genAI = new GoogleGenerativeAI(apiKey);
+    // Initialize Bytez client with the practice test API key
+    this.genAI = new Bytez(apiKey);
   }
 
   async generatePracticeTest(options: PracticeTestOptions): Promise<PracticeTestResult> {
@@ -82,16 +83,6 @@ export class PracticeTestGenerator {
       throw new Error('Content too long. Please limit to 100,000 characters');
     }
 
-    const model = this.genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp",
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.9,
-        topK: 2000,
-        maxOutputTokens: 8000,
-      }
-    });
-
     const prompt = this.createPrompt(
       content,
       title,
@@ -103,7 +94,7 @@ export class PracticeTestGenerator {
     );
 
     try {
-      logger.info('Generating practice test with AI', {
+      logger.info('Generating practice test with Bytez/OpenAI GPT-4.1', {
         contentLength: content.length,
         maxQuestions,
         difficulty,
@@ -111,9 +102,53 @@ export class PracticeTestGenerator {
         includeWritten
       });
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const generatedText = response.text();
+      // Use Bytez SDK to call model openai/gpt-4.1
+      const model = this.genAI.model('openai/gpt-4.1');
+      const res: any = await model.run([
+        {
+          role: 'user',
+          content: prompt
+        }
+      ]);
+
+      if (res?.error) {
+        throw new Error(`Model error: ${JSON.stringify(res.error)}`);
+      }
+
+      // Normalize output - Bytez returns { output: { role: 'assistant', content: 'text' } }
+      let generatedText = '';
+      const output = res?.output;
+      
+      if (!output) {
+        generatedText = '';
+      } else if (typeof output === 'string') {
+        generatedText = output;
+      } else if (typeof output === 'object' && !Array.isArray(output)) {
+        if (typeof output.content === 'string') {
+          generatedText = output.content;
+        } else if (typeof output.text === 'string') {
+          generatedText = output.text;
+        } else if (output.message && typeof output.message.content === 'string') {
+          generatedText = output.message.content;
+        }
+      } else if (Array.isArray(output)) {
+        for (const item of output) {
+          if (!item) continue;
+          if (typeof item === 'string') generatedText += item;
+          else if (typeof item === 'object') {
+            if (typeof item.content === 'string') generatedText += item.content;
+            else if (typeof item.text === 'string') generatedText += item.text;
+            else if (Array.isArray(item.content)) {
+              for (const c of item.content) {
+                if (typeof c === 'string') generatedText += c;
+                else if (typeof c.text === 'string') generatedText += c.text;
+              }
+            } else if (item.message && typeof item.message.content === 'string') {
+              generatedText += item.message.content;
+            }
+          }
+        }
+      }
 
       logger.info('AI response received for practice test', {
         responseLength: generatedText.length
