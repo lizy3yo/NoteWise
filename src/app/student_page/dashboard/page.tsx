@@ -126,7 +126,7 @@ export default function UserDashboard() {
             fetch(`/api/student_page/folder?userId=${userId}`, { credentials: 'include' }),
             fetch(`/api/student_page/practice-test?userId=${userId}`, { credentials: 'include' }),
             fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' }),
-            fetch(`/api/student_page/history?userId=${userId}&limit=10`, { credentials: 'include' }),
+            fetch(`/api/student_page/history?userId=${userId}&limit=200`, { credentials: 'include' }),
             fetch(`/api/student_page/practice-test/submit?userId=${userId}`, { credentials: 'include' })
           ]);
 
@@ -191,6 +191,7 @@ export default function UserDashboard() {
 
           // Calculate study streak (days with activity in the last 7 days)
           const studyStreak = calculateStudyStreak(fetchedActivities);
+          console.log('📊 Dashboard Study Streak:', studyStreak, 'days (from', fetchedActivities.length, 'activities)');
 
           // Calculate weekly activity
           const weekly = calculateWeeklyActivity(fetchedActivities);
@@ -262,22 +263,50 @@ export default function UserDashboard() {
 
   // Helper functions
   function calculateStudyStreak(activities: Activity[]): number {
-    if (activities.length === 0) return 0;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const uniqueDays = new Set<string>();
-    activities.forEach(activity => {
-      const activityDate = new Date(activity.createdAt);
-      activityDate.setHours(0, 0, 0, 0);
-      const daysDiff = Math.floor((today.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysDiff < 7) {
-        uniqueDays.add(activityDate.toISOString());
+    try {
+      // Collect all study-related activity dates
+      const studyDates = new Set<string>();
+      
+      activities.forEach(a => {
+        const type = (a.type || '')?.toString().toLowerCase();
+        // Count flashcard sessions, summary reads, and practice test submissions
+        if (type.includes('flashcard.study_complete') || 
+            type.includes('summary.read') || 
+            type.includes('practice_test.submit')) {
+          const date = new Date(a.createdAt);
+          // Normalize to start of day (midnight) for comparison
+          date.setHours(0, 0, 0, 0);
+          studyDates.add(date.toISOString());
+        }
+      });
+
+      // Calculate consecutive days from today backwards
+      let streak = 0;
+      const now = new Date();
+      // Set to start of current day to check if user studied today
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+
+      // Check consecutive days going backwards
+      for (let i = 0; i < 365; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        const key = checkDate.toISOString();
+        
+        if (studyDates.has(key)) {
+          streak++;
+        } else {
+          // If this is day 0 (today) and no activity yet, continue checking yesterday
+          // This prevents breaking streak if user hasn't studied today yet but studied yesterday
+          if (i === 0) continue;
+          break;
+        }
       }
-    });
-    
-    return uniqueDays.size;
+
+      return streak;
+    } catch {
+      return 0;
+    }
   }
 
   function calculateWeeklyActivity(activities: Activity[]): number[] {
@@ -447,39 +476,174 @@ export default function UserDashboard() {
     }
   }, [allActivities]);
 
-  // Keep parity with Achievements page which uses placeholder 0 for practice tests until a source exists
+  // Practice tests completed: count of practice_test.submit activities
   const practiceTestsCompleted = useMemo(() => {
-    return 0;
-  }, [allActivities, recentTests]);
+    try {
+      return (allActivities || []).filter(a => {
+        const t = (a.type || a.action || '')?.toString().toLowerCase();
+        return t.includes('practice_test.submit') || t.includes('practice_test.completed') || t.includes('test.submit');
+      }).length;
+    } catch {
+      return 0;
+    }
+  }, [allActivities]);
 
   const achievements = useMemo<AchievementLocal[]>(() => {
+    const finishedSets = allFlashcards.filter((f: any) => f.lastReviewed).length;
+    const totalCards = allFlashcards.reduce((sum: number, f: any) => sum + (Array.isArray(f.cards) ? f.cards.length : 0), 0);
+    const studyCompletions = studySessionsCompleted;
+
     const a: AchievementLocal[] = [
       { id: 1, title: 'First Steps', description: 'Created your first flashcard set', icon: '🎯', earned: stats.totalFlashcards >= 1, earnedDate: stats.totalFlashcards >= 1 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && ((x.action || '').toLowerCase().includes('create') || (x.type || '').includes('create'))) : null },
       { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: stats.studyStreak >= 7, progress: stats.studyStreak, total: 7, earnedDate: stats.studyStreak >= 7 ? null : null },
       { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', progress: stats.totalFlashcards, total: 10, earned: stats.totalFlashcards >= 10, earnedDate: stats.totalFlashcards >= 10 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && ((x.action || '').toLowerCase().includes('create') || (x.type || '').includes('create'))) : null },
-      { id: 4, title: 'Perfect Score', description: 'Got 100% on a practice test', icon: '⭐', progress: practiceTestsCompleted, total: 1, earned: recentTests.some(t => t.score === 100), earnedDate: recentTests.filter(t => t.score === 100).sort((a,b)=> new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0]?.completedAt || null },
-      { id: 5, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', progress: studySessionsCompleted, total: 5, earned: studySessionsCompleted >= 5, earnedDate: studySessionsCompleted >= 5 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && ((x.action || '').toLowerCase().includes('study') || x.meta?.sessionFinished)) : null },
-      { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', progress: cardsReviewed, total: 50, earned: cardsReviewed >= 50, earnedDate: cardsReviewed >= 50 ? findLatestActivityDate(x => Number(x.meta?.reviewedCount) > 0) : null },
-      { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', progress: summarySessionsCompleted, total: 1, earned: summarySessionsCompleted >= 1, earnedDate: summarySessionsCompleted >= 1 ? findLatestActivityDate(x => (x.type || '').includes('summary') || (x.action || '').toLowerCase().includes('read')) : null },
-      { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', progress: totalCards, total: 100, earned: totalCards >= 100, earnedDate: totalCards >= 100 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && Boolean(x.createdAt)) : null }
+      { id: 4, title: 'Perfect Score', description: 'Got 100% on a practice test', icon: '⭐', progress: practiceTestsCompleted, total: 1, earned: practiceTestsCompleted >= 1, earnedDate: recentTests.filter(t => t.score === 100).sort((a,b)=> new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0]?.completedAt || null },
+      { id: 5, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', progress: studyCompletions, total: 5, earned: studyCompletions >= 5, earnedDate: studyCompletions >= 5 ? findLatestActivityDate(x => (x.type || '').includes('flashcard.study_complete')) : null },
+      { id: 6, title: 'Streak Holder', description: 'Keep a study streak for 14 days', icon: '📅', progress: stats.studyStreak, total: 14, earned: stats.studyStreak >= 14 },
+      { id: 7, title: 'Flashcard Novice', description: 'Create 3 flashcard sets', icon: '📚', progress: stats.totalFlashcards, total: 3, earned: stats.totalFlashcards >= 3 },
+      { id: 8, title: 'Flashcard Collector', description: 'Create 25 flashcard sets', icon: '🧩', progress: stats.totalFlashcards, total: 25, earned: stats.totalFlashcards >= 25 },
+      { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', progress: summarySessionsCompleted, total: 1, earned: summarySessionsCompleted >= 1, earnedDate: summarySessionsCompleted >= 1 ? findLatestActivityDate(x => (x.type || '').includes('summary.read')) : null },
+      { id: 10, title: 'Summary Scholar', description: 'Read 5 summaries', icon: '📖', progress: summarySessionsCompleted, total: 5, earned: summarySessionsCompleted >= 5 },
+      { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', progress: cardsReviewed, total: 50, earned: cardsReviewed >= 50, earnedDate: cardsReviewed >= 50 ? findLatestActivityDate(x => (x.type || '').includes('flashcard.study_complete')) : null },
+      { id: 12, title: 'Review Pro', description: 'Review 200 cards', icon: '⚡', progress: cardsReviewed, total: 200, earned: cardsReviewed >= 200 },
+      { id: 13, title: 'Marathoner', description: 'Study streak of 30 days', icon: '🏃‍♀️', progress: stats.studyStreak, total: 30, earned: stats.studyStreak >= 30 },
+      { id: 14, title: 'Active Week', description: 'Study 7 times in the last 7 days', icon: '📆', progress: studyCompletions, total: 7, earned: studyCompletions >= 7 },
+      { id: 15, title: 'Session Master', description: 'Complete 10 study sessions', icon: '🎓', progress: studyCompletions, total: 10, earned: studyCompletions >= 10 },
+      { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', progress: totalCards, total: 100, earned: totalCards >= 100, earnedDate: totalCards >= 100 ? findLatestActivityDate(x => (x.type || '').includes('flashcard') && Boolean(x.createdAt)) : null },
+      { id: 17, title: 'Card Hoarder', description: 'Add 500 cards total', icon: '📦', progress: totalCards, total: 500, earned: totalCards >= 500 },
+      { id: 18, title: 'Favorites Fan', description: 'Study favorites 3 times', icon: '⭐', progress: favoritesStudied, total: 3, earned: favoritesStudied >= 3 },
+      { id: 19, title: 'Centurion', description: 'Create 100 flashcard sets', icon: '💯', progress: stats.totalFlashcards, total: 100, earned: stats.totalFlashcards >= 100 },
+      { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', progress: studyCompletions, total: 50, earned: studyCompletions >= 50 }
     ];
     return a;
-  }, [stats, allActivities, allFlashcards, recentTests, practiceTestsCompleted, cardsReviewed, studySessionsCompleted, summarySessionsCompleted, totalCards]);
+  }, [stats, allActivities, allFlashcards, recentTests, practiceTestsCompleted, cardsReviewed, studySessionsCompleted, summarySessionsCompleted, favoritesStudied]);
 
   const unlockedAchievements = useMemo(() => {
     const unlocked = achievements.filter(a => a.earned).map(a => ({ ...a }));
-    // If an earned achievement didn't have an earnedDate try to provide one from activities
+    
+    // Assign earnedDate based on the LATEST activity that would have unlocked each achievement
+    // This shows the MOST RECENTLY unlocked achievements, not the oldest ones
     unlocked.forEach(u => {
-      if (!u.earnedDate) {
-        // coarse fallback: use most recent activity overall
-        u.earnedDate = allActivities.length > 0 ? allActivities.slice().sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime())[0].createdAt : null;
+      if (u.earnedDate) return; // Skip if already has earnedDate from achievements array
+      
+      let relevantDate: string | null = null;
+      const title = u.title;
+      
+      // For ALL achievements, use the MOST RECENT (LATEST) activity that crossed the threshold
+      // Sort by DESCENDING date (newest first) and take the activity at the threshold index from the END
+      
+      if (title === 'First Steps') {
+        const createActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard') && ((a.action || '').toLowerCase().includes('create') || (a.type || '').toLowerCase().includes('create')));
+        if (createActivities.length >= 1) {
+          const sorted = createActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 1].createdAt; // LAST created (1st flashcard)
+        }
+      } else if (title === 'Flashcard Novice') {
+        const createActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard') && ((a.action || '').toLowerCase().includes('create') || (a.type || '').toLowerCase().includes('create')));
+        if (createActivities.length >= 3) {
+          const sorted = createActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 3].createdAt; // 3rd from end (3rd flashcard created)
+        }
+      } else if (title === 'Knowledge Master') {
+        const createActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard') && ((a.action || '').toLowerCase().includes('create') || (a.type || '').toLowerCase().includes('create')));
+        if (createActivities.length >= 10) {
+          const sorted = createActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 10].createdAt; // 10th from end
+        }
+      } else if (title === 'Flashcard Collector') {
+        const createActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard') && ((a.action || '').toLowerCase().includes('create') || (a.type || '').toLowerCase().includes('create')));
+        if (createActivities.length >= 25) {
+          const sorted = createActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 25].createdAt;
+        }
+      } else if (title === 'Centurion') {
+        const createActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard') && ((a.action || '').toLowerCase().includes('create') || (a.type || '').toLowerCase().includes('create')));
+        if (createActivities.length >= 100) {
+          const sorted = createActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 100].createdAt;
+        }
+      } else if (title === 'Summary Starter') {
+        const summaryActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('summary.read'));
+        if (summaryActivities.length >= 1) {
+          const sorted = summaryActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 1].createdAt;
+        }
+      } else if (title === 'Summary Scholar') {
+        const summaryActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('summary.read'));
+        if (summaryActivities.length >= 5) {
+          const sorted = summaryActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 5].createdAt;
+        }
+      } else if (title === 'Deck Finisher') {
+        const sessionActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard.study_complete'));
+        if (sessionActivities.length >= 5) {
+          const sorted = sessionActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 5].createdAt; // 5th session from end (when unlocked)
+        }
+      } else if (title === 'Session Master') {
+        const sessionActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard.study_complete'));
+        if (sessionActivities.length >= 10) {
+          const sorted = sessionActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 10].createdAt; // 10th session from end
+        }
+      } else if (title === 'Study Champion') {
+        const sessionActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard.study_complete'));
+        if (sessionActivities.length >= 50) {
+          const sorted = sessionActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 50].createdAt; // 50th session from end
+        }
+      } else if (title === 'Review Apprentice' || title === 'Review Pro') {
+        // These track cumulative reviews, use most recent study session
+        const sessionActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard.study_complete'));
+        if (sessionActivities.length > 0) {
+          const sorted = sessionActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[0].createdAt; // Most recent session
+        }
+      } else if (title === 'Favorites Fan') {
+        const favActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('folder.favorite'));
+        if (favActivities.length >= 3) {
+          const sorted = favActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 3].createdAt;
+        }
+      } else if (title === 'Perfect Score') {
+        const testActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('practice_test.submit'));
+        if (testActivities.length >= 1) {
+          const sorted = testActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 1].createdAt;
+        }
+      } else if (title === 'Active Week') {
+        const sessionActivities = allActivities.filter(a => (a.type || '').toLowerCase().includes('flashcard.study_complete'));
+        if (sessionActivities.length >= 7) {
+          const sorted = sessionActivities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          relevantDate = sorted[sorted.length - 7].createdAt;
+        }
       }
+      
+      // Fallback to most recent activity if no specific date found
+      u.earnedDate = relevantDate || (allActivities.length > 0 ? allActivities[0].createdAt : null);
     });
-    return unlocked.sort((a, b) => {
+    
+    // Sort by earnedDate descending (most recent first)
+    const sorted = unlocked.sort((a, b) => {
       const ta = a.earnedDate ? new Date(a.earnedDate).getTime() : 0;
       const tb = b.earnedDate ? new Date(b.earnedDate).getTime() : 0;
       return tb - ta;
-    }).slice(0, 4);
+    });
+    
+    // Log ALL unlocked achievements to debug
+    console.log('🏆 ALL Unlocked Achievements (sorted by date):', sorted.map((a, idx) => ({
+      rank: idx + 1,
+      title: a.title,
+      earnedDate: a.earnedDate ? new Date(a.earnedDate).toLocaleString() : 'unknown',
+      timestamp: a.earnedDate ? new Date(a.earnedDate).getTime() : 0,
+      progress: a.progress,
+      total: a.total
+    })));
+    
+    const result = sorted.slice(0, 4);
+    console.log('🏆 Top 4 Recent Unlocked Achievements:', result.map(a => a.title));
+    
+    return result;
   }, [achievements, allActivities]);
 
   // Show library-style loading UI while auth or dashboard stats are loading.

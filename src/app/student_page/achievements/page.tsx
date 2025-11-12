@@ -26,68 +26,59 @@ export default function AchievementsPage() {
     const { showSuccess, showError } = useAlert();
     const [recentCompletions, setRecentCompletions] = useState<any[]>([]);
 
-    // compute streak from lastReviewed dates (consecutive days up to today)
-    function computeStreakFromDates(dates: Date[]) {
+    // compute streak from activity dates (consecutive days up to today, ending at 11:59 PM each day)
+    function computeStreakFromActivities(activities: any[]) {
         try {
-            const set = new Set(dates.map(d => {
-                const x = new Date(d);
-                x.setHours(0,0,0,0);
-                return x.toISOString();
-            }));
+            // Collect all study-related activity dates
+            const studyDates = new Set<string>();
+            
+            activities.forEach(a => {
+                const type = (a.type || '')?.toString().toLowerCase();
+                // Count flashcard sessions, summary reads, and practice test submissions
+                if (type.includes('flashcard.study_complete') || 
+                    type.includes('summary.read') || 
+                    type.includes('practice_test.submit')) {
+                    const date = new Date(a.createdAt);
+                    // Normalize to start of day (midnight) for comparison
+                    date.setHours(0, 0, 0, 0);
+                    studyDates.add(date.toISOString());
+                }
+            });
 
+            // Calculate consecutive days from today backwards
             let streak = 0;
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            for (let i = 0; i < 365; i++) { // cap to 1 year scan
-                const d = new Date(today);
-                d.setDate(today.getDate() - i);
-                const key = d.toISOString();
-                if (set.has(key)) streak++; else break;
+            const now = new Date();
+            // Set to start of current day to check if user studied today
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+
+            // Check consecutive days going backwards
+            for (let i = 0; i < 365; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(today.getDate() - i);
+                const key = checkDate.toISOString();
+                
+                if (studyDates.has(key)) {
+                    streak++;
+                } else {
+                    // If this is day 0 (today) and no activity yet, continue checking yesterday
+                    // This prevents breaking streak if user hasn't studied today yet but studied yesterday
+                    if (i === 0) continue;
+                    break;
+                }
             }
+
             return streak;
         } catch {
             return 0;
         }
     }
 
-    // When flashcards update, derive recent completions and compute streak
+    // When flashcards or activities update, compute streak from all study activities
     useEffect(() => {
-        if (!flashcards || flashcards.length === 0) {
-            setRecentCompletions([]);
-            return;
-        }
-
-        const finished = flashcards
-            .filter(f => f && f.lastReviewed)
-            .map(f => ({ _id: f._id, title: f.title, lastReviewed: new Date(f.lastReviewed) }))
-            .sort((a, b) => b.lastReviewed.getTime() - a.lastReviewed.getTime());
-
-        if (finished.length > 0) {
-            setRecentCompletions(finished.slice(0, 20));
-        } else {
-            // Fallback: build recent completions from activity events when flashcard.lastReviewed isn't available
-            try {
-                const fromActivities = (activities || [])
-                    .filter(a => {
-                        const t = (a.type || a.action || '')?.toString().toLowerCase();
-                        return t.includes('flashcard.study_complete') && (a.createdAt || (a.meta && a.meta.createdAt));
-                    })
-                    .map(a => {
-                        const created = a.createdAt || (a.meta && a.meta.createdAt) || new Date().toISOString();
-                        return { _id: a.meta?.flashcardId || a._id, title: a.meta?.title || 'Study', lastReviewed: new Date(created) };
-                    })
-                    .sort((a, b) => b.lastReviewed.getTime() - a.lastReviewed.getTime());
-
-                setRecentCompletions(fromActivities.slice(0, 20));
-            } catch (e) {
-                setRecentCompletions([]);
-            }
-        }
-
-        const dates = finished.map(f => f.lastReviewed);
-        const computed = computeStreakFromDates(dates);
+        const computed = computeStreakFromActivities(activities);
         setStudyStreak(computed);
-    }, [flashcards]);
+    }, [activities]);
 
     // Load checklist from localStorage
     useEffect(() => {
@@ -106,16 +97,6 @@ export default function AchievementsPage() {
     }, [checklist]);
 
     useEffect(() => {
-        // Load studyStreak fallback from localStorage similar to dashboard
-        try {
-            if (typeof window !== 'undefined') {
-                const s = localStorage.getItem('studyStreak');
-                if (s) setStudyStreak(Number(s) || 0);
-            }
-        } catch {}
-    }, []);
-
-    useEffect(() => {
         let mounted = true;
         async function load() {
             setLoading(true);
@@ -129,7 +110,7 @@ export default function AchievementsPage() {
                 const [flashcardsRes, summariesRes, activitiesRes] = await Promise.allSettled([
                     fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' }),
                     fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' }),
-                    fetch(`/api/student_page/history?userId=${userId}`, { credentials: 'include' })
+                    fetch(`/api/student_page/history?userId=${userId}&limit=200`, { credentials: 'include' })
                 ]);
 
                 if (mounted) {
@@ -149,8 +130,18 @@ export default function AchievementsPage() {
 
                     if (activitiesRes.status === 'fulfilled' && activitiesRes.value.ok) {
                         const data = await activitiesRes.value.json().catch(() => null);
-                        setActivities(Array.isArray(data?.activities) ? data.activities : []);
+                        const acts = Array.isArray(data?.activities) ? data.activities : [];
+                        console.log('📊 Activities loaded:', acts.length, 'activities');
+                        console.log('📊 Activity types:', acts.map((a: any) => a.type || a.action).filter(Boolean));
+                        console.log('📊 Full activities data:', acts);
+                        console.log('📊 User ID used for query:', userId);
+                        setActivities(acts);
                     } else {
+                        console.error('❌ Failed to fetch activities:', activitiesRes.status === 'fulfilled' ? activitiesRes.value.status : 'rejected');
+                        if (activitiesRes.status === 'fulfilled') {
+                            const errorText = await activitiesRes.value.text().catch(() => 'Unable to read error');
+                            console.error('❌ Error response:', errorText);
+                        }
                         setActivities([]);
                     }
                     
@@ -227,10 +218,12 @@ export default function AchievementsPage() {
     // studySessionsCompleted: number of flashcard study sessions (i.e., sets completed)
     const studySessionsCompleted = useMemo(() => {
         try {
-            return (activities || []).filter(a => {
+            const count = (activities || []).filter(a => {
                 const t = (a.type || a.action || '')?.toString().toLowerCase();
                 return t.includes('flashcard.study_complete');
             }).length;
+            console.log('📚 Flashcard sessions completed:', count);
+            return count;
         } catch (e) {
             return 0;
         }
@@ -248,19 +241,29 @@ export default function AchievementsPage() {
         }
     }, [activities]);
 
-    // Placeholder: practice tests completed (no direct source in current payloads)
-    // Keep zero for now; can be wired to an API or model later.
+    // Practice tests completed: count of practice_test.submit activities
     const practiceTestsCompleted = useMemo(() => {
-        return 0;
-    }, [flashcards, summaries]);
+        try {
+            const count = (activities || []).filter(a => {
+                const t = (a.type || a.action || '')?.toString().toLowerCase();
+                return t.includes('practice_test.submit') || t.includes('practice_test.completed') || t.includes('test.submit');
+            }).length;
+            console.log('✅ Practice tests completed:', count);
+            return count;
+        } catch (e) {
+            return 0;
+        }
+    }, [activities]);
 
     // summarySessionsCompleted: count of summary "read" activities
     const summarySessionsCompleted = useMemo(() => {
         try {
-            return (activities || []).filter(a => {
+            const count = (activities || []).filter(a => {
                 const t = (a.type || a.action || '')?.toString().toLowerCase();
                 return t.includes('summary.read') || t.includes('summary.session') || t.includes('summary.completed');
             }).length;
+            console.log('📖 Summary sessions completed:', count);
+            return count;
         } catch (e) {
             return 0;
         }
@@ -321,7 +324,7 @@ export default function AchievementsPage() {
             { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', progress: studyCompletions, total: 50, earned: studyCompletions >= 50 }
         ];
         return a;
-    }, [flashcards, totalFlashcards, totalSummaries, cardsReviewed, practiceTestsCompleted, studyStreak, recentCompletions, sparkline, activities, studySessionsCompleted]);
+    }, [flashcards, totalFlashcards, totalSummaries, cardsReviewed, practiceTestsCompleted, studyStreak, recentCompletions, sparkline, activities, studySessionsCompleted, summarySessionsCompleted, favoritesStudied]);
 
     const earnedCount = achievements.filter(a => a.earned).length;
 
@@ -345,15 +348,21 @@ export default function AchievementsPage() {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
     }
 
-    // helper: update local streak when user finishes a set
+    // helper: update local streak when user finishes any study activity
+    // Note: This is a fallback for localStorage-based streak tracking
+    // The actual streak is now computed from activities in computeStreakFromActivities()
     function updateStreakOnFinish() {
         try {
             if (typeof window === 'undefined') return;
             const keyDate = 'studyLastFinishedDate';
             const keyStreak = 'studyStreak';
             const rawLast = localStorage.getItem(keyDate);
-            const today = new Date();
-            today.setHours(0,0,0,0);
+            
+            // Current date/time
+            const now = new Date();
+            // Start of today (12:00 AM)
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
             const todayStr = today.toISOString();
 
             let streak = 0;
@@ -362,16 +371,19 @@ export default function AchievementsPage() {
 
             if (rawLast) {
                 const last = new Date(rawLast);
-                last.setHours(0,0,0,0);
+                last.setHours(0, 0, 0, 0);
                 const diff = Math.round((today.getTime() - last.getTime()) / (1000*60*60*24));
                 if (diff === 0) {
-                    // already finished today: no change
+                    // already studied today: no change to streak
                 } else if (diff === 1) {
+                    // studied yesterday, increment streak
                     streak = streak + 1;
                 } else {
+                    // gap in days, reset streak to 1
                     streak = 1;
                 }
             } else {
+                // first time studying
                 streak = 1;
             }
 
@@ -480,17 +492,17 @@ export default function AchievementsPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div className="text-2xl sm:text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">{studySessionsCompleted}</div>
-                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Flashcard sessions completed</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Flashcards</div>
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">{summarySessionsCompleted}</div>
-                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Summary sessions completed</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Summaries</div>
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">{practiceTestsCompleted}</div>
-                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Practice tests complete</div>
+                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Practice tests</div>
                                 </div>
 
                                 <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
