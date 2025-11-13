@@ -43,7 +43,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <SessionProvider refetchOnWindowFocus={false}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

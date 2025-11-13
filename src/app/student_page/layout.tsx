@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Chatbot from "@/components/chatbot/Chatbot";
+import { AchievementProvider, useAchievements } from "@/contexts/AchievementContext";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -41,6 +42,177 @@ declare global {
   interface WindowEventMap {
     profileUpdated: CustomEvent;
   }
+}
+
+// Inner component that uses achievement hooks
+function AchievementListener() {
+  const { checkForNewAchievements } = useAchievements();
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    // Get user ID from session or localStorage
+    const getUserId = () => {
+      const localUser = localStorage.getItem('user');
+      if (localUser) {
+        try {
+          const parsed = JSON.parse(localUser);
+          return parsed._id || parsed.id;
+        } catch {}
+      }
+      return (session?.user as any)?._id || (session?.user as any)?.id;
+    };
+
+    const fetchAndCheckAchievements = async () => {
+      const userId = getUserId();
+      if (!userId) return;
+
+      try {
+        // Fetch minimal data needed for achievement calculation
+        const [flashcardsRes, summariesRes, activitiesRes] = await Promise.allSettled([
+          fetch(`/api/student_page/flashcard?userId=${encodeURIComponent(userId)}`, { credentials: 'include' }),
+          fetch(`/api/student_page/summary?userId=${encodeURIComponent(userId)}`, { credentials: 'include' }),
+          fetch(`/api/student_page/history?userId=${encodeURIComponent(userId)}&limit=200`, { credentials: 'include' })
+        ]);
+
+        let flashcards: any[] = [];
+        let summaries: any[] = [];
+        let activities: any[] = [];
+
+        if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.ok) {
+          const data = await flashcardsRes.value.json();
+          flashcards = data.flashcards || [];
+        }
+
+        if (summariesRes.status === 'fulfilled' && summariesRes.value.ok) {
+          const data = await summariesRes.value.json();
+          summaries = data.summaries || [];
+        }
+
+        if (activitiesRes.status === 'fulfilled' && activitiesRes.value.ok) {
+          const data = await activitiesRes.value.json();
+          activities = data.activities || [];
+        }
+
+        // Calculate achievements (same logic as achievements page)
+        const totalFlashcards = flashcards.length;
+        const studySessionsCompleted = activities.filter((a: any) =>
+          a.type?.toLowerCase().includes('flashcard.study_complete')
+        ).length;
+        const summarySessionsCompleted = activities.filter((a: any) =>
+          a.type?.toLowerCase().includes('summary.read')
+        ).length;
+        const practiceTestsCompleted = activities.filter((a: any) =>
+          a.type?.toLowerCase().includes('practice_test.submit')
+        ).length;
+        const cardsReviewed = activities.filter((a: any) =>
+          a.type?.toLowerCase().includes('flashcard.card_reviewed')
+        ).length;
+        const favoritesStudied = activities.filter((a: any) =>
+          a.type?.toLowerCase().includes('flashcard.study_complete') && a.metadata?.isFavorite
+        ).length;
+
+        // Calculate study streak
+        const studyDates = new Set<string>();
+        activities.forEach((a: any) => {
+          const type = (a.type || '').toString().toLowerCase();
+          if (type.includes('flashcard.study_complete') ||
+            type.includes('summary.read') ||
+            type.includes('practice_test.submit')) {
+            const date = new Date(a.createdAt);
+            date.setHours(0, 0, 0, 0);
+            studyDates.add(date.toISOString());
+          }
+        });
+
+        let studyStreak = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let i = 0; i < 365; i++) {
+          const checkDate = new Date(today);
+          checkDate.setDate(today.getDate() - i);
+          const key = checkDate.toISOString();
+
+          if (studyDates.has(key)) {
+            studyStreak++;
+          } else {
+            if (i === 0) continue;
+            break;
+          }
+        }
+
+        const totalCards = flashcards.reduce((sum: number, f: any) =>
+          sum + (Array.isArray(f.cards) ? f.cards.length : 0), 0);
+
+        // Build achievements array
+        const achievements = [
+          { id: 1, title: 'First Steps', description: 'Created your first flashcard set', icon: '🎯', earned: totalFlashcards >= 1 },
+          { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: studyStreak >= 7 },
+          { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', earned: totalFlashcards >= 10 },
+          { id: 4, title: 'Perfect Score', description: 'Got 100% on a practice test', icon: '⭐', earned: practiceTestsCompleted >= 1 },
+          { id: 5, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', earned: studySessionsCompleted >= 5 },
+          { id: 6, title: 'Streak Holder', description: 'Keep a study streak for 14 days', icon: '📅', earned: studyStreak >= 14 },
+          { id: 7, title: 'Flashcard Novice', description: 'Create 3 flashcard sets', icon: '📚', earned: totalFlashcards >= 3 },
+          { id: 8, title: 'Flashcard Collector', description: 'Create 25 flashcard sets', icon: '🧩', earned: totalFlashcards >= 25 },
+          { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', earned: summarySessionsCompleted >= 1 },
+          { id: 10, title: 'Summary Scholar', description: 'Read 5 summaries', icon: '📖', earned: summarySessionsCompleted >= 5 },
+          { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', earned: cardsReviewed >= 50 },
+          { id: 12, title: 'Review Pro', description: 'Review 200 cards', icon: '⚡', earned: cardsReviewed >= 200 },
+          { id: 13, title: 'Marathoner', description: 'Study streak of 30 days', icon: '🏃‍♀️', earned: studyStreak >= 30 },
+          { id: 14, title: 'Active Week', description: 'Study 7 times in the last 7 days', icon: '📆', earned: false },
+          { id: 15, title: 'Session Master', description: 'Complete 10 study sessions', icon: '🎓', earned: studySessionsCompleted >= 10 },
+          { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', earned: totalCards >= 100 },
+          { id: 17, title: 'Card Hoarder', description: 'Add 500 cards total', icon: '📦', earned: totalCards >= 500 },
+          { id: 18, title: 'Favorites Fan', description: 'Study favorites 3 times', icon: '⭐', earned: favoritesStudied >= 3 },
+          { id: 19, title: 'Centurion', description: 'Create 100 flashcard sets', icon: '💯', earned: totalFlashcards >= 100 },
+          { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', earned: studySessionsCompleted >= 50 }
+        ];
+
+        // Check for newly unlocked achievements
+        checkForNewAchievements(achievements);
+      } catch (error) {
+        console.error('Failed to check achievements:', error);
+      }
+    };
+
+    // Check immediately
+    fetchAndCheckAchievements();
+
+    // Listen for manual trigger events (when user completes an action)
+    const handleManualCheck = () => {
+      console.log('🎯 Manual achievement check triggered');
+      fetchAndCheckAchievements();
+    };
+    window.addEventListener('checkAchievements', handleManualCheck);
+
+    // Check when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('👀 Page visible - checking achievements');
+        fetchAndCheckAchievements();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Check when window gains focus
+    const handleFocus = () => {
+      console.log('🔍 Window focused - checking achievements');
+      fetchAndCheckAchievements();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // Then check every 3 seconds for real-time updates
+    const interval = setInterval(fetchAndCheckAchievements, 3000);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('checkAchievements', handleManualCheck);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [checkForNewAchievements, session]);
+
+  return null; // This component doesn't render anything
 }
 
 export default function StudentLayout({ children }: StudentLayoutProps) {
@@ -482,9 +654,11 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const isExpanded = !isSidebarCollapsed || isTouchExpanded;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      {/* Global alert (used by auth pages and layout actions like logout) */}
-      <Alert
+    <AchievementProvider>
+      <AchievementListener />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        {/* Global alert (used by auth pages and layout actions like logout) */}
+        <Alert
         type={alert.type}
         message={alert.message}
         title={alert.title}
@@ -1220,6 +1394,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       {/* Chatbot */}
       <Chatbot isAuthenticated={true} />
     </div>
+    </AchievementProvider>
   );
 }
 

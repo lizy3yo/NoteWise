@@ -2,10 +2,16 @@
 
 import "./styles.css";
 import { useState, useEffect, useMemo } from "react";
+import { 
+  FileText, BookOpen, ClipboardCheck, Trash2, Edit, Plus,
+  Clock, Calendar, Filter, TrendingUp, Award, RefreshCw,
+  Folder, Star, FolderEdit, User, Lock
+} from 'lucide-react';
 import useAuth from "@/hooks/useAuth";
 import Link from "next/link";
 import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2";
 import { useSession } from "next-auth/react";
+import { useAchievements } from '@/contexts/AchievementContext';
 
 interface DashboardStats {
   totalFlashcards: number;
@@ -73,6 +79,7 @@ export default function UserDashboard() {
   const [allFlashcards, setAllFlashcards] = useState<any[]>([]);
   const [recentTests, setRecentTests] = useState<TestSubmission[]>([]);
   const [weeklyActivity, setWeeklyActivity] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const { checkForNewAchievements } = useAchievements();
 
   // Resolve first name from several sources
   const fromAuth =
@@ -339,31 +346,88 @@ export default function UserDashboard() {
     return actionMap[activity.type] || activity.action || 'Recent activity';
   }
 
-  function getActivityIcon(type: string) {
-    if (type.includes('flashcard')) {
-      return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      );
-    } else if (type.includes('summary')) {
-      return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      );
-    } else if (type.includes('test')) {
-      return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-      );
+  // Normalize/respect different activity shapes -- some events (login/logout, theme changes)
+  // may come back with different field names or only an action. Resolve to a stable
+  // type string used for icons, colors and filtering (borrowed from History page logic).
+  function resolveActivityType(act: Activity | null | undefined) {
+    if (!act) return '';
+    // If server provided a type, trust it first
+    if ((act as any).type) return (act as any).type;
+
+    const action = ((act as any).action || '').toString().toLowerCase();
+
+    // Common special cases
+    if (action.includes('login')) return 'auth.login';
+    if (action.includes('logout')) return 'auth.logout';
+
+    // Theme changes may be recorded as action='theme', 'theme_change', 'dark', 'light', or in meta
+    if (action.includes('theme') || action.includes('dark') || action.includes('light') || ((act as any).meta && ((act as any).meta.mode || (act as any).meta.theme))) {
+      return 'appearance.theme_change';
     }
-    return (
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-    );
+
+    // If meta contains a type, use it
+    if ((act as any).meta && typeof (act as any).meta.type === 'string') return (act as any).meta.type;
+
+    // fallback: try to infer category from action words
+    if (action.includes('flashcard')) return `flashcard.${action.replace(/\s+/g, '_')}`;
+    if (action.includes('summary')) return `summary.${action.replace(/\s+/g, '_')}`;
+    if (action.includes('practice') || action.includes('test')) return `practice_test.${action.replace(/\s+/g, '_')}`;
+
+    // Last resort: return the raw action or empty
+    return action || '';
+  }
+
+  const formatActivityLabel = (type: string | undefined, action: string | undefined) => {
+    const t = (type || '').toString();
+    const parts = t.split('.');
+    const category = (parts[0] || '').replace('_', ' ');
+    const actionPart = action || parts[1] ? (parts[1] || '').replace(/_/g, ' ') : '';
+    const titleCategory = category ? `${category.charAt(0).toUpperCase() + category.slice(1)}` : '';
+    return `${titleCategory} ${actionPart}`.trim();
+  };
+
+  const activityIcons: Record<string, any> = {
+    'flashcard.create': Plus,
+    'flashcard.update': Edit,
+    'flashcard.delete': Trash2,
+    'flashcard.generate': BookOpen,
+    'flashcard.study_complete': ClipboardCheck,
+    'summary.generate': FileText,
+    'summary.update': Edit,
+    'summary.delete': Trash2,
+    'practice_test.submit': ClipboardCheck,
+    'practice_test.generate': Plus,
+    'folder.create': Folder,
+    'folder.rename': FolderEdit,
+    'folder.delete': Trash2,
+    'folder.favorite': Star,
+    'profile.update': User,
+    'profile.password_change': Lock,
+  };
+
+  const activityColors: Record<string, string> = {
+    'flashcard.create': 'text-teal-600 bg-teal-50 dark:bg-teal-900/20',
+    'flashcard.update': 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+    'flashcard.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
+    'flashcard.generate': 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+    'flashcard.study_complete': 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
+    'summary.generate': 'text-green-600 bg-green-50 dark:bg-green-900/20',
+    'summary.update': 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+    'summary.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
+    'practice_test.submit': 'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
+    'practice_test.generate': 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20',
+    'folder.create': 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20',
+    'folder.rename': 'text-sky-600 bg-sky-50 dark:bg-sky-900/20',
+    'folder.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
+    'folder.favorite': 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+    'profile.update': 'text-violet-600 bg-violet-50 dark:bg-violet-900/20',
+    'profile.password_change': 'text-rose-600 bg-rose-50 dark:bg-rose-900/20',
+  };
+
+  function getActivityIcon(type: string) {
+    // Try exact match, then lowercase fallback, else default to Clock icon
+    const Icon = activityIcons[type] || activityIcons[type.toLowerCase?.()] || Clock;
+    return <Icon className="w-4 h-4" />;
   }
 
   function getTimeAgo(dateString: string): string {
@@ -646,6 +710,11 @@ export default function UserDashboard() {
     return result;
   }, [achievements, allActivities]);
 
+  // Check for newly unlocked achievements using the global context
+  useEffect(() => {
+    checkForNewAchievements(achievements);
+  }, [achievements, checkForNewAchievements]);
+
   // Show library-style loading UI while auth or dashboard stats are loading.
   if (authLoading || loadingStats) {
     return (
@@ -758,25 +827,30 @@ export default function UserDashboard() {
               </div>
               <div className="space-y-3 max-h-80 overflow-y-auto">
                 {recentActivities.length > 0 ? (
-                  recentActivities.map((activity) => (
-                    <div key={activity._id} className="flex items-start gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
-                      <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${getActivityColorClass(activity.type)}`}>
-                        {getActivityIcon(activity.type)}
+                  recentActivities.map((activity) => {
+                    const resolvedType = resolveActivityType(activity);
+                    const title = formatActivityLabel(resolvedType, activity.action);
+                    const colorClass = activityColors[resolvedType] || getActivityColorClass(resolvedType);
+                    return (
+                      <div key={activity._id} className="flex items-start gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
+                        <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                          {getActivityIcon(resolvedType)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {title || formatActivityMessage(activity)}
+                          </p>
+                          {/* show an optional subtitle if meta contains a title or details */}
+                          {activity.meta?.title ? (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{activity.meta.title}</p>
+                          ) : activity.meta?.summary ? (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{activity.meta.summary}</p>
+                          ) : null}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{getTimeAgo(activity.createdAt)}</div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                          {formatActivityMessage(activity)}
-                        </p>
-                        {/* show an optional subtitle if meta contains a title or details */}
-                        {activity.meta?.title ? (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{activity.meta.title}</p>
-                        ) : activity.meta?.summary ? (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{activity.meta.summary}</p>
-                        ) : null}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{getTimeAgo(activity.createdAt)}</div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p className="text-sm">No recent activity</p>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import { useAlert } from '@/hooks/useAlert';
+import { useAchievements } from '@/contexts/AchievementContext';
 
 type Achievement = {
     id: number;
@@ -25,6 +26,7 @@ export default function AchievementsPage() {
     const [checklist, setChecklist] = useState<Record<string, boolean>>({});
     const { showSuccess, showError } = useAlert();
     const [recentCompletions, setRecentCompletions] = useState<any[]>([]);
+    const { checkForNewAchievements, showAllUnlocked, resetTracking } = useAchievements();
 
     // compute streak from activity dates (consecutive days up to today, ending at 11:59 PM each day)
     function computeStreakFromActivities(activities: any[]) {
@@ -344,6 +346,11 @@ export default function AchievementsPage() {
     const unlocked = useMemo(() => sortedAchievements.filter(a => a.earned), [sortedAchievements]);
     const locked = useMemo(() => sortedAchievements.filter(a => !a.earned), [sortedAchievements]);
 
+    // Check for newly unlocked achievements using the global context
+    useEffect(() => {
+        checkForNewAchievements(achievements);
+    }, [achievements, checkForNewAchievements]);
+
     function toggleChecklist(key: string) {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
     }
@@ -481,8 +488,35 @@ export default function AchievementsPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Achievements</h1>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Track your learning milestones and celebrate your progress.</p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Achievements</h1>
+                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Track your learning milestones and celebrate your progress.</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    console.log('🎉 MANUALLY SHOWING ALL UNLOCKED ACHIEVEMENTS');
+                                    showAllUnlocked(achievements);
+                                }}
+                                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                                title="Show all unlocked achievements"
+                            >
+                                🎊 Show All
+                            </button>
+                            <button
+                                onClick={() => {
+                                    console.log('🔄 RESETTING TRACKING');
+                                    resetTracking();
+                                    showSuccess('Reset complete! Refresh to see all achievements again.');
+                                }}
+                                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                                title="Reset achievement tracking"
+                            >
+                                🔄 Reset
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Your Progress - moved to top-most position */}
