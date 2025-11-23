@@ -262,7 +262,6 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             title,
             cards,
             description,
-            folder: folder ? new Types.ObjectId(folder) : undefined,
             difficulty,
             image,
             tags,
@@ -274,6 +273,13 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             shareableLink: shareableLink || undefined,
             isFavorite
         };
+
+        // Handle folder field explicitly - if null, remove it; if valid ID, set it
+        if (folder === null) {
+            updateData.folder = null; // Explicitly set to null to remove from document
+        } else if (folder && Types.ObjectId.isValid(folder)) {
+            updateData.folder = new Types.ObjectId(folder);
+        }
 
         // Handle shared users based on sharing mode
         if (sharingMode === 'restricted') {

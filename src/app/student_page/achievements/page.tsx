@@ -26,12 +26,12 @@ export default function AchievementsPage() {
     const [checklist, setChecklist] = useState<Record<string, boolean>>({});
     const { showSuccess, showError } = useAlert();
     const [recentCompletions, setRecentCompletions] = useState<any[]>([]);
-    const { checkForNewAchievements, showAllUnlocked, resetTracking } = useAchievements();
+    const { checkForNewAchievements } = useAchievements();
 
     // compute streak from activity dates (consecutive days up to today, ending at 11:59 PM each day)
     function computeStreakFromActivities(activities: any[]) {
         try {
-            // Collect all study-related activity dates
+            // Collect all study-related activity dates (normalized to start of day)
             const studyDates = new Set<string>();
             
             activities.forEach(a => {
@@ -47,15 +47,41 @@ export default function AchievementsPage() {
                 }
             });
 
-            // Calculate consecutive days from today backwards
+            // Calculate consecutive days
             let streak = 0;
             const now = new Date();
-            // Set to start of current day to check if user studied today
             const today = new Date(now);
             today.setHours(0, 0, 0, 0);
+            
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
 
-            // Check consecutive days going backwards
-            for (let i = 0; i < 365; i++) {
+            // Check if user studied today
+            const studiedToday = studyDates.has(today.toISOString());
+            // Check if user studied yesterday
+            const studiedYesterday = studyDates.has(yesterday.toISOString());
+
+            // Streak logic:
+            // - If studied today, start counting from today
+            // - If NOT studied today but studied yesterday, start counting from yesterday
+            //   (grace period: streak continues if they haven't passed midnight yet)
+            // - If neither today nor yesterday, streak is 0
+            
+            let startDay = 0;
+            if (studiedToday) {
+                // Start from today
+                startDay = 0;
+            } else if (studiedYesterday) {
+                // Grace period: if they studied yesterday, streak continues
+                // They have until 11:59 PM today to maintain it
+                startDay = 1;
+            } else {
+                // No activity today or yesterday - streak is broken
+                return 0;
+            }
+
+            // Count consecutive days going backwards from the start day
+            for (let i = startDay; i < 365; i++) {
                 const checkDate = new Date(today);
                 checkDate.setDate(today.getDate() - i);
                 const key = checkDate.toISOString();
@@ -63,15 +89,14 @@ export default function AchievementsPage() {
                 if (studyDates.has(key)) {
                     streak++;
                 } else {
-                    // If this is day 0 (today) and no activity yet, continue checking yesterday
-                    // This prevents breaking streak if user hasn't studied today yet but studied yesterday
-                    if (i === 0) continue;
+                    // Found a gap - streak ends
                     break;
                 }
             }
 
             return streak;
-        } catch {
+        } catch (error) {
+            console.error('Error computing streak:', error);
             return 0;
         }
     }
@@ -488,34 +513,9 @@ export default function AchievementsPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 <div className="mb-6 sm:mb-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Achievements</h1>
-                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Track your learning milestones and celebrate your progress.</p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => {
-                                    console.log('🎉 MANUALLY SHOWING ALL UNLOCKED ACHIEVEMENTS');
-                                    showAllUnlocked(achievements);
-                                }}
-                                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors"
-                                title="Show all unlocked achievements"
-                            >
-                                🎊 Show All
-                            </button>
-                            <button
-                                onClick={() => {
-                                    console.log('🔄 RESETTING TRACKING');
-                                    resetTracking();
-                                    showSuccess('Reset complete! Refresh to see all achievements again.');
-                                }}
-                                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-colors"
-                                title="Reset achievement tracking"
-                            >
-                                🔄 Reset
-                            </button>
-                        </div>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Achievements</h1>
+                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Track your learning milestones and celebrate your progress.</p>
                     </div>
                 </div>
 
@@ -523,29 +523,29 @@ export default function AchievementsPage() {
                 <div className="mb-6 sm:mb-8">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">Your Progress</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-                                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">{studySessionsCompleted}</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+                                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">{studySessionsCompleted}</div>
                                         <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Flashcards</div>
                                 </div>
 
-                                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">{summarySessionsCompleted}</div>
+                                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-1">{summarySessionsCompleted}</div>
                                         <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Summaries</div>
                                 </div>
 
-                                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">{practiceTestsCompleted}</div>
+                                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">{practiceTestsCompleted}</div>
                                     <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Practice tests</div>
                                 </div>
 
-                                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">{Math.round((earnedCount / (achievements.length || 1)) * 100)}%</div>
-                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Completion %</div>
+                                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">{Math.round((earnedCount / (achievements.length || 1)) * 100)}%</div>
+                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Completion</div>
                                 </div>
 
-                                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{studyStreak}d</div>
+                                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{studyStreak}d</div>
                                     <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Study streak</div>
                                 </div>
                             </div>

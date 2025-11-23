@@ -366,7 +366,7 @@ export default function MatchPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto text-red-600 dark:text-red-400">{error}</div>
+        <div className="max-w-7xl mx-auto text-red-600 dark:text-red-400">{error}</div>
         <div className="mt-4">
           <button onClick={() => router.back()} className="px-4 py-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:scale-105 transition">Back</button>
         </div>

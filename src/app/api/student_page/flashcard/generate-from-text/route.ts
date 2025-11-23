@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       aiProvider = 'gemini',
       folderId,
       tags = [],
-      maxCards = 20
+      maxCards = 10
     } = body;
 
     // Validate user exists
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       title: title || 'Text-based Flashcards',
       difficulty: difficulty as 'easy' | 'medium' | 'hard',
       contentType: 'text',
-      maxCards: parseInt(maxCards) || 20
+      maxCards: parseInt(maxCards) || 10
     });
 
     // Create enhanced flashcard set with internal AI metadata

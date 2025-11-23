@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
           const libraryUrl = type === 'flashcard' 
             ? `/student_page/library?tab=flashcards${itemId ? `&highlight=${itemId}` : ''}`
             : type === 'summary'
-            ? `/student_page/summaries`
+            ? `/student_page/library?tab=study_notes`
             : `/student_page/library?tab=practice_tests`;
 
           return NextResponse.json({

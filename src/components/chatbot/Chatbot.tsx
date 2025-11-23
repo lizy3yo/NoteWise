@@ -777,7 +777,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                     Number of Flashcards to Generate
                   </label>
                   <select
-                    value={generationState.params.numCards || 20}
+                    value={generationState.params.numCards || 10}
                     onChange={(e) => setGenerationState(prev => ({
                       ...prev,
                       params: { ...prev.params, numCards: parseInt(e.target.value) }
@@ -801,6 +801,21 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
               {/* Summary-specific fields */}
               {generationState.type === 'summary' && (
                 <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Subject/Category (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={generationState.params.subject || ''}
+                      onChange={(e) => setGenerationState(prev => ({
+                        ...prev,
+                        params: { ...prev.params, subject: e.target.value }
+                      }))}
+                      placeholder="e.g., Mathematics, History, Science"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Summary Type

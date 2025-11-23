@@ -172,42 +172,44 @@ export class InternalSummaryGenerator {
     summaryType?: string,
     maxLength?: number
   ): string {
-    return `You are an expert at creating concise, easy-to-understand summaries for students. Your goal is to distill complex content into clear, digestible summaries that capture the main concepts without getting lost in specific details.
+    const targetWords = this.getTargetLength(summaryType, maxLength);
+    
+    return `You are an expert at creating concise, easy-to-understand summaries for students. Analyze the content and create a clear, well-structured summary.
 
-INPUT:
-- CONTENT: ${content}
-- TITLE: ${title || 'Study Material'}
-- SUBJECT: ${subject || 'General'}
-- SUMMARY TYPE: ${summaryType}
-- MAX LENGTH: ${maxLength} words
+INPUT CONTENT TO SUMMARIZE:
+${content}
 
-SUMMARY APPROACH:
-Focus on creating a SHORT, CONCISE summary that:
-- Explains the main concepts in simple terms
-- Avoids excessive detail and specific examples
-- Uses clear, straightforward language
-- Helps students understand the big picture
-- Is easy to read and remember
+REQUIREMENTS:
+- Title: ${title || 'Study Material'}
+- Subject: ${subject || 'General'}
+- Summary Type: ${summaryType || 'detailed'}
+- Target Length: ${targetWords} words (strictly enforce this)
 
-SUMMARY TYPES:
-- brief: Very concise overview (100-200 words) - focus on core concepts only
-- detailed: Balanced summary (300-500 words) - main concepts with some context
-- bullet-points: Key concepts as clear bullet points
-- outline: Main topics with brief explanations
+YOUR TASK:
+1. READ and UNDERSTAND the content thoroughly
+2. IDENTIFY the main concepts, key points, and important topics
+3. CREATE a summary that explains these concepts clearly
+4. FORMAT according to the summary type specified
+5. ENSURE the summary is approximately ${targetWords} words
 
-WRITING STYLE:
-- Use simple, clear language that students can easily understand
-- Focus on WHAT the topic is about, not specific details
-- Explain concepts in a way that makes sense to someone learning
-- Avoid jargon unless necessary (and explain it if used)
+SUMMARY TYPE FORMATS:
+- "brief": Write a concise paragraph (150-200 words) covering the main idea
+- "detailed": Write a comprehensive summary (300-400 words) with context and explanations
+- "bullet-points": Format as bullet points (• Main point 1\n• Main point 2\n• Main point 3...)
+- "outline": Format as a hierarchical outline (1. Topic\n   a. Subtopic\n   b. Subtopic\n2. Topic...)
+
+WRITING GUIDELINES:
+- Use clear, simple language that students can understand
+- Focus on WHAT the content teaches, not just listing facts
+- Explain concepts in a way that makes sense
 - Make it conversational but informative
+- Avoid copying text verbatim - REPHRASE and SYNTHESIZE
 
-EXAMPLE TRANSFORMATION:
-Instead of: "The lecture began by differentiating UI and UX. User Experience (UX) encompasses the overall experience a user has with a website or application, focusing on the flow and layout to ensure ease of understanding and navigation..."
+EXAMPLE - GOOD SUMMARY:
+Original: "The lecture began by differentiating UI and UX. User Experience (UX) encompasses the overall experience..."
+Summary: "This material covers UI and UX design fundamentals. UI focuses on visual elements and interactions, while UX ensures the overall experience is intuitive and user-friendly..."
 
-Write: "This covers the basics of UI and UX design. UI (User Interface) is about how things look and what users click on. UX (User Experience) is about making websites and apps easy and enjoyable to use..."
-
-JSON SCHEMA:
+OUTPUT FORMAT (JSON):
 {
   "summary": {
     "title": "Clear, descriptive title (max 200 characters)",
@@ -224,31 +226,25 @@ JSON SCHEMA:
   }
 }
 
-CRITICAL LENGTH CONSTRAINTS:
-- title: Maximum 200 characters
-- content: Maximum 10,000 characters
-- keyPoints: Each point maximum 500 characters
-- mainTopics: Each topic maximum 100 characters (KEEP THESE SHORT - just the topic name, not a description!)
-- tags: Each tag maximum 50 characters
+FIELD REQUIREMENTS:
+- title: Clear, descriptive (max 200 chars)
+- content: ${targetWords} words (±10%) - MUST be actual summary, not copied text
+- keyPoints: 3-5 key takeaways (each max 500 chars)
+- mainTopics: 2-4 SHORT topic names (each max 100 chars) - e.g., "Web Development", "Data Structures"
+- wordCount: Should match actual word count of content
+- readingTime: Estimated minutes to read (wordCount / 250)
+- difficulty: "easy", "medium", or "hard" based on content complexity
+- subject: ${subject || 'General'}
+- summaryType: ${summaryType || 'detailed'}
+- tags: 2-4 relevant tags (each max 50 chars)
+- confidence: 0.7-0.95 (your confidence in summary quality)
 
-IMPORTANT: mainTopics should be SHORT topic names only (e.g., "Career Development", "Programming Basics", "Study Techniques"), NOT long descriptions or sentences!
-
-QUALITY REQUIREMENTS:
-1. Summary must be CONCISE and focused on main concepts
-2. Use SIMPLE language that students can easily understand
-3. Avoid unnecessary details and specific examples
-4. Make it feel like a helpful study guide, not lecture notes
-5. Key points should be clear and memorable
-6. Focus on understanding, not memorization
-
-Return ONLY the JSON object. No markdown, no code blocks, no additional text.
-
-CRITICAL OUTPUT FORMAT:
-- Return ONLY the JSON object
-- NO markdown code blocks
-- NO \`\`\`json or \`\`\` tags
-- NO additional text or explanations
-- Start directly with { and end with }`;
+CRITICAL RULES:
+1. DO NOT copy text verbatim - SUMMARIZE and REPHRASE
+2. Content length MUST be approximately ${targetWords} words
+3. mainTopics are SHORT names only, not descriptions
+4. Return ONLY valid JSON, no markdown, no code blocks
+5. Start with { and end with }`;
   }
 
   private parseAIResponse(response: string): { summary: GeneratedSummary } {
@@ -283,9 +279,10 @@ CRITICAL OUTPUT FORMAT:
         summary.title = summary.title.substring(0, 197) + '...';
       }
       
-      // Truncate content if too long
+      // Only truncate if content exceeds absolute maximum
       if (summary.content && summary.content.length > 10000) {
         summary.content = summary.content.substring(0, 9997) + '...';
+        logger.warn('Content truncated due to exceeding maximum length');
       }
       
       // Truncate key points if too long
@@ -317,6 +314,22 @@ CRITICAL OUTPUT FORMAT:
         responsePreview: response.substring(0, 200)
       });
       throw new Error(`Failed to parse AI response: ${error instanceof Error ? error.message : 'Invalid JSON'}`);
+    }
+  }
+
+  private getTargetLength(summaryType?: string, maxLength?: number): number {
+    // Determine target word count based on summary type
+    switch (summaryType) {
+      case 'brief':
+        return 150; // 100-200 words
+      case 'detailed':
+        return 400; // 300-500 words
+      case 'bullet-points':
+        return maxLength || 300;
+      case 'outline':
+        return maxLength || 300;
+      default:
+        return maxLength || 300;
     }
   }
 

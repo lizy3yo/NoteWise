@@ -160,10 +160,31 @@ export class InternalFlashcardGenerator {
       const parsedResult = this.parseAIResponse(generatedText);
       
       // Validate the result
-      this.validateResult(parsedResult);
+      this.validateResult(parsedResult, maxCards);
+
+      // ENFORCE EXACT CARD COUNT - truncate if AI generated more than requested
+      const requestedCount = maxCards || 10;
+      if (parsedResult.flashcards.length > requestedCount) {
+        logger.warn('AI generated more cards than requested, truncating', {
+          requested: requestedCount,
+          generated: parsedResult.flashcards.length,
+          truncating: parsedResult.flashcards.length - requestedCount
+        });
+        parsedResult.flashcards = parsedResult.flashcards.slice(0, requestedCount);
+        parsedResult.summary.cardsGenerated = requestedCount;
+      }
+
+      // If we got fewer cards than requested, log a warning but continue
+      if (parsedResult.flashcards.length < requestedCount) {
+        logger.warn('Generated fewer cards than requested', {
+          requested: requestedCount,
+          generated: parsedResult.flashcards.length
+        });
+      }
 
       logger.info('Flashcard generation completed successfully', {
         cardsGenerated: parsedResult.flashcards.length,
+        requestedCards: requestedCount,
         overallScore: parsedResult.qualityMetrics.overallScore
       });
 
@@ -187,9 +208,12 @@ export class InternalFlashcardGenerator {
     contentType?: string, 
     maxCards?: number
   ): string {
+    const requestedCards = maxCards || 10;
     return `You are an expert educational designer specializing in creating ULTRA-CONCISE, high-quality flashcards. Analyze the content, then generate a complete set of brief, pedagogically-sound flashcards with built-in quality assurance.
 
-CRITICAL: MAXIMUM BREVITY REQUIRED - Questions: 8-15 words ONLY. Answers: 1-3 sentences ONLY (20-40 words TOTAL). NO EXCEPTIONS. Longer answers will be rejected.
+CRITICAL REQUIREMENTS:
+1. MAXIMUM BREVITY - Questions: 8-15 words ONLY. Answers: 1-3 sentences ONLY (20-40 words TOTAL). NO EXCEPTIONS.
+2. EXACT CARD COUNT - You MUST generate EXACTLY ${requestedCards} flashcards. No more, no less.
 
 EXAMPLE OF CORRECT LENGTH:
 Question: "Why do plants need sunlight?" (6 words)
@@ -199,20 +223,23 @@ INPUT:
 - CONTENT: ${content}
 - TITLE: ${title || 'Study Material'}
 - DIFFICULTY: ${difficulty || 'medium'}
+- REQUIRED NUMBER OF CARDS: ${requestedCards} (MUST BE EXACT)
 
 PROCESS (execute all steps in sequence):
 
 STEP 1: CONTENT ANALYSIS
 - Identify 2-5 major topics and key concepts
-- Determine optimal flashcard count (5-15 cards based on content density)
 - Auto-detect subject area and learning strategy
 - Assess content difficulty and complexity
+- Plan to generate EXACTLY ${requestedCards} flashcards
 
 STEP 2: FLASHCARD GENERATION
+- Create EXACTLY ${requestedCards} flashcards (no more, no less)
 - Create diverse, understanding-focused questions (not just recall)
 - Include mix of: concept, application, comparison, process questions
 - Ensure answers are complete with explanations, examples, and common mistakes
 - Vary question formats and difficulty appropriately
+- VERIFY you have generated exactly ${requestedCards} cards before proceeding
 
 STEP 3: QUALITY ASSURANCE
 - Self-evaluate each card for clarity, completeness, and educational value
@@ -232,10 +259,11 @@ JSON SCHEMA:
     "subject": "Auto-detected subject area",
     "difficulty": "easy|medium|hard", 
     "keyTopics": ["topic1", "topic2", "topic3"],
-    "optimalCardCount": ${maxCards || 10},
+    "optimalCardCount": ${requestedCards},
     "strategy": "definition|process|concept|application"
   },
   "flashcards": [
+    // MUST CONTAIN EXACTLY ${requestedCards} FLASHCARD OBJECTS
     {
       "question": "Understanding-focused question that requires reasoning",
       "answer": "Complete explanation with reasoning, concrete example, and common mistake to avoid",
@@ -258,7 +286,7 @@ JSON SCHEMA:
     "questionTypes": {"concept": 4, "application": 3, "comparison": 2, "process": 1}
   },
   "summary": {
-    "cardsGenerated": ${maxCards || 10},
+    "cardsGenerated": ${requestedCards},
     "mainTopics": ["topic1", "topic2"],
     "learningObjectives": ["Understand X", "Apply Y", "Compare Z"],
     "recommendedUse": "Study sequence and spaced repetition suggestions"
@@ -271,7 +299,7 @@ QUALITY RULES:
 3. No verbatim copying from source content - transform and abstract
 4. Ensure variety in question types and formats
 5. All cards must have confidence > 0.7 (refine if lower)
-6. Total cards should match analysis.optimalCardCount ±1
+6. CRITICAL: The flashcards array MUST contain EXACTLY ${requestedCards} cards - count them before returning
 7. Cover all keyTopics with appropriate depth
 8. ULTRA-CONCISENESS IS CRITICAL - flashcards should be instantly readable
 
@@ -320,9 +348,17 @@ CRITICAL OUTPUT FORMAT:
     }
   }
 
-  private validateResult(result: FlashcardGenerationResult): void {
+  private validateResult(result: FlashcardGenerationResult, requestedCount?: number): void {
     if (!result.flashcards || result.flashcards.length === 0) {
       throw new Error('No flashcards generated');
+    }
+
+    // Warn if card count doesn't match requested count
+    if (requestedCount && result.flashcards.length !== requestedCount) {
+      logger.warn('Card count mismatch', {
+        requested: requestedCount,
+        generated: result.flashcards.length
+      });
     }
 
     // Validate each flashcard
@@ -342,6 +378,7 @@ CRITICAL OUTPUT FORMAT:
 
     logger.info('Flashcard validation passed', {
       cardCount: result.flashcards.length,
+      requestedCount,
       avgConfidence: result.qualityMetrics.avgConfidence
     });
   }

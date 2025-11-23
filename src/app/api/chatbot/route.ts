@@ -194,14 +194,14 @@ export async function POST(req: NextRequest) {
           // Save to database
           const summaryDoc = new Summary({
             userId,
-            title: result.summary.title,
+            title: params.title || result.summary.title,
+            subject: params.subject || result.summary.subject,
             content: result.summary.content,
             keyPoints: result.summary.keyPoints,
             mainTopics: result.summary.mainTopics,
             wordCount: result.summary.wordCount,
             readingTime: result.summary.readingTime,
             difficulty: result.summary.difficulty,
-            subject: result.summary.subject,
             summaryType: result.summary.summaryType,
             tags: result.summary.tags,
             confidence: result.summary.confidence,
@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
           const libraryUrl = type === 'flashcard' 
             ? `/student_page/library?tab=flashcards${itemId ? `&highlight=${itemId}` : ''}`
             : type === 'summary'
-            ? `/student_page/summaries`
+            ? `/student_page/library?tab=study_notes`
             : `/student_page/library?tab=practice_tests`;
 
           return NextResponse.json({

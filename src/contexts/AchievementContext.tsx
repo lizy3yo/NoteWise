@@ -62,6 +62,18 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     console.log('✨ Newly unlocked achievement:', newlyUnlocked ? newlyUnlocked.title : 'None');
     
     if (newlyUnlocked) {
+      // Check if we recently showed this achievement (within last 10 seconds)
+      const lastShownKey = `achievement_shown_${newlyUnlocked.id}`;
+      const lastShownTime = typeof window !== 'undefined' ? localStorage.getItem(lastShownKey) : null;
+      const now = Date.now();
+      
+      if (lastShownTime && (now - parseInt(lastShownTime)) < 10000) {
+        console.log('⏭️ Skipping - achievement was shown recently');
+        // Still update the tracking to prevent showing again
+        setPreviouslyUnlockedIds(currentlyUnlockedIds);
+        return;
+      }
+      
       console.log('🎉 SHOWING ACHIEVEMENT TOAST:', newlyUnlocked.title);
       // Show toast for the newly unlocked achievement
       setUnlockedAchievement({
@@ -70,10 +82,11 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
         icon: newlyUnlocked.icon
       });
       
-      // Update localStorage with all unlocked IDs
+      // Update localStorage with all unlocked IDs and timestamp
       try {
         if (typeof window !== 'undefined') {
           localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
+          localStorage.setItem(lastShownKey, now.toString());
           console.log('💾 Saved to localStorage:', Array.from(currentlyUnlockedIds));
         }
       } catch (e) {

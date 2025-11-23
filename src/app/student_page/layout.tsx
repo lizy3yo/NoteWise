@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Chatbot from "@/components/chatbot/Chatbot";
 import { AchievementProvider, useAchievements } from "@/contexts/AchievementContext";
+import GenerationProgressModal from "@/components/ui/GenerationProgressModal";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -276,6 +277,29 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
     window.addEventListener('notewise:alert', handler as EventListener);
     return () => window.removeEventListener('notewise:alert', handler as EventListener);
   }, [showAlert]);
+
+  // Listen for session expiration events
+  useEffect(() => {
+    const handleSessionExpired = (e: Event) => {
+      const ce = e as CustomEvent;
+      const detail = ce?.detail;
+      if (!detail) return;
+      
+      const { message, title } = detail;
+      showError?.(message, title);
+    };
+
+    window.addEventListener('session:expired', handleSessionExpired as EventListener);
+    return () => window.removeEventListener('session:expired', handleSessionExpired as EventListener);
+  }, [showError]);
+
+  // Setup session monitoring on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const { setupSessionMonitoring } = require('@/utils/sessionHandler');
+      setupSessionMonitoring();
+    }
+  }, []);
   const sidebarRef = useRef<HTMLElement | null>(null);
   const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
   const bufferActiveRef = useRef(false);
@@ -657,6 +681,9 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
     <AchievementProvider>
       <AchievementListener />
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        {/* Global Generation Progress Modal */}
+        <GenerationProgressModal />
+        
         {/* Global alert (used by auth pages and layout actions like logout) */}
         <Alert
         type={alert.type}

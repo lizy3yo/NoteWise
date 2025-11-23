@@ -23,7 +23,7 @@ export default function FlashcardGenerator({ userId }: FlashcardGeneratorProps) 
   const [textSubject, setTextSubject] = useState('');
 
   // File upload state
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [fileTitle, setFileTitle] = useState('');
   const [fileDifficulty, setFileDifficulty] = useState('medium');
   const [fileSubject, setFileSubject] = useState('');
@@ -77,8 +77,8 @@ export default function FlashcardGenerator({ userId }: FlashcardGeneratorProps) 
   };
 
   const handleFileGeneration = async () => {
-    if (!selectedFile) {
-      setError('Please select a file');
+    if (selectedFiles.length === 0) {
+      setError('Please select at least one file');
       return;
     }
 
@@ -87,34 +87,63 @@ export default function FlashcardGenerator({ userId }: FlashcardGeneratorProps) 
     setResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('title', fileTitle || selectedFile.name);
-      formData.append('difficulty', fileDifficulty);
-      formData.append('subject', fileSubject);
-      formData.append('aiProvider', 'gemini');
+      const results = [];
+      const errors = [];
 
-      const response = await fetch(`/api/student_page/flashcard/generate-from-file?userId=${userId}`, {
-        method: 'POST',
-        body: formData
-      });
+      // Process each file
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // For multiple files, auto-generate title with number
+        const title = selectedFiles.length > 1 
+          ? (fileTitle ? `${fileTitle} - File ${i + 1}` : `${file.name.replace(/\.[^/.]+$/, '')} - Set ${i + 1}`)
+          : (fileTitle || file.name);
+        
+        formData.append('title', title);
+        formData.append('difficulty', fileDifficulty);
+        formData.append('subject', fileSubject);
+        formData.append('aiProvider', 'gemini');
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server returned non-JSON response');
+        try {
+          const response = await fetch(`/api/student_page/flashcard/generate-from-file?userId=${userId}`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Server returned non-JSON response');
+          }
+
+          const data = await response.json();
+          
+          if (data.success) {
+            results.push({ file: file.name, data });
+          } else {
+            errors.push({ file: file.name, error: data.error });
+          }
+        } catch (err) {
+          errors.push({ file: file.name, error: 'Failed to process file' });
+        }
       }
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setResult(data);
-        setSelectedFile(null);
+      // Set combined result
+      if (results.length > 0) {
+        setResult({
+          success: true,
+          message: `Successfully generated flashcards from ${results.length} file(s)`,
+          results,
+          errors: errors.length > 0 ? errors : undefined
+        });
+        setSelectedFiles([]);
         setFileTitle('');
       } else {
-        setError(data.error);
+        setError(`Failed to generate flashcards from all files: ${errors.map(e => e.error).join(', ')}`);
       }
     } catch (error) {
-      setError('Failed to generate flashcards from file');
+      setError('Failed to generate flashcards from files');
     } finally {
       setIsLoading(false);
     }
@@ -240,42 +269,79 @@ export default function FlashcardGenerator({ userId }: FlashcardGeneratorProps) 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select File *
+                  Select Files *
                 </label>
                 <input
                   type="file"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setSelectedFiles(files);
+                  }}
                   accept=".pdf,.doc,.docx,.txt,.csv,.ppt,.pptx"
+                  multiple
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isLoading}
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  Supported: PDF, Word, PowerPoint, Text files (max 10MB)
+                  Supported: PDF, Word, PowerPoint, Text files (max 10MB each). You can select multiple files.
                 </p>
               </div>
 
-              {selectedFile && (
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <p className="text-sm">
-                    <strong>Selected:</strong> {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </p>
+              {selectedFiles.length > 0 && (
+                <div className="bg-gray-50 p-3 rounded-md space-y-2">
+                  <p className="text-sm font-semibold">Selected Files ({selectedFiles.length}):</p>
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm bg-white p-2 rounded border">
+                      <span>
+                        {index + 1}. {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                      <button
+                        onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== index))}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                        disabled={isLoading}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Title (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={fileTitle}
-                    onChange={(e) => setFileTitle(e.target.value)}
-                    placeholder="Flashcard set title"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={isLoading}
-                  />
-                </div>
+                {selectedFiles.length === 1 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Title (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={fileTitle}
+                      onChange={(e) => setFileTitle(e.target.value)}
+                      placeholder="Flashcard set title"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isLoading}
+                    />
+                  </div>
+                )}
+
+                {selectedFiles.length > 1 && (
+                  <div className="md:col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Title Prefix (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={fileTitle}
+                      onChange={(e) => setFileTitle(e.target.value)}
+                      placeholder="e.g., Chapter 1"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Will create: "{fileTitle || 'Filename'} - File 1", "File 2", etc.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -310,10 +376,10 @@ export default function FlashcardGenerator({ userId }: FlashcardGeneratorProps) 
 
               <button
                 onClick={handleFileGeneration}
-                disabled={isLoading || !selectedFile}
+                disabled={isLoading || selectedFiles.length === 0}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? '🔄 Processing File...' : '📁 Generate from File'}
+                {isLoading ? `🔄 Processing ${selectedFiles.length} File(s)...` : `📁 Generate from ${selectedFiles.length} File(s)`}
               </button>
             </div>
           )}
@@ -332,11 +398,42 @@ export default function FlashcardGenerator({ userId }: FlashcardGeneratorProps) 
             <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
               <h3 className="text-green-800 font-semibold">✅ Success!</h3>
               <p className="text-green-700 mt-1">{result.message}</p>
-              <div className="mt-2 text-sm text-green-600">
-                <p>📚 Title: {result.flashcard.title}</p>
-                <p>🃏 Cards Generated: {result.flashcard.cardsGenerated}</p>
-                <p>⏱️ Processing Time: {result.flashcard.processingTime}ms</p>
-              </div>
+              
+              {/* Single file result */}
+              {result.flashcard && (
+                <div className="mt-2 text-sm text-green-600">
+                  <p>📚 Title: {result.flashcard.title}</p>
+                  <p>🃏 Cards Generated: {result.flashcard.cardsGenerated}</p>
+                  {result.flashcard.processingTime && (
+                    <p>⏱️ Processing Time: {result.flashcard.processingTime}ms</p>
+                  )}
+                </div>
+              )}
+
+              {/* Multiple files result */}
+              {result.results && (
+                <div className="mt-3 space-y-2">
+                  {result.results.map((res: any, index: number) => (
+                    <div key={index} className="bg-white p-3 rounded border border-green-300">
+                      <p className="font-semibold text-green-800">📄 {res.file}</p>
+                      <p className="text-sm text-green-600">
+                        📚 {res.data.flashcard.title} - 🃏 {res.data.flashcard.cardsGenerated} cards
+                      </p>
+                    </div>
+                  ))}
+                  
+                  {result.errors && result.errors.length > 0 && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded">
+                      <p className="text-sm font-semibold text-yellow-800">⚠️ Some files failed:</p>
+                      {result.errors.map((err: any, index: number) => (
+                        <p key={index} className="text-xs text-yellow-700">
+                          • {err.file}: {err.error}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

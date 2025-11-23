@@ -949,7 +949,7 @@ export default function FlashcardDetailPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-red-600 dark:text-red-400">{error}</div>
           <button
             onClick={() => router.push("/student_page/library")}
@@ -965,7 +965,7 @@ export default function FlashcardDetailPage() {
   if (!flashcard) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-slate-500 dark:text-slate-400">
             Flashcard not found
           </div>

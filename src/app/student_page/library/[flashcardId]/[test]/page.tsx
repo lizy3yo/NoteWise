@@ -672,7 +672,7 @@ export default function TestPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">

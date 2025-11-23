@@ -2,6 +2,12 @@
 import React, { useRef, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAlert } from "@/hooks/useAlert";
+import GenerationProgressModal, { 
+  startGeneration, 
+  updateGenerationProgress, 
+  addGenerationResult, 
+  completeGeneration 
+} from "@/components/ui/GenerationProgressModal";
 
 function StudyModeContent() {
   const router = useRouter();
@@ -29,7 +35,7 @@ function StudyModeContent() {
   const [summaryLength, setSummaryLength] = useState<'short' | 'medium' | 'long'>('medium');
   const [customTitle, setCustomTitle] = useState('');
   // flashcard options
-  const [maxCards, setMaxCards] = useState<number>(20);
+  const [maxCards, setMaxCards] = useState<number>(10);
 
   // localStorage keys for persisting options
   const SUMMARY_OPTIONS_KEY = 'study_mode_summary_options_v1';
@@ -245,16 +251,74 @@ function StudyModeContent() {
 
       if (createType === 'summary') {
         if (tab === "upload" && files.length > 0) {
-          const formData = new FormData();
-          formData.append('file', files[0]);
-          formData.append('title', customTitle || files[0].name);
-          formData.append('summaryType', summaryType);
-          formData.append('maxLength', maxLength.toString());
+          // Start progress tracking for multiple files
+          startGeneration('summary', files.length);
 
-          response = await fetch(`/api/student_page/summary/generate-from-file?userId=${userId}`, {
-            method: 'POST',
-            body: formData
-          });
+          // Handle multiple files
+          const results = [];
+          const errors = [];
+
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Update progress
+            updateGenerationProgress(file.name, i);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Auto-generate title with number for multiple files
+            const title = files.length > 1 
+              ? (customTitle ? `${customTitle} - File ${i + 1}` : `${file.name.replace(/\.[^/.]+$/, '')} - Summary ${i + 1}`)
+              : (customTitle || file.name);
+            
+            formData.append('title', title);
+            formData.append('summaryType', summaryType);
+            formData.append('maxLength', maxLength.toString());
+
+            try {
+              const fileResponse = await fetch(`/api/student_page/summary/generate-from-file?userId=${userId}`, {
+                method: 'POST',
+                body: formData
+              });
+
+              const fileData = await fileResponse.json();
+              if (fileResponse.ok && fileData.success) {
+                results.push({ file: file.name, data: fileData });
+                addGenerationResult(file.name, true);
+              } else {
+                errors.push({ file: file.name, error: fileData.error || 'Failed to process' });
+                addGenerationResult(file.name, false, fileData.error || 'Failed to process');
+              }
+            } catch (err) {
+              errors.push({ file: file.name, error: 'Failed to process file' });
+              addGenerationResult(file.name, false, 'Failed to process file');
+            }
+          }
+
+          // Complete progress tracking
+          updateGenerationProgress('', files.length);
+          completeGeneration();
+
+          if (results.length === 0) {
+            throw new Error(`Failed to generate summaries: ${errors.map(e => e.error).join(', ')}`);
+          }
+
+          // Show success message
+          const successMsg = files.length > 1 
+            ? `Successfully generated ${results.length} summaries from ${files.length} file(s)`
+            : 'Summary generated successfully';
+          showSuccess(successMsg, 'Generation Complete');
+
+          if (errors.length > 0) {
+            showInfo(`${errors.length} file(s) failed to process`, 'Partial Success');
+          }
+
+          setTimeout(() => {
+            router.push('/student_page/library?tab=study_notes');
+          }, 400);
+          return;
+
         } else {
           const requestBody = {
             content: pasteText,
@@ -273,15 +337,73 @@ function StudyModeContent() {
       } else if (createType === 'flashcards') {
         // generate flashcards
         if (tab === "upload" && files.length > 0) {
-          const formData = new FormData();
-          formData.append('file', files[0]);
-          formData.append('title', customTitle || files[0].name);
-          formData.append('maxCards', String(maxCards));
+          // Start progress tracking for multiple files
+          startGeneration('flashcard', files.length);
 
-          response = await fetch(`/api/student_page/flashcard/generate-from-file?userId=${userId}`, {
-            method: 'POST',
-            body: formData
-          });
+          // Handle multiple files
+          const results = [];
+          const errors = [];
+
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Update progress
+            updateGenerationProgress(file.name, i);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Auto-generate title with number for multiple files
+            const title = files.length > 1 
+              ? (customTitle ? `${customTitle} - File ${i + 1}` : `${file.name.replace(/\.[^/.]+$/, '')} - Set ${i + 1}`)
+              : (customTitle || file.name);
+            
+            formData.append('title', title);
+            formData.append('maxCards', String(maxCards));
+
+            try {
+              const fileResponse = await fetch(`/api/student_page/flashcard/generate-from-file?userId=${userId}`, {
+                method: 'POST',
+                body: formData
+              });
+
+              const fileData = await fileResponse.json();
+              if (fileResponse.ok && fileData.success) {
+                results.push({ file: file.name, data: fileData });
+                addGenerationResult(file.name, true);
+              } else {
+                errors.push({ file: file.name, error: fileData.error || 'Failed to process' });
+                addGenerationResult(file.name, false, fileData.error || 'Failed to process');
+              }
+            } catch (err) {
+              errors.push({ file: file.name, error: 'Failed to process file' });
+              addGenerationResult(file.name, false, 'Failed to process file');
+            }
+          }
+
+          // Complete progress tracking
+          updateGenerationProgress('', files.length);
+          completeGeneration();
+
+          if (results.length === 0) {
+            throw new Error(`Failed to generate flashcards: ${errors.map(e => e.error).join(', ')}`);
+          }
+
+          // Show success message
+          const successMsg = files.length > 1 
+            ? `Successfully generated ${results.length} flashcard sets from ${files.length} file(s)`
+            : 'Flashcards generated successfully';
+          showSuccess(successMsg, 'Generation Complete');
+
+          if (errors.length > 0) {
+            showInfo(`${errors.length} file(s) failed to process`, 'Partial Success');
+          }
+
+          setTimeout(() => {
+            router.push('/student_page/library?tab=flashcards');
+          }, 400);
+          return;
+
         } else {
           const requestBody = {
             content: pasteText,
@@ -327,7 +449,10 @@ function StudyModeContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      {/* Generation Progress Modal */}
+      <GenerationProgressModal />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -432,14 +557,21 @@ function StudyModeContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {files.length > 1 ? 'Title Prefix (Optional)' : 'Title (Optional)'}
+                  </label>
                   <input 
                     type="text" 
                     value={customTitle} 
                     onChange={(e) => setCustomTitle(e.target.value)} 
-                    placeholder="Auto-generated if empty" 
+                    placeholder={files.length > 1 ? "e.g., Chapter 1" : "Auto-generated if empty"} 
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
                   />
+                  {files.length > 1 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Will create: "{customTitle || 'Filename'} - Summary 1", "Summary 2", etc.
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -466,8 +598,21 @@ function StudyModeContent() {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title (Optional)</label>
-                  <input type="text" value={customTitle} onChange={(e)=>setCustomTitle(e.target.value)} placeholder="Auto-generated if empty" className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {files.length > 1 ? 'Title Prefix (Optional)' : 'Title (Optional)'}
+                  </label>
+                  <input 
+                    type="text" 
+                    value={customTitle} 
+                    onChange={(e) => setCustomTitle(e.target.value)} 
+                    placeholder={files.length > 1 ? "e.g., Chapter 1" : "Auto-generated if empty"} 
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                  />
+                  {files.length > 1 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Will create: "{customTitle || 'Filename'} - Set 1", "Set 2", etc.
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -495,6 +640,16 @@ function StudyModeContent() {
 
           {tab === "upload" && (
             <div>
+              {/* Hidden file input - always present in DOM */}
+              <input
+                ref={fileInputRef}
+                onChange={handleFileInput}
+                type="file"
+                accept=".pdf,.docx,.txt,.md,.doc"
+                className="hidden"
+                multiple
+              />
+              
               {/* show drop/browse area only when no files selected */}
               {files.length === 0 ? (
                 <div
@@ -520,14 +675,6 @@ function StudyModeContent() {
                     >
                       Browse files
                     </button>
-                    <input
-                      ref={fileInputRef}
-                      onChange={handleFileInput}
-                      type="file"
-                      accept=".pdf,.docx,.txt,.md,.doc"
-                      className="hidden"
-                      multiple
-                    />
                   </div>
                 </div>
               ) : (
@@ -553,7 +700,20 @@ function StudyModeContent() {
                       </button>
                     </div>
                   ))}
-                  {/* Removed: '+ Add more files' button - users may not add more files after initial selection */}
+                  {/* Add more files button */}
+                  <button
+                    onClick={() => {
+                      console.log('Add more files clicked');
+                      console.log('fileInputRef.current:', fileInputRef.current);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full p-4 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-teal-500 dark:hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-colors flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 font-medium"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add more files
+                  </button>
                 </div>
               )}
             </div>

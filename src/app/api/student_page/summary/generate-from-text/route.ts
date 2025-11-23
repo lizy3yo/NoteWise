@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Save to database
     const summaryDoc = new Summary({
       userId,
-      title: result.summary.title,
+      title: title?.trim() || result.summary.title,
       content: result.summary.content,
       keyPoints: result.summary.keyPoints,
       mainTopics: result.summary.mainTopics,

@@ -77,7 +77,7 @@ export default function SharedTestPage({ params }: { params: Promise<{ shareLink
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 text-white shadow-xl mb-8">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">📤</span>

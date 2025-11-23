@@ -37,8 +37,8 @@ export default function UploadFlashcardPage() {
   const [zapierLoading, setZapierLoading] = useState(false);
 
   // Flashcard count states
-  const [aiCardCount, setAiCardCount] = useState(20);
-  const [zapierCardCount, setZapierCardCount] = useState(20);
+  const [aiCardCount, setAiCardCount] = useState(10);
+  const [zapierCardCount, setZapierCardCount] = useState(10);
 
   // Editable cards built from parsed/AI results
   const [cards, setCards] = useState<Array<{ question: string; answer: string }>>([]);

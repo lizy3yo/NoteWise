@@ -477,7 +477,7 @@ export default function PracticeTestsPage() {
               )}
 
               <div className="space-y-4">
-                {!loading && !error && tab === 'sets' && Array.from(flashcardsBySubject.entries()).map(([subject, items]) => (
+                {!loading && !error && tab === 'sets' && Array.from(flashcardsBySubject.entries()).filter(([subject]) => subject !== 'Uncategorized').map(([subject, items]) => (
                   <div
                     key={subject}
                     className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-visible"
@@ -567,7 +567,7 @@ export default function PracticeTestsPage() {
                   </div>
                 ))}
 
-                {!loading && !error && tab === 'notes' && Array.from(summariesBySubject.entries()).map(([subject, items]) => (
+                {!loading && !error && tab === 'notes' && Array.from(summariesBySubject.entries()).filter(([subject]) => subject !== 'Uncategorized').map(([subject, items]) => (
                   <div
                     key={subject}
                     className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-visible"
@@ -664,6 +664,140 @@ export default function PracticeTestsPage() {
                     )}
                   </div>
                 ))}
+
+                {/* Uncategorized flashcards - displayed as direct cards at the bottom */}
+                {!loading && !error && tab === 'sets' && (() => {
+                  const uncategorizedItems = flashcardsBySubject.get('Uncategorized') || [];
+                  if (uncategorizedItems.length === 0) return null;
+                  
+                  return (
+                    <div className="mt-6">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Uncategorized</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {uncategorizedItems.length} {uncategorizedItems.length === 1 ? 'set' : 'sets'}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {uncategorizedItems.map((item) => {
+                          const selected = !!selectedIds[item._id];
+                          return (
+                            <div
+                              key={item._id}
+                              onClick={() => toggleSelect(item._id)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelect(item._id); } }}
+                              aria-pressed={selected}
+                              className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all relative`}
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
+                                  <span className="text-sm font-medium text-teal-600">{item.cards?.length || 0} cards</span>
+                                </div>
+
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleSelect(item._id); }}
+                                  className={`px-3 py-1 rounded-lg text-sm font-medium ${selected ? 'bg-teal-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                                  aria-pressed={selected}
+                                >
+                                  {selected ? 'Selected' : 'Select'}
+                                </button>
+                              </div>
+
+                              <div className="mb-3">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">{item.title}</h3>
+                                {item.description && <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>}
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 bg-teal-600/10 rounded-full flex items-center justify-center">
+                                    <span className="text-xs font-medium text-teal-600">Y</span>
+                                  </div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">You</span>
+                                </div>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Recently'}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Uncategorized summaries - displayed as direct cards at the bottom */}
+                {!loading && !error && tab === 'notes' && (() => {
+                  const uncategorizedItems = summariesBySubject.get('Uncategorized') || [];
+                  if (uncategorizedItems.length === 0) return null;
+                  
+                  return (
+                    <div className="mt-6">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Uncategorized</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {uncategorizedItems.length} {uncategorizedItems.length === 1 ? 'summary' : 'summaries'}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {uncategorizedItems.map((item) => {
+                          const selected = !!selectedIds[item._id];
+                          return (
+                            <div
+                              key={item._id}
+                              onClick={() => toggleSelect(item._id)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelect(item._id); } }}
+                              aria-pressed={selected}
+                              className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all relative`}
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
+                                  <span className="text-sm font-medium text-teal-600">{item.wordCount} words</span>
+                                </div>
+
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleSelect(item._id); }}
+                                  className={`px-3 py-1 rounded-lg text-sm font-medium ${selected ? 'bg-teal-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+                                  aria-pressed={selected}
+                                >
+                                  {selected ? 'Selected' : 'Select'}
+                                </button>
+                              </div>
+
+                              <div className="mb-3">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">{item.title}</h3>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`px-2 py-1 text-xs rounded-full ${item.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                    item.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                    }`}>
+                                    {item.difficulty}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">{item.readingTime} min read</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 bg-teal-600/10 rounded-full flex items-center justify-center">
+                                    <span className="text-xs font-medium text-teal-600">Y</span>
+                                  </div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">You</span>
+                                </div>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Recently'}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </>
           )}

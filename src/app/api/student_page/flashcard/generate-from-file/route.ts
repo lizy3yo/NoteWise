@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const aiProvider = (formData.get('aiProvider') as string) || 'gemini';
     const folderId = formData.get('folderId') as string;
     const tagsString = formData.get('tags') as string;
-    const maxCards = parseInt((formData.get('maxCards') as string) || '20');
+    const maxCards = parseInt((formData.get('maxCards') as string) || '10');
     const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : [];
 
     if (!file) {
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
             title: title || file.name.replace(/\.[^/.]+$/, ''),
             difficulty: difficulty as 'easy' | 'medium' | 'hard',
             contentType: 'document',
-            maxCards: maxCards || 20
+            maxCards: maxCards || 10
           });
 
           logger.info('AI generation successful for file', {
