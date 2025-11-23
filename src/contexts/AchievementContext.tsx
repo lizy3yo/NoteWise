@@ -26,25 +26,41 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     description: string;
     icon: string;
   } | null>(null);
-  const [previouslyUnlockedIds, setPreviouslyUnlockedIds] = useState<Set<number>>(new Set());
-
-  console.log('🌍 AchievementProvider rendering, current unlocked achievement:', unlockedAchievement);
-
-  // Load previously unlocked achievement IDs from localStorage on mount
-  useEffect(() => {
-    console.log('🌍 AchievementProvider MOUNTED');
+  
+  // Initialize from localStorage immediately to prevent false "new" detections
+  const [previouslyUnlockedIds, setPreviouslyUnlockedIds] = useState<Set<number>>(() => {
     try {
-      const unlockedRaw = typeof window !== 'undefined' ? localStorage.getItem('unlocked_achievements') : null;
-      if (unlockedRaw) {
-        const ids = JSON.parse(unlockedRaw);
-        setPreviouslyUnlockedIds(new Set(ids));
+      if (typeof window !== 'undefined') {
+        const unlockedRaw = localStorage.getItem('unlocked_achievements');
+        if (unlockedRaw) {
+          const ids = JSON.parse(unlockedRaw);
+          console.log('🔄 Initialized previously unlocked IDs from localStorage:', ids);
+          return new Set(ids);
+        }
       }
     } catch (e) {
       console.error('Failed to load unlocked achievements:', e);
     }
+    return new Set();
+  });
+  
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  console.log('🌍 AchievementProvider rendering, current unlocked achievement:', unlockedAchievement);
+
+  // Mark as initialized after first render
+  useEffect(() => {
+    console.log('🌍 AchievementProvider MOUNTED');
+    setIsInitialized(true);
   }, []);
 
   const checkForNewAchievements = (currentAchievements: Achievement[]) => {
+    // Don't check until initialized to prevent false positives
+    if (!isInitialized) {
+      console.log('⏸️ Skipping check - not yet initialized');
+      return;
+    }
+    
     console.log('🔍 Checking for new achievements...', {
       totalAchievements: currentAchievements.length,
       previouslyUnlocked: Array.from(previouslyUnlockedIds),
@@ -62,12 +78,12 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     console.log('✨ Newly unlocked achievement:', newlyUnlocked ? newlyUnlocked.title : 'None');
     
     if (newlyUnlocked) {
-      // Check if we recently showed this achievement (within last 10 seconds)
+      // Check if we recently showed this achievement (within last 30 seconds)
       const lastShownKey = `achievement_shown_${newlyUnlocked.id}`;
       const lastShownTime = typeof window !== 'undefined' ? localStorage.getItem(lastShownKey) : null;
       const now = Date.now();
       
-      if (lastShownTime && (now - parseInt(lastShownTime)) < 10000) {
+      if (lastShownTime && (now - parseInt(lastShownTime)) < 30000) {
         console.log('⏭️ Skipping - achievement was shown recently');
         // Still update the tracking to prevent showing again
         setPreviouslyUnlockedIds(currentlyUnlockedIds);
@@ -97,6 +113,18 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       setPreviouslyUnlockedIds(currentlyUnlockedIds);
     } else {
       console.log('ℹ️ No new achievements unlocked');
+      
+      // Update tracking even if no new achievements to keep it in sync
+      if (currentlyUnlockedIds.size > 0) {
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
+          }
+        } catch (e) {
+          console.error('Failed to update unlocked achievements:', e);
+        }
+        setPreviouslyUnlockedIds(currentlyUnlockedIds);
+      }
     }
   };
 
