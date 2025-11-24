@@ -72,6 +72,15 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     
     const currentlyUnlockedIds = new Set(unlocked.map(a => a.id));
     
+    // Check if the sets are actually different before doing anything
+    const hasChanges = currentlyUnlockedIds.size !== previouslyUnlockedIds.size ||
+      Array.from(currentlyUnlockedIds).some(id => !previouslyUnlockedIds.has(id));
+    
+    if (!hasChanges) {
+      console.log('ℹ️ No changes in unlocked achievements');
+      return;
+    }
+    
     // Find newly unlocked achievement (not in previous set but in current set)
     const newlyUnlocked = unlocked.find(a => !previouslyUnlockedIds.has(a.id));
     
@@ -87,10 +96,62 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
         console.log('⏭️ Skipping - achievement was shown recently');
         // Still update the tracking to prevent showing again
         setPreviouslyUnlockedIds(currentlyUnlockedIds);
+        
+        // Update localStorage
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
+          }
+        } catch (e) {
+          console.error('Failed to update unlocked achievements:', e);
+        }
         return;
       }
       
       console.log('🎉 SHOWING ACHIEVEMENT TOAST:', newlyUnlocked.title);
+      
+      // Log achievement to activity feed
+      try {
+        const localUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+        let userId = null;
+        if (localUser) {
+          const parsed = JSON.parse(localUser);
+          userId = parsed._id || parsed.id;
+        }
+        
+        console.log('📝 Logging achievement to activity feed...', {
+          userId,
+          title: newlyUnlocked.title,
+          description: newlyUnlocked.description,
+          icon: newlyUnlocked.icon
+        });
+        
+        if (userId) {
+          fetch('/api/student_page/log-achievement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              userId,
+              achievementTitle: newlyUnlocked.title,
+              achievementDescription: newlyUnlocked.description,
+              achievementIcon: newlyUnlocked.icon
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            console.log('✅ Achievement logged successfully:', data);
+            // Trigger a refresh of the notification widget
+            window.dispatchEvent(new CustomEvent('achievement:unlocked'));
+          })
+          .catch(err => console.error('❌ Failed to log achievement:', err));
+        } else {
+          console.error('❌ No userId found, cannot log achievement');
+        }
+      } catch (e) {
+        console.error('❌ Failed to log achievement to activity feed:', e);
+      }
+      
       // Show toast for the newly unlocked achievement
       setUnlockedAchievement({
         title: newlyUnlocked.title,
@@ -111,20 +172,6 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       
       // Update state
       setPreviouslyUnlockedIds(currentlyUnlockedIds);
-    } else {
-      console.log('ℹ️ No new achievements unlocked');
-      
-      // Update tracking even if no new achievements to keep it in sync
-      if (currentlyUnlockedIds.size > 0) {
-        try {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
-          }
-        } catch (e) {
-          console.error('Failed to update unlocked achievements:', e);
-        }
-        setPreviouslyUnlockedIds(currentlyUnlockedIds);
-      }
     }
   };
 

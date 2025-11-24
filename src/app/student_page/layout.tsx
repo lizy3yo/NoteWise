@@ -12,6 +12,7 @@ import Image from "next/image";
 import Chatbot from "@/components/chatbot/Chatbot";
 import { AchievementProvider, useAchievements } from "@/contexts/AchievementContext";
 import GenerationProgressModal from "@/components/ui/GenerationProgressModal";
+import NotificationWidget from "@/components/notifications/NotificationWidget";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -222,6 +223,18 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
   const { data: session, status } = useSession(); // << get NextAuth session with status
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Get user ID from session or localStorage
+  const getUserId = () => {
+    const localUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    if (localUser) {
+      try {
+        const parsed = JSON.parse(localUser);
+        return parsed._id || parsed.id;
+      } catch {}
+    }
+    return (session?.user as any)?._id || (session?.user as any)?.id;
+  };
 
 
   // Client-side authentication redirect
@@ -769,29 +782,31 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                 )}
 
                 {/* Toggle Button */}
-                {isMobile ? (
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    aria-label="Close menu"
-                    className="p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                  >
-                    <svg width="22" height="22" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                      <path strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
-                    </svg>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                    aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    className={`p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ${isSidebarCollapsed ? "mx-auto" : ""
-                      }`}
-                  >
-                    {/* Hamburger icon to match mobile navbar */}
-                    <svg width="24" height="24" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                      <path strokeWidth={2} strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-                    </svg>
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {isMobile ? (
+                    <button
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      aria-label="Close menu"
+                      className="p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                    >
+                      <svg width="22" height="22" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                      aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                      className={`p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ${isSidebarCollapsed ? "mx-auto" : ""
+                        }`}
+                    >
+                      {/* Hamburger icon to match mobile navbar */}
+                      <svg width="24" height="24" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path strokeWidth={2} strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             {/* Divider line */}
@@ -964,42 +979,6 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                       )}
                     </Link>
 
-                    <Link
-                      href="/student_page/practice_tests"
-                      className={`flex items-center ${!isExpanded
-                        ? "justify-center w-full p-2.5 mx-0"
-                        : "gap-4 px-5 py-2.5 mx-4"
-                        } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
-                        } ${pathname === "/student_page/practice_tests"
-                          ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
-                          : ""
-                        }`}
-                      title={!isExpanded ? "Practice Tests" : ""}
-                    >
-                      <svg
-                        className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${pathname === "/student_page/practice_tests"
-                          ? "text-teal-600 dark:text-slate-200"
-                          : ""
-                          }`}
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                        />
-                      </svg>
-                      {isExpanded && (
-                        <span className="whitespace-nowrap">
-                          Practice Tests
-                        </span>
-                      )}
-                    </Link>
                     {/* Achievements - moved here so it's visible in the main sidebar quick-access */}
                     <Link
                       href="/student_page/achievements"
@@ -1072,28 +1051,9 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
             </div>
 
                     
-            {/* Notification Card - Above Profile Section */}
+            {/* Dynamic Notification Card - Above Profile Section */}
             {isExpanded && (
-              <div className="flex-shrink-0 px-6 pb-4">
-                <div className="notification-card bg-transparent rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <div className="notification-badge inline-flex items-center px-2.5 py-1 rounded-full bg-teal-600 text-white text-xs font-bold mb-2">
-                        New
-                      </div>
-                      <h3 className="text-slate-800 dark:text-white text-sm font-semibold mb-1">
-                        7-Day Study Streak! 🔥
-                      </h3>
-                      <p className="text-slate-600 dark:text-[#BCBCBC] text-xs leading-relaxed mb-3">
-                        You are on a 7-day Study Streak. Keep the good work up!
-                      </p>
-                      <button className="notification-action w-full bg-transparent border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-600 focus:ring-offset-2 focus:ring-offset-transparent">
-                        Let&apos;s Go!
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <NotificationWidget userId={getUserId()} />
             )}
 
             {/* Profile Section at Bottom - Fixed Height via CSS var */}
@@ -1396,7 +1356,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
 
         {/* Main Content Area */}
         <main
-          className={`flex-1 p-8 transition-all duration-300 ${isMobile ? "ml-0 pt-16" : isExpanded ? "ml-80" : "ml-20"
+          className={`flex-1 p-2 sm:p-8 transition-all duration-300 ${isMobile ? "ml-0 pt-16" : isExpanded ? "ml-80" : "ml-20"
             }`}
         >
           {/* Top bar with Breadcrumbs and Time */}

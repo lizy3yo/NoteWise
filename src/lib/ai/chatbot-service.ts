@@ -248,7 +248,7 @@ ${systemContext}
 ${isAuthenticated ? `
 - Help users understand how to use NoteWise features
 - Answer questions about their achievements, history, and progress
-- Guide them on generating flashcards, summaries, and practice tests
+- Guide them on generating flashcards and summaries
 - Provide study tips and recommendations
 - Help with file uploads and content generation
 ` : `
@@ -300,9 +300,7 @@ Provide a helpful, friendly response based on the context above. Keep it concise
             if (userContext.achievements.totalSummaries === 0) {
                 suggestions.push("How do I generate a summary?");
             }
-            if (userContext.achievements.totalPracticeTests === 0) {
-                suggestions.push("How do I create a practice test?");
-            }
+
             suggestions.push("What are my recent achievements?");
             suggestions.push("Show me my study history");
         }

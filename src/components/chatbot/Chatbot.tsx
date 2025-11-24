@@ -385,7 +385,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
       {/* Chatbot Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center ${className}`}
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center ${className}`}
         aria-label="Toggle chatbot"
       >
         {isOpen ? (
@@ -401,9 +401,9 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[420px] h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700">
+        <div className="fixed left-2 right-2 bottom-16 sm:bottom-20 sm:right-4 sm:left-auto z-50 w-auto sm:w-[420px] h-[70vh] sm:h-[600px] max-h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700">
           {/* Header */}
-          <div className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-4 rounded-t-2xl flex items-center justify-between">
+          <div className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-3 sm:p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -601,15 +601,6 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                 >
                   📝 Summary
                 </button>
-                <button
-                  onClick={() => {
-                    setGenerationState({ type: 'practice_test', params: {} });
-                    setShowGenerationForm(true);
-                  }}
-                  className="text-xs px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-colors font-medium"
-                >
-                  📋 Practice Test
-                </button>
               </div>
             </div>
           )}
@@ -734,9 +725,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
           <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {generationState.type === 'flashcard' ? '🃏 Generate Flashcards' : 
-                 generationState.type === 'summary' ? '📝 Generate Summary' : 
-                 '📋 Generate Practice Test'}
+                {generationState.type === 'flashcard' ? '🃏 Generate Flashcards' : '📝 Generate Summary'}
               </h3>
               <button
                 className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1"
@@ -854,89 +843,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                 </>
               )}
 
-              {/* Practice Test-specific fields */}
-              {generationState.type === 'practice_test' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Number of Questions
-                    </label>
-                    <input
-                      type="number"
-                      value={generationState.params.maxQuestions || 20}
-                      onChange={(e) => setGenerationState(prev => ({
-                        ...prev,
-                        params: { ...prev.params, maxQuestions: parseInt(e.target.value) || 20 }
-                      }))}
-                      min="5"
-                      max="100"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Time Limit (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      value={generationState.params.timeLimit || 30}
-                      onChange={(e) => setGenerationState(prev => ({
-                        ...prev,
-                        params: { ...prev.params, timeLimit: parseInt(e.target.value) || 30 }
-                      }))}
-                      min="5"
-                      max="180"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Difficulty
-                    </label>
-                    <select
-                      value={generationState.params.difficulty || 'medium'}
-                      onChange={(e) => setGenerationState(prev => ({
-                        ...prev,
-                        params: { ...prev.params, difficulty: e.target.value }
-                      }))}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
-                    >
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Question Types
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={generationState.params.includeMultipleChoice !== false}
-                        onChange={(e) => setGenerationState(prev => ({
-                          ...prev,
-                          params: { ...prev.params, includeMultipleChoice: e.target.checked }
-                        }))}
-                        className="w-4 h-4 text-teal-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Multiple Choice</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={generationState.params.includeWritten !== false}
-                        onChange={(e) => setGenerationState(prev => ({
-                          ...prev,
-                          params: { ...prev.params, includeWritten: e.target.checked }
-                        }))}
-                        className="w-4 h-4 text-teal-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Written Response</span>
-                    </label>
-                  </div>
-                </>
-              )}
+
             </div>
 
             <div className="flex gap-3 justify-end mt-6">
@@ -1037,7 +944,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
             </div>
 
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Paste your study material here to generate flashcards, summaries, or practice tests.
+              Paste your study material here to generate flashcards or summaries.
             </p>
 
             <textarea

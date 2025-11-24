@@ -3,8 +3,6 @@ import User from '@/models/user';
 import Activity from '@/models/activity';
 import Flashcard from '@/models/flashcard';
 import { Summary } from '@/models/summary';
-import { PracticeTest } from '@/models/practice-test';
-import { PracticeTestSubmission } from '@/models/practice-test-submission';
 import StudyProgress from '@/models/study_progress';
 
 export interface UserContext {
@@ -18,7 +16,6 @@ export interface UserContext {
     achievements: {
         totalFlashcards: number;
         totalSummaries: number;
-        totalPracticeTests: number;
         totalActivities: number;
         recentAchievements: string[];
     };
@@ -58,10 +55,9 @@ NoteWise is an AI-powered study companion that transforms learning materials int
 ## Key Features:
 1. **AI-Powered Summarization**: Automatically generates clear, concise summaries from uploaded notes and documents (PDF, DOCX, TXT support)
 2. **Flashcard Generation Engine**: Transforms key concepts from summaries into interactive flashcards for active recall
-3. **Practice Test Generation**: Creates practice tests from your study materials to test knowledge
-4. **File Upload Interface**: Drag & drop interface supporting multiple file formats
-5. **Summary Customization**: Adjust summary length, focus, or writing style to match study preferences
-6. **Flashcard Review Mode**: Interactive quiz-like experience to help test and retain knowledge
+3. **File Upload Interface**: Drag & drop interface supporting multiple file formats
+4. **Summary Customization**: Adjust summary length, focus, or writing style to match study preferences
+5. **Flashcard Review Mode**: Interactive quiz-like experience to help test and retain knowledge
 
 ## How It Works:
 1. **Upload Your Materials**: Drag and drop study notes, PDFs, or documents
@@ -95,16 +91,14 @@ Sign up for free to start transforming your study experience with AI-powered too
 ## Available Features:
 1. **Generate Flashcards**: Create flashcards from text, uploaded files, or existing summaries
 2. **Generate Summaries**: Create AI-powered summaries from uploaded documents (PDF, DOCX, TXT)
-3. **Generate Practice Tests**: Create practice tests from your study materials
-4. **Library Management**: Organize flashcards and summaries in folders
-5. **Study Progress Tracking**: Track your learning progress and achievements
-6. **Profile Management**: Customize your profile and settings
-7. **Activity History**: View your recent study activities
+3. **Library Management**: Organize flashcards and summaries in folders
+4. **Study Progress Tracking**: Track your learning progress and achievements
+5. **Profile Management**: Customize your profile and settings
+6. **Activity History**: View your recent study activities
 
 ## How to Use:
 - **Upload Files**: Go to Summaries or Flashcards section and upload PDF, DOCX, or TXT files
 - **Generate from Text**: Paste text directly to generate flashcards or summaries
-- **Practice Tests**: Create tests from your materials and track your scores
 - **View History**: Check your activity history and achievements in your profile
 - **Organize**: Use folders to organize your study materials
 
@@ -112,7 +106,6 @@ Sign up for free to start transforming your study experience with AI-powered too
 NoteWise helps you study more efficiently by:
 - Converting complex materials into simple summaries
 - Creating interactive flashcards for active recall
-- Generating practice tests to assess your knowledge
 - Tracking your progress and achievements
 - Organizing all your study materials in one place
 `;
@@ -130,10 +123,9 @@ NoteWise helps you study more efficiently by:
             }
 
             // Get counts
-            const [flashcardCount, summaryCount, practiceTestCount, activityCount] = await Promise.all([
+            const [flashcardCount, summaryCount, activityCount] = await Promise.all([
                 Flashcard.countDocuments({ user: userId }),
                 Summary.countDocuments({ user: userId }),
-                PracticeTest.countDocuments({ user: userId }),
                 Activity.countDocuments({ user: userId })
             ]);
 
@@ -162,7 +154,6 @@ NoteWise helps you study more efficiently by:
             const recentAchievements: string[] = [];
             if (flashcardCount >= 10) recentAchievements.push(`Created ${flashcardCount} flashcard sets`);
             if (summaryCount >= 5) recentAchievements.push(`Generated ${summaryCount} summaries`);
-            if (practiceTestCount >= 3) recentAchievements.push(`Completed ${practiceTestCount} practice tests`);
             if (activityCount >= 50) recentAchievements.push(`Reached ${activityCount} study activities`);
 
             return {
@@ -176,7 +167,6 @@ NoteWise helps you study more efficiently by:
                 achievements: {
                     totalFlashcards: flashcardCount,
                     totalSummaries: summaryCount,
-                    totalPracticeTests: practiceTestCount,
                     totalActivities: activityCount,
                     recentAchievements
                 },
@@ -221,7 +211,6 @@ NoteWise helps you study more efficiently by:
 # Achievements:
 - Total Flashcard Sets: ${context.achievements.totalFlashcards}
 - Total Summaries: ${context.achievements.totalSummaries}
-- Total Practice Tests: ${context.achievements.totalPracticeTests}
 - Total Activities: ${context.achievements.totalActivities}
 ${context.achievements.recentAchievements.length > 0 ? `- Recent Achievements:\n${context.achievements.recentAchievements.map(a => `  * ${a}`).join('\n')}` : ''}
 

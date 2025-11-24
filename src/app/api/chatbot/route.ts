@@ -234,67 +234,16 @@ export async function POST(req: NextRequest) {
             }
           };
           
-        } else if (type === 'practice_test') {
-          if (!uploadedContent) {
-            throw new Error('No content provided for practice test generation');
-          }
-          
-          // Import and use the practice test generator directly
-          const { PracticeTestGenerator } = await import('@/lib/ai/practice-test-generator');
-          const { logActivity } = await import('@/lib/activity');
-          
-          const generator = new PracticeTestGenerator();
-          
-          // Truncate content if too long
-          let processedContent = uploadedContent;
-          if (uploadedContent.length > 50000) {
-            logger.warn('Content exceeds 50,000 characters, truncating', {
-              originalLength: uploadedContent.length
-            });
-            processedContent = uploadedContent.substring(0, 50000);
-          }
-          
-          const result = await generator.generatePracticeTest({
-            content: processedContent,
-            title: params.title || 'AI Generated Practice Test',
-            maxQuestions: params.maxQuestions || 20,
-            includeMultipleChoice: params.includeMultipleChoice !== false,
-            includeWritten: params.includeWritten !== false,
-            difficulty: params.difficulty || 'medium',
-            timeLimit: params.timeLimit || 30
-          });
-
-          await logActivity({
-            userId: String(userId),
-            type: 'practice_test.generate',
-            action: 'generated via chatbot',
-            meta: {
-              title: result.title,
-              questionCount: result.multipleChoiceQuestions.length + result.writtenQuestions.length,
-              totalPoints: result.totalPoints
-            },
-            progress: 100
-          });
-
-          generationResult = {
-            success: true,
-            practiceTest: {
-              title: result.title,
-              questionCount: result.multipleChoiceQuestions.length + result.writtenQuestions.length
-            }
-          };
         }
         
         if (generationResult?.success) {
           const itemId = generationResult.flashcard?.id || generationResult.summary?.id;
           const libraryUrl = type === 'flashcard' 
             ? `/student_page/library?tab=flashcards${itemId ? `&highlight=${itemId}` : ''}`
-            : type === 'summary'
-            ? `/student_page/library?tab=study_notes`
-            : `/student_page/library?tab=practice_tests`;
+            : `/student_page/library?tab=study_notes`;
 
           return NextResponse.json({
-            message: `✅ Great! I've successfully generated your ${type === 'flashcard' ? 'flashcards' : type === 'summary' ? 'summary' : 'practice test'}!\n\n📚 Click the button below to view it in your library.`,
+            message: `✅ Great! I've successfully generated your ${type === 'flashcard' ? 'flashcards' : 'summary'}!\n\n📚 Click the button below to view it in your library.`,
             context: 'authenticated',
             generationSuccess: true,
             generationType: type,

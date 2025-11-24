@@ -844,7 +844,7 @@ export default function FlashcardOnlyPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-3 sm:p-4 lg:p-6 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
-        <header className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] items-start lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <header className="grid grid-cols-1 xl:grid-cols-[auto_1fr_auto] items-start xl:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => router.back()}
@@ -860,7 +860,7 @@ export default function FlashcardOnlyPage() {
             </div>
           </div>
 
-          <div className="w-full lg:justify-self-center lg:max-w-4xl px-1 sm:px-2">
+          <div className="w-full xl:justify-self-center xl:max-w-4xl px-1 sm:px-2">
             <div className="w-full h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-teal-600 to-teal-600 transition-all"
@@ -887,7 +887,7 @@ export default function FlashcardOnlyPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 lg:justify-self-end">
+          <div className="flex items-center gap-2 sm:gap-3 xl:justify-self-end">
             <button
               onClick={() => setShowOptions(true)}
               aria-label="Options"
@@ -1087,7 +1087,7 @@ export default function FlashcardOnlyPage() {
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowOptions(false)} />
 
             {/* center modal, allow scrolling when viewport is small */}
-            <div className="relative w-full max-w-4xl max-h-[95vh] bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl overflow-auto grid grid-cols-1 lg:grid-cols-[1fr_220px] items-start">
+            <div className="relative w-full max-w-4xl max-h-[95vh] bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl overflow-auto grid grid-cols-1 xl:grid-cols-[1fr_220px] items-start">
               {/* Left: settings */}
               <div className="p-4 sm:p-6 h-full flex flex-col gap-3">
                 <div className="flex items-start justify-between">
