@@ -20,6 +20,7 @@ export interface ISummary extends Document {
   sourceFileName?: string;
   folder?: string; // folder ID if organized in a folder
   isFavorite?: boolean;
+  isArchived?: boolean;
   isRead?: boolean; // whether the summary has been marked as read
   isPublic: boolean;
   createdAt: Date;
@@ -112,6 +113,10 @@ const SummarySchema = new Schema<ISummary>({
     ref: 'Folder'
   },
   isFavorite: {
+    type: Boolean,
+    default: false
+  },
+  isArchived: {
     type: Boolean,
     default: false
   },

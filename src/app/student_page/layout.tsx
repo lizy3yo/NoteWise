@@ -1147,7 +1147,27 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         <span>My Profile</span>
                       </Link>
 
-                      {/* Achievements link removed from profile dropdown - now in sidebar quick-access */}
+                      <Link
+                        href="/student_page/archive"
+                        className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"
+                      >
+                        <svg
+                          className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                          width="18"
+                          height="18"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                          />
+                        </svg>
+                        <span>Archive</span>
+                      </Link>
 
                       <button
                         className="group flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-200 border-none bg-transparent w-full text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"

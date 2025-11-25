@@ -16,6 +16,7 @@ type FlashcardItem = {
   image?: string;
   folder?: string;
   isFavorite?: boolean;
+  isArchived?: boolean;
   lastReviewed?: Date | string;
   repetitionCount?: number;
   createdAt?: string;
@@ -38,13 +39,23 @@ type SummaryItem = {
   tags: string[];
   folder?: string;
   isFavorite?: boolean;
+  isArchived?: boolean;
   isRead?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
 
 function PrivateLibraryContent() {
-  const [activeTab, setActiveTab] = useState<'flashcards' | 'study_notes' | 'folders' | 'favorites'>('favorites');
+  // Initialize activeTab from localStorage or default to 'favorites'
+  const [activeTab, setActiveTab] = useState<'flashcards' | 'study_notes' | 'folders' | 'favorites'>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTab = localStorage.getItem('library_active_tab');
+      if (savedTab && ['flashcards', 'study_notes', 'folders', 'favorites'].includes(savedTab)) {
+        return savedTab as 'flashcards' | 'study_notes' | 'folders' | 'favorites';
+      }
+    }
+    return 'favorites';
+  });
   const [filter, setFilter] = useState('recent');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null); // Track which folder is open
@@ -58,6 +69,7 @@ function PrivateLibraryContent() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const [openSubMenu, setOpenSubMenu] = useState<'share' | 'organize' | null>(null);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [shareItem, setShareItem] = useState<FlashcardItem | null>(null);
@@ -317,6 +329,10 @@ function PrivateLibraryContent() {
       // Only switch tabs if the URL parameter is valid
       if ((allowed as readonly string[]).includes(tabParam)) {
         setActiveTab(tabParam as any);
+        // Also save to localStorage so it persists
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('library_active_tab', tabParam);
+        }
       }
     }
   }, [searchParams, isLoading]);
@@ -430,7 +446,9 @@ function PrivateLibraryContent() {
           console.log(`Flashcard ${idx + 1}: "${fc.title}" - Subject: "${fc.subject || 'MISSING'}"`, fc);
         });
 
-        setFlashcards(Array.isArray(data?.flashcards) ? data.flashcards : []);
+        // Filter out archived flashcards from library view
+        const activeFlashcards = Array.isArray(data?.flashcards) ? data.flashcards.filter((f: FlashcardItem) => !f.isArchived) : [];
+        setFlashcards(activeFlashcards);
 
         // Fetch summaries
         const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, {
@@ -445,7 +463,9 @@ function PrivateLibraryContent() {
           if (isMounted && summariesData.success) {
             console.log('📄 Loaded summaries:', summariesData.summaries);
             console.log('📄 Summaries with isRead:', summariesData.summaries.filter((s: any) => s.isRead));
-            setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
+            // Filter out archived summaries from library view
+            const activeSummaries = Array.isArray(summariesData?.summaries) ? summariesData.summaries.filter((s: SummaryItem) => !s.isArchived) : [];
+            setSummaries(activeSummaries);
           }
         } else {
           console.warn('Failed to load summaries');
@@ -525,6 +545,34 @@ function PrivateLibraryContent() {
     };
   }, []);
 
+  // Helper function to determine menu position based on button location
+  const handleMenuToggle = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    
+    if (openMenuId === itemId) {
+      setOpenMenuId(null);
+      return;
+    }
+
+    // Get button position
+    const button = e.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate space below and above
+    const spaceBelow = viewportHeight - rect.bottom;
+    const menuHeight = 400; // Approximate height of the menu
+    
+    // If not enough space below, show menu above
+    if (spaceBelow < menuHeight && rect.top > menuHeight) {
+      setMenuPosition('top');
+    } else {
+      setMenuPosition('bottom');
+    }
+    
+    setOpenMenuId(itemId);
+  };
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -601,7 +649,9 @@ function PrivateLibraryContent() {
           if (summariesRes.ok) {
             const summariesData = await summariesRes.json();
             if (summariesData.success) {
-              setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
+              // Filter out archived summaries from library view
+              const activeSummaries = Array.isArray(summariesData?.summaries) ? summariesData.summaries.filter((s: SummaryItem) => !s.isArchived) : [];
+              setSummaries(activeSummaries);
             }
           }
         } catch (e) {
@@ -1026,6 +1076,48 @@ function PrivateLibraryContent() {
     );
   };
 
+  // Archive flashcard
+  const handleArchiveFlashcard = async (flashcardId: string) => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/student_page/flashcard/${flashcardId}?userId=${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: true }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to archive flashcard');
+      }
+      setFlashcards(prev => prev.filter(f => f._id !== flashcardId));
+      setOpenMenuId(null);
+      showSuccess('Flashcard archived successfully');
+    } catch (e: unknown) {
+      showError(e instanceof Error ? e.message : 'Failed to archive flashcard');
+    }
+  };
+
+  // Archive summary
+  const handleArchiveSummary = async (summaryId: string) => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/student_page/summary?userId=${userId}&summaryId=${summaryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: true }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Failed to archive summary');
+      }
+      setSummaries(prev => prev.filter(s => s._id !== summaryId));
+      setOpenMenuId(null);
+      showSuccess('Summary archived successfully');
+    } catch (e: unknown) {
+      showError(e instanceof Error ? e.message : 'Failed to archive summary');
+    }
+  };
+
   // Get unique subjects/folders from flashcards and summaries based on active tab
   const subjects = useMemo(() => {
     const subjectSet = new Set<string>();
@@ -1162,6 +1254,14 @@ function PrivateLibraryContent() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+        /* Fix for multi-line clamp mask leaking parent/background colors
+           Forces the mask to be opaque so ellipsis/fade composites against
+           the element's own background (works in WebKit/Blink).
+        */
+        .clamp-fix {
+          -webkit-mask-image: linear-gradient(#000, #000);
+          mask-image: linear-gradient(#000, #000);
+        }
       `}</style>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
@@ -1185,10 +1285,16 @@ function PrivateLibraryContent() {
               <button
                 key={tab}
                 type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab
-                  ? 'text-gray-900 dark:text-white border-b-2 border-teal-500 -mb-[2px]'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                onClick={() => {
+                  setActiveTab(tab);
+                  // Save the active tab to localStorage
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('library_active_tab', tab);
+                  }
+                }}
+                className={`py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap relative group ${activeTab === tab
+                  ? 'text-teal-600 dark:text-teal-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400'
                   }`}
               >
                 {tab === 'favorites' ? (
@@ -1199,6 +1305,8 @@ function PrivateLibraryContent() {
                     <span>{label}</span>
                   </span>
                 ) : label}
+                {/* Animated underline */}
+                <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-teal-500 transition-transform duration-300 origin-center ${activeTab === tab ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </button>
             );
           })}
@@ -1483,7 +1591,7 @@ function PrivateLibraryContent() {
                               <div
                                 key={`flashcard-${item._id}`}
                                 onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
-                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1498,7 +1606,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
+                                    onClick={(e) => handleMenuToggle(e, item._id)}
                                     className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                     aria-label="Open actions"
                                   >
@@ -1508,7 +1616,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === item._id && (
-                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
@@ -1524,28 +1632,34 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { router.push(`/student_page/library/${item._id}`); setOpenMenuId(null); }}
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { openFolderModal(item._id, 'flashcard', item.title); setOpenMenuId(null); }}
                                       >
                                         Move to Folder
                                       </button>
-                                      <button
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { toggleFlashcardCompleted(item._id, isFlashcardCompleted(item)); setOpenMenuId(null); }}
-                                      >
-                                        {isFlashcardCompleted(item) ? 'Mark as not completed' : 'Mark as completed'}
-                                      </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+
                                       <button
-                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                        onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+
+                                        onClick={() => { handleArchiveFlashcard(item._id); setOpenMenuId(null); }}
+
                                       >
+
+                                        Archive
+
+                                      </button>
+
+                                      <button
+
+                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+
+                                        onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+
+                                      >
+
                                         Delete
+
                                       </button>
                                     </div>
                                   )}
@@ -1566,9 +1680,9 @@ function PrivateLibraryContent() {
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
-                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
                                   {item.description && (
-                                    <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                    <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
                                   )}
                                 </div>
                                 {item.createdAt && (
@@ -1584,7 +1698,7 @@ function PrivateLibraryContent() {
                               <div
                                 key={`summary-${summary._id}`}
                                 onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
-                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1599,7 +1713,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }}
+                                    onClick={(e) => handleMenuToggle(e, summary._id)}
                                     className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                     aria-label="Open actions"
                                   >
@@ -1609,7 +1723,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -1675,11 +1789,29 @@ function PrivateLibraryContent() {
                                         Move to Folder
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+
                                       <button
-                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                        onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}
+
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+
+                                        onClick={() => { handleArchiveSummary(summary._id); setOpenMenuId(null); }}
+
                                       >
+
+                                        Archive
+
+                                      </button>
+
+                                      <button
+
+                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+
+                                        onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}
+
+                                      >
+
                                         Delete
+
                                       </button>
                                     </div>
                                   )}
@@ -1700,7 +1832,7 @@ function PrivateLibraryContent() {
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
-                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
                                   <div className="flex items-center gap-2">
                                     <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                                       summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
@@ -1787,7 +1919,7 @@ function PrivateLibraryContent() {
                               <div
                                 key={`uncategorized-flashcard-${item._id}`}
                                 onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
-                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (uncategorized flashcard) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1802,7 +1934,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
+                                    onClick={(e) => handleMenuToggle(e, item._id)}
                                     className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                     aria-label="Open actions"
                                   >
@@ -1812,14 +1944,14 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === item._id && (
-                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
                                       >
                                         {item.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
                                       </button>
-                                      <div className="h-px bg-gray-100 dark:bg-slate-7g00 mx-2" />
+                                      <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { handleRename(item); setOpenMenuId(null); }}
@@ -1828,28 +1960,34 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { router.push(`/student_page/library/${item._id}`); setOpenMenuId(null); }}
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { openFolderModal(item._id, 'flashcard', item.title); setOpenMenuId(null); }}
                                       >
                                         Move to Folder
                                       </button>
-                                      <button
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { toggleFlashcardCompleted(item._id, isFlashcardCompleted(item)); setOpenMenuId(null); }}
-                                      >
-                                        {isFlashcardCompleted(item) ? 'Mark as not completed' : 'Mark as completed'}
-                                      </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+
                                       <button
-                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                        onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+
+                                        onClick={() => { handleArchiveFlashcard(item._id); setOpenMenuId(null); }}
+
                                       >
+
+                                        Archive
+
+                                      </button>
+
+                                      <button
+
+                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+
+                                        onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+
+                                      >
+
                                         Delete
+
                                       </button>
                                     </div>
                                   )}
@@ -1870,9 +2008,9 @@ function PrivateLibraryContent() {
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
-                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
                                   {item.description && (
-                                    <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                    <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
                                   )}
                                 </div>
                                 {item.createdAt && (
@@ -1888,7 +2026,7 @@ function PrivateLibraryContent() {
                               <div
                                 key={`uncategorized-summary-${summary._id}`}
                                 onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
-                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (uncategorized summary) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1903,7 +2041,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }}
+                                    onClick={(e) => handleMenuToggle(e, summary._id)}
                                     className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                     aria-label="Open actions"
                                   >
@@ -1913,7 +2051,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -1976,11 +2114,29 @@ function PrivateLibraryContent() {
                                         Move to Folder
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+
                                       <button
-                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                        onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}
+
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+
+                                        onClick={() => { handleArchiveSummary(summary._id); setOpenMenuId(null); }}
+
                                       >
+
+                                        Archive
+
+                                      </button>
+
+                                      <button
+
+                                        className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+
+                                        onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}
+
+                                      >
+
                                         Delete
+
                                       </button>
                                     </div>
                                   )}
@@ -2001,7 +2157,7 @@ function PrivateLibraryContent() {
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
-                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
                                   <div className="flex items-center gap-2">
                                     <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                                       summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
@@ -2243,7 +2399,7 @@ function PrivateLibraryContent() {
                                   <div
                                     key={`fav-flash-${item._id}`}
                                     onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
-                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                                   >
                                     {/* Favorite + actions (inside folder) */}
                                     <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -2258,7 +2414,7 @@ function PrivateLibraryContent() {
                                       </button>
 
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
+                                        onClick={(e) => handleMenuToggle(e, item._id)}
                                         className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                         aria-label="Open actions"
                                       >
@@ -2268,7 +2424,7 @@ function PrivateLibraryContent() {
                                       </button>
 
                                       {openMenuId === item._id && (
-                                        <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                        <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                           <button
                                             className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                             onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
@@ -2295,11 +2451,29 @@ function PrivateLibraryContent() {
                                             Move to Folder
                                           </button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+
                                           <button
-                                            className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
-                                            onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+
+                                            onClick={() => { handleArchiveFlashcard(item._id); setOpenMenuId(null); }}
+
                                           >
+
+                                            Archive
+
+                                          </button>
+
+                                          <button
+
+                                            className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+
+                                            onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}
+
+                                          >
+
                                             Delete
+
                                           </button>
                                         </div>
                                       )}
@@ -2320,9 +2494,9 @@ function PrivateLibraryContent() {
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
-                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
                                       {item.description && (
-                                        <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                        <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
                                       )}
                                       {item.createdAt && (
                                         <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2337,26 +2511,26 @@ function PrivateLibraryContent() {
                                   <div
                                     key={`fav-sum-${summary._id}`}
                                     onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
-                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                                   >
                                     <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                       <button onClick={(e) => { e.stopPropagation(); toggleFavorite(summary._id, 'summary', summary.isFavorite || false); }} className={`p-1 rounded-lg transition-colors ${summary.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`} title={summary.isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
                                         <svg className="w-4 h-4" fill={summary.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                                       </button>
 
-                                      <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }} className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all" aria-label="Open actions">
+                                      <button onClick={(e) => handleMenuToggle(e, summary._id)} className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all" aria-label="Open actions">
                                         <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                       </button>
 
                                       {openMenuId === summary._id && (
-                                        <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                        <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}>{summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
-                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}>View</button>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}>Rename</button>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={async () => { if (!userId) return; setOpenMenuId(null); try { const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: summary.content, title: `${summary.title} - Flashcards`, subject: summary.subject, difficulty: summary.difficulty, maxCards: 15 }) }); const data = await response.json(); if (!response.ok || !data.success) throw new Error(data.error || 'Failed to generate flashcards'); router.push('/student_page/library?tab=flashcards'); } catch (error) { console.error('Flashcard generation failed:', error); showError(error instanceof Error ? error.message : 'Failed to generate flashcards'); } }}>Create Flashcards</button>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(summary._id, 'summary', summary.title); setOpenMenuId(null); }}>Move to Folder</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600" onClick={() => { handleArchiveSummary(summary._id); setOpenMenuId(null); }}>Archive</button>
                                           <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}>Delete</button>
                                         </div>
                                       )}
@@ -2377,7 +2551,7 @@ function PrivateLibraryContent() {
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
-                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
                                     </div>
                                     {summary.createdAt && (
                                       <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2444,7 +2618,7 @@ function PrivateLibraryContent() {
                                   <div
                                     key={`uncat-fav-flash-${item._id}`}
                                     onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
-                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                                   >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
@@ -2456,7 +2630,7 @@ function PrivateLibraryContent() {
                                     </button>
 
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
+                                      onClick={(e) => handleMenuToggle(e, item._id)}
                                       className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                       aria-label="Open actions"
                                     >
@@ -2466,13 +2640,14 @@ function PrivateLibraryContent() {
                                     </button>
 
                                     {openMenuId === item._id && (
-                                      <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                      <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}>{item.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRename(item); setOpenMenuId(null); }}>Rename</button>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/library/${item._id}`); setOpenMenuId(null); }}>Edit</button>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(item._id, 'flashcard', item.title); setOpenMenuId(null); }}>Move to Folder</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600" onClick={() => { handleArchiveFlashcard(item._id); setOpenMenuId(null); }}>Archive</button>
                                         <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDelete(item._id); setOpenMenuId(null); }}>Delete</button>
                                       </div>
                                     )}
@@ -2496,9 +2671,9 @@ function PrivateLibraryContent() {
                                     </div>
                                   </div>
                                   <div className="mb-2 sm:mb-3">
-                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
                                     {item.description && (
-                                      <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                      <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
                                     )}
                                     {item.createdAt && (
                                       <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2511,7 +2686,7 @@ function PrivateLibraryContent() {
                                 <div
                                   key={`uncat-fav-sum-${item._id}`}
                                   onClick={() => { markAsViewed(item._id); router.push(`/student_page/summaries/${item._id}`); }}
-                                  className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
+                                  className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                                 >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
@@ -2523,7 +2698,7 @@ function PrivateLibraryContent() {
                                     </button>
 
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
+                                      onClick={(e) => handleMenuToggle(e, item._id)}
                                       className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                       aria-label="Open actions"
                                     >
@@ -2533,13 +2708,13 @@ function PrivateLibraryContent() {
                                     </button>
 
                                     {openMenuId === item._id && (
-                                      <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                      <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(item._id, 'summary', item.isFavorite || false); setOpenMenuId(null); }}>{item.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
-                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${item._id}`); setOpenMenuId(null); }}>View</button>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(item); setOpenMenuId(null); }}>Rename</button>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(item._id, 'summary', item.title); setOpenMenuId(null); }}>Move to Folder</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600" onClick={() => { handleArchiveSummary(item._id); setOpenMenuId(null); }}>Archive</button>
                                         <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDeleteSummary(item._id); setOpenMenuId(null); }}>Delete</button>
                                       </div>
                                     )}
@@ -2563,7 +2738,7 @@ function PrivateLibraryContent() {
                                     </div>
                                   </div>
                                   <div className="mb-2 sm:mb-3">
-                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
+                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
                                   </div>
                                   {item.createdAt && (
                                     <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2759,7 +2934,7 @@ function PrivateLibraryContent() {
                               <div
                                 key={`summary-${summary._id}`}
                                 onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
-                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 isolate group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -2774,7 +2949,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }}
+                                    onClick={(e) => handleMenuToggle(e, summary._id)}
                                     className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                     aria-label="Open actions"
                                   >
@@ -2784,7 +2959,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -2792,12 +2967,6 @@ function PrivateLibraryContent() {
                                         {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
-                                      <button
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}
-                                      >
-                                        View
-                                      </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}
@@ -2851,6 +3020,15 @@ function PrivateLibraryContent() {
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+                                        onClick={() => {
+                                          handleArchiveSummary(summary._id);
+                                          setOpenMenuId(null);
+                                        }}
+                                      >
+                                        Archive
+                                      </button>
+                                      <button
                                         className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
                                         onClick={() => {
                                           handleDeleteSummary(summary._id);
@@ -2875,7 +3053,7 @@ function PrivateLibraryContent() {
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
-                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
                                   <div className="flex items-center gap-2">
                                     <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                                       summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
@@ -2961,7 +3139,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }}
+                                    onClick={(e) => handleMenuToggle(e, summary._id)}
                                     className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                     aria-label="Open actions"
                                   >
@@ -2971,7 +3149,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -2979,12 +3157,6 @@ function PrivateLibraryContent() {
                                         {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
-                                      <button
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}
-                                      >
-                                        View
-                                      </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}
@@ -3038,6 +3210,15 @@ function PrivateLibraryContent() {
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+                                        onClick={() => {
+                                          handleArchiveSummary(summary._id);
+                                          setOpenMenuId(null);
+                                        }}
+                                      >
+                                        Archive
+                                      </button>
+                                      <button
                                         className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
                                         onClick={() => {
                                           handleDeleteSummary(summary._id);
@@ -3065,7 +3246,7 @@ function PrivateLibraryContent() {
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
-                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
                                   <div className="flex items-center gap-2">
                                     <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                                       summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
@@ -3246,14 +3427,21 @@ function PrivateLibraryContent() {
                               </svg>
                             </button>
                           </div>
-                          <svg
-                            className={`w-5 h-5 text-slate-400 transition-transform ${expandedFolder === folder._id ? 'rotate-180' : ''}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setExpandedFolder(expandedFolder === folder._id ? null : folder._id); }}
+                            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            title={expandedFolder === folder._id ? 'Collapse folder' : 'Expand folder'}
+                            aria-label={expandedFolder === folder._id ? 'Collapse folder' : 'Expand folder'}
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
+                            <svg
+                              className={`w-5 h-5 text-slate-400 transition-transform ${expandedFolder === folder._id ? 'rotate-180' : ''}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
 
@@ -3332,7 +3520,7 @@ function PrivateLibraryContent() {
                                         </button>
 
                                         <button
-                                          onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === fc._id ? null : fc._id); }}
+                                          onClick={(e) => handleMenuToggle(e, fc._id)}
                                           className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                           aria-label="Open actions"
                                         >
@@ -3340,6 +3528,43 @@ function PrivateLibraryContent() {
                                             <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
                                           </svg>
                                         </button>
+
+                                        {openMenuId === fc._id && (
+                                          <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                              className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                              onClick={() => { toggleFavorite(fc._id, 'flashcard', fc.isFavorite || false); setOpenMenuId(null); }}
+                                            >
+                                              {fc.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                            </button>
+                                            <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                            <button
+                                              className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                              onClick={() => { handleRename(fc); setOpenMenuId(null); }}
+                                            >
+                                              Rename
+                                            </button>
+                                            <button
+                                              className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                              onClick={() => { openFolderModal(fc._id, 'flashcard', fc.title); setOpenMenuId(null); }}
+                                            >
+                                              Move to Folder
+                                            </button>
+                                            <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                            <button
+                                              className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+                                              onClick={() => { handleArchiveFlashcard(fc._id); setOpenMenuId(null); }}
+                                            >
+                                              Archive
+                                            </button>
+                                            <button
+                                              className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+                                              onClick={() => { handleDelete(fc._id); setOpenMenuId(null); }}
+                                            >
+                                              Delete
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
                                       <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                           <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {fc.cards?.length || 0} cards</span>
@@ -3357,9 +3582,9 @@ function PrivateLibraryContent() {
                                         </div>
                                       </div>
                                       <div className="mb-2 sm:mb-3">
-                                        <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{fc.title}</h4>
+                                        <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{fc.title}</h4>
                                         {fc.description && (
-                                          <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{fc.description}</p>
+                                          <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{fc.description}</p>
                                         )}
                                       </div>
                                       {fc.createdAt && (
@@ -3391,7 +3616,7 @@ function PrivateLibraryContent() {
                                       </button>
 
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === sm._id ? null : sm._id); }}
+                                        onClick={(e) => handleMenuToggle(e, sm._id)}
                                         className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                         aria-label="Open actions"
                                       >
@@ -3399,6 +3624,76 @@ function PrivateLibraryContent() {
                                           <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
                                         </svg>
                                       </button>
+
+                                      {openMenuId === sm._id && (
+                                        <div className={`absolute ${menuPosition === 'top' ? 'bottom-10' : 'top-10'} right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50`} onClick={(e) => e.stopPropagation()}>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { toggleFavorite(sm._id, 'summary', sm.isFavorite || false); setOpenMenuId(null); }}
+                                          >
+                                            {sm.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                          </button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { handleRenameSummary(sm); setOpenMenuId(null); }}
+                                          >
+                                            Rename
+                                          </button>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={async () => {
+                                              if (!userId) return;
+                                              setOpenMenuId(null);
+                                              try {
+                                                const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
+                                                  method: 'POST',
+                                                  headers: { 'Content-Type': 'application/json' },
+                                                  body: JSON.stringify({
+                                                    content: sm.content,
+                                                    title: `${sm.title} - Flashcards`,
+                                                    subject: sm.subject,
+                                                    difficulty: sm.difficulty,
+                                                    maxCards: 15
+                                                  })
+                                                });
+
+                                                const data = await response.json();
+
+                                                if (!response.ok || !data.success) {
+                                                  throw new Error(data.error || 'Failed to generate flashcards');
+                                                }
+
+                                                router.push('/student_page/library?tab=flashcards');
+                                              } catch (error) {
+                                                console.error('Flashcard generation failed:', error);
+                                                showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
+                                              }
+                                            }}
+                                          >
+                                            Create Flashcards
+                                          </button>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                            onClick={() => { openFolderModal(sm._id, 'summary', sm.title); setOpenMenuId(null); }}
+                                          >
+                                            Move to Folder
+                                          </button>
+                                          <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600"
+                                            onClick={() => { handleArchiveSummary(sm._id); setOpenMenuId(null); }}
+                                          >
+                                            Archive
+                                          </button>
+                                          <button
+                                            className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
+                                            onClick={() => { handleDeleteSummary(sm._id); setOpenMenuId(null); }}
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                      )}
                                     </div>
                                     <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                         <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {sm.wordCount} words</span>
@@ -3416,7 +3711,7 @@ function PrivateLibraryContent() {
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
-                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{sm.title}</h4>
+                                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{sm.title}</h4>
                                     </div>
                                     {sm.createdAt && (
                                       <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">

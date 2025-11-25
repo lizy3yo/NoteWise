@@ -48,6 +48,7 @@ export interface IFlashcard {
     correctCount?: number;
     incorrectCount?: number;
     isFavorite?: boolean;
+    isArchived?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
     accessType: 'private' | 'public';
@@ -99,6 +100,10 @@ const flashcardSchema = new Schema<IFlashcard>({
     correctCount: { type: Number, default: 0 },
     incorrectCount: { type: Number, default: 0 },
     isFavorite: {
+        type: Boolean,
+        default: false
+    },
+    isArchived: {
         type: Boolean,
         default: false
     },

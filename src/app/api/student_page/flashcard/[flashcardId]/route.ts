@@ -181,6 +181,7 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             sharedUsers,
             shareableLink,
             isFavorite,
+            isArchived,
             lastReviewed,
             repetitionCount
         } = body;
@@ -275,6 +276,11 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             shareableLink: shareableLink || undefined,
             isFavorite
         };
+
+        // Handle isArchived field
+        if (typeof isArchived !== 'undefined') {
+            updateData.isArchived = isArchived;
+        }
 
         // Allow updating repetitionCount when provided
         if (typeof repetitionCount !== 'undefined') {

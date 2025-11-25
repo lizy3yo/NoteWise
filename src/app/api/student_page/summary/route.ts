@@ -169,7 +169,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subject, tags, isPublic, folder, isFavorite, isRead } = body;
+    const { title, subject, tags, isPublic, folder, isFavorite, isArchived, isRead } = body;
 
     // Build update object
     const updateData: any = {};
@@ -179,6 +179,7 @@ export async function PATCH(request: NextRequest) {
     if (isPublic !== undefined) updateData.isPublic = isPublic;
     if (folder !== undefined) updateData.folder = folder;
     if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
+    if (isArchived !== undefined) updateData.isArchived = isArchived;
     if (isRead !== undefined) updateData.isRead = isRead;
 
     // Update the summary (only if it belongs to the user)
