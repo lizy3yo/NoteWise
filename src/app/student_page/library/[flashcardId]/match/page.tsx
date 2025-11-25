@@ -183,26 +183,61 @@ export default function MatchPage() {
   };
   
   // save progress helper (sends match namespace)
-  const saveProgress = async (payload: { shuffledAnswers?: any; matches?: any } = {}, modeOverride?: 'immediate' | 'end') => {
+  const saveProgress = async (payload: any = {}, modeOverride?: 'immediate' | 'end') => {
     const uid = userIdRef.current;
     const modeToSave = modeOverride ?? feedbackMode;
     // Always persist chosen mode to localStorage (fallback when server save doesn't happen)
     try { writeModeToLS(modeToSave); } catch (e) { /* ignore */ }
     if (!uid) return;
     try {
-      await fetch(`/api/student_page/flashcard/${flashcardId}/progress?userId=${uid}`, {
+      // Ensure completion is sent as a top-level field (the API inspects body.completion)
+      const payloadCopy = { ...(payload || {}) };
+      const completion = payloadCopy.completion;
+      if (completion !== undefined) delete payloadCopy.completion;
+
+      const bodyToSend: any = { match: { ...payloadCopy, mode: modeToSave } };
+      if (completion !== undefined) bodyToSend.completion = completion;
+
+      const res = await fetch(`/api/student_page/flashcard/${flashcardId}/progress?userId=${uid}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ match: { ...payload, mode: modeToSave } })
+        body: JSON.stringify(bodyToSend)
       });
+
+      // If the progress save succeeded, fetch the updated flashcard and broadcast it
+      if (res.ok) {
+        try {
+          const flashRes = await fetch(`/api/student_page/flashcard/${flashcardId}?userId=${uid}`);
+          if (flashRes.ok) {
+            const flashJson = await flashRes.json().catch(() => null);
+            const flashcard = flashJson?.flashcard || flashJson;
+            try {
+              if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                const bc = new BroadcastChannel('notewise.activities');
+                bc.postMessage({ type: 'flashcard.updated', flashcard });
+                bc.close();
+              }
+            } catch (e) {
+              // ignore broadcast failures
+            }
+          }
+        } catch (e) {
+          // non-fatal
+          console.warn('Failed to fetch updated flashcard after progress save', e);
+        }
+      }
     } catch (err) {
       console.warn("Failed to save match progress:", err);
     }
   };
 
   useEffect(() => {
-    if (cards.length > 0 && Object.keys(matches).length === cards.length) {
+    const allMatched = cards.length > 0 && Object.keys(matches).length === cards.length;
+    if (allMatched && !completed) {
+      // mark as completed (immediate mode finished all matches)
       setCompleted(true);
+      // send completion payload so server stamps Flashcard.lastReviewed/repetitionCount
+      saveProgress({ shuffledAnswers, matches, completion: { completedAt: new Date().toISOString() } });
     }
   }, [matches, cards.length]);
 
@@ -340,8 +375,8 @@ export default function MatchPage() {
     }
     setVerifiedMatches(result);
     setFinished(true);
-    // save verification state and current mode explicitly
-    saveProgress({ shuffledAnswers, matches }, feedbackMode);
+    // save verification state and mark session completion so server stamps flashcard
+    saveProgress({ shuffledAnswers, matches, completion: { completedAt: new Date().toISOString() } }, feedbackMode);
   };
 
   const reset = () => {

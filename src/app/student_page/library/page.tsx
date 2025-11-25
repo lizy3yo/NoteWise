@@ -16,6 +16,8 @@ type FlashcardItem = {
   image?: string;
   folder?: string;
   isFavorite?: boolean;
+  lastReviewed?: Date | string;
+  repetitionCount?: number;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -36,6 +38,7 @@ type SummaryItem = {
   tags: string[];
   folder?: string;
   isFavorite?: boolean;
+  isRead?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -50,6 +53,8 @@ function PrivateLibraryContent() {
   const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
   const [summaries, setSummaries] = useState<SummaryItem[]>([]);
   const [folders, setFolders] = useState<any[]>([]);
+  const [summaryReadActivityIds, setSummaryReadActivityIds] = useState<Set<string>>(() => new Set());
+  const [flashcardCompletedActivityIds, setFlashcardCompletedActivityIds] = useState<Set<string>>(() => new Set());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -107,6 +112,33 @@ function PrivateLibraryContent() {
     return `${dateStr} - ${timeStr}`;
   };
 
+  const isFlashcardCompleted = (item: FlashcardItem) => {
+    if (!item) return false;
+    // Consider a flashcard completed if it has been reviewed or has positive repetition count
+    if (item.lastReviewed) return true;
+    if (typeof item.repetitionCount === 'number' && item.repetitionCount > 0) return true;
+    // Fallback: check activity-derived completions (some flows only emit activities)
+    try {
+      if (flashcardCompletedActivityIds && flashcardCompletedActivityIds.has(item._id)) return true;
+    } catch (e) {
+      // ignore
+    }
+    return false;
+  };
+
+  const isSummaryCompleted = (s: SummaryItem) => {
+    if (!s) return false;
+    // Primary signal: summary.isRead
+    if (s.isRead) return true;
+    // Some flows only create an activity instead of updating the summary document — check activity cache
+    try {
+      if (summaryReadActivityIds && summaryReadActivityIds.has(s._id)) return true;
+    } catch (e) {
+      // ignore
+    }
+    return false;
+  };
+
   // Track viewed items
   const [viewedItems, setViewedItems] = useState<Set<string>>(() => {
     if (typeof window !== 'undefined') {
@@ -139,6 +171,69 @@ function PrivateLibraryContent() {
       localStorage.setItem('viewed_library_items', JSON.stringify(Array.from(newViewed)));
     } catch (e) {
       console.error('Failed to save viewed items:', e);
+    }
+  };
+
+  // Toggle flashcard completed state (uses lastReviewed as 'completed' flag)
+  const toggleFlashcardCompleted = async (id: string, currentCompleted: boolean) => {
+    if (!userId) return;
+    try {
+      const endpoint = `/api/student_page/flashcard/${id}?userId=${userId}`;
+      const body: any = currentCompleted
+        ? { lastReviewed: null, repetitionCount: 0 }
+        : { lastReviewed: new Date().toISOString() };
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to update flashcard');
+      }
+
+      // Update local state
+      setFlashcards(prev => prev.map(f => f._id === id ? { ...f, lastReviewed: currentCompleted ? undefined : new Date().toISOString(), repetitionCount: currentCompleted ? 0 : (f.repetitionCount || 0) } : f));
+      showSuccess(currentCompleted ? 'Marked as not completed' : 'Marked as completed');
+    } catch (e: unknown) {
+      console.error('Failed to toggle completed state:', e);
+      showError(e instanceof Error ? e.message : 'Failed to update completed state');
+    }
+  };
+
+  // Toggle summary read/unread
+  const toggleSummaryRead = async (id: string, currentRead: boolean) => {
+    if (!userId) return;
+    try {
+      const endpoint = `/api/student_page/summary?userId=${userId}&summaryId=${id}`;
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isRead: !currentRead }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || err.error || 'Failed to update summary');
+      }
+
+      // Update local state
+      setSummaries(prev => prev.map(s => s._id === id ? { ...s, isRead: !currentRead } : s));
+
+      // Broadcast the change so other tabs update
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          bc.postMessage({ type: 'summary.read', summaryId: id });
+          bc.close();
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      showSuccess(!currentRead ? 'Marked as read' : 'Marked as unread');
+    } catch (e: unknown) {
+      console.error('Failed to toggle summary read state:', e);
+      showError(e instanceof Error ? e.message : 'Failed to update read state');
     }
   };
   const searchParams = useSearchParams();
@@ -330,6 +425,7 @@ function PrivateLibraryContent() {
 
         // Debug: Log flashcard data to check subjects
         console.log('📚 Loaded flashcards:', data.flashcards);
+        console.log('📚 Flashcards with lastReviewed:', data.flashcards.filter((fc: any) => fc.lastReviewed));
         data.flashcards.forEach((fc, idx) => {
           console.log(`Flashcard ${idx + 1}: "${fc.title}" - Subject: "${fc.subject || 'MISSING'}"`, fc);
         });
@@ -348,6 +444,7 @@ function PrivateLibraryContent() {
           const summariesData = await summariesRes.json();
           if (isMounted && summariesData.success) {
             console.log('📄 Loaded summaries:', summariesData.summaries);
+            console.log('📄 Summaries with isRead:', summariesData.summaries.filter((s: any) => s.isRead));
             setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
           }
         } else {
@@ -370,6 +467,48 @@ function PrivateLibraryContent() {
           }
         } else {
           console.warn('Failed to load folders');
+        }
+
+        // Fetch activities to detect summary.read and flashcard.study_complete events
+        // (some flows create activities instead of updating the document fields)
+        try {
+          const actsRes = await fetch(`/api/student_page/history?userId=${uid}&limit=200`, {
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-store',
+            credentials: 'include'
+          });
+
+          if (actsRes.ok) {
+            const actsData = await actsRes.json();
+            
+            const readIds = new Set<string>();
+            const completedFlashcardIds = new Set<string>();
+            
+            // Parse activities array (same format as achievements page)
+            if (Array.isArray(actsData.activities)) {
+              actsData.activities.forEach((a: any) => {
+                const activityType = (a.type || a.action || '').toLowerCase();
+                
+                // Check for summary.read activities
+                if (activityType.includes('summary.read') || activityType.includes('summary_read')) {
+                  const mid = a.meta?.summaryId || a.meta?.summaryID || a.meta?.id;
+                  if (mid) readIds.add(mid.toString());
+                }
+                
+                // Check for flashcard.study_complete activities
+                if (activityType.includes('flashcard.study_complete') || activityType.includes('flashcard_study_complete')) {
+                  const fid = a.meta?.flashcardId || a.meta?.flashcardID || a.meta?.id;
+                  if (fid) completedFlashcardIds.add(fid.toString());
+                }
+              });
+            }
+
+            setSummaryReadActivityIds(readIds);
+            setFlashcardCompletedActivityIds(completedFlashcardIds);
+          }
+        } catch (e) {
+          // non-fatal
+          console.warn('Failed to load activities for completion detection', e);
         }
       } catch (e: unknown) {
         if (!isMounted) return;
@@ -402,6 +541,81 @@ function PrivateLibraryContent() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [openMenuId]);
+
+  // Listen for summary read events to refresh the data
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+
+    try {
+      const bc = new BroadcastChannel('notewise.activities');
+      
+      bc.onmessage = (event) => {
+        if (event.data?.type === 'summary.read' && event.data?.summaryId) {
+          // Update the specific summary's isRead status
+          setSummaries(prev => prev.map(s => 
+            s._id === event.data.summaryId ? { ...s, isRead: true } : s
+          ));
+          // Also mark in activity set so UI shows COMPLETED even if summary.isRead isn't present
+          setSummaryReadActivityIds(prev => new Set(prev).add(event.data.summaryId));
+        }
+
+        // Update flashcard data when a session finishes in another tab (or match page)
+        if (event.data?.type === 'flashcard.updated' && event.data?.flashcard) {
+          const fc = event.data.flashcard;
+          setFlashcards(prev => {
+            const found = prev.some(f => String(f._id) === String(fc._id));
+            if (found) {
+              return prev.map(f => String(f._id) === String(fc._id) ? { ...f, lastReviewed: fc.lastReviewed, repetitionCount: fc.repetitionCount } : f);
+            }
+            // if not present, prepend to the list
+            return [fc, ...prev];
+          });
+        }
+
+        // Some flows broadcast only an activity for completion
+        if (event.data?.type === 'flashcard.study_complete' && event.data?.flashcardId) {
+          setFlashcards(prev => prev);
+          setFlashcardCompletedActivityIds(prev => new Set(prev).add(event.data.flashcardId));
+        }
+      };
+
+      return () => {
+        bc.close();
+      };
+    } catch (e) {
+      console.warn('BroadcastChannel not supported or failed to initialize');
+    }
+  }, []);
+
+  // Refresh data when navigating back to the library page
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && userId) {
+        // Refresh summaries to get updated isRead status
+        try {
+          const summariesRes = await fetch(`/api/student_page/summary?userId=${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-store',
+          });
+
+          if (summariesRes.ok) {
+            const summariesData = await summariesRes.json();
+            if (summariesData.success) {
+              setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to refresh summaries:', e);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [userId]);
 
   const handleDelete = async (flashcardId: string) => {
     if (!userId) return;
@@ -1020,11 +1234,10 @@ function PrivateLibraryContent() {
               {activeTab === 'study_notes' && `${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}, ${summaries.length} ${summaries.length === 1 ? 'summary' : 'summaries'}`}
               {activeTab === 'folders' && `${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}`}
               {activeTab === 'favorites' && (() => {
-                const favoriteFolders = folders.filter(f => f.isFavorite);
                 const favoriteFlashcards = flashcards.filter(f => f.isFavorite);
                 const favoriteSummaries = summaries.filter(s => s.isFavorite);
                 const favItemsCount = favoriteFlashcards.length + favoriteSummaries.length;
-                return `${favoriteFolders.length} ${favoriteFolders.length === 1 ? 'folder' : 'folders'}, ${favItemsCount} ${favItemsCount === 1 ? 'item' : 'items'}`;
+                return `${favItemsCount} ${favItemsCount === 1 ? 'item' : 'items'}`;
               })()}
             </span>
           </div>
@@ -1091,12 +1304,27 @@ function PrivateLibraryContent() {
             {!isLoading && !error && (
               <div className="space-y-4">
 
-                {/* Folders - Sort according to favorites + active filter */}
+                {/* Folders - Sort according to favorites (by timestamp) + active filter */}
                 {(() => {
+                  // Use a single comparator that orders favorites by their persisted timestamp
+                  // and falls back to the active `filter` for tie-breaking or non-favorites.
+                  const tsMap = getFavoriteTimestamps('folder');
                   const sorted = [...folders].sort((a, b) => {
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
+                    const aFav = a.isFavorite ? 1 : 0;
+                    const bFav = b.isFavorite ? 1 : 0;
 
+                    // Both favorites -> order by favorite timestamp (most recent first)
+                    if (aFav && bFav) {
+                      const at = tsMap[a._id] ?? ((a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0);
+                      const bt = tsMap[b._id] ?? ((b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0);
+                      if (bt !== at) return bt - at;
+                    }
+
+                    // If one is favorite, it should come first
+                    if (aFav && !bFav) return -1;
+                    if (!aFav && bFav) return 1;
+
+                    // Now either both non-favorites or tied on favorite timestamp -> apply active filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -1306,6 +1534,12 @@ function PrivateLibraryContent() {
                                       >
                                         Move to Folder
                                       </button>
+                                      <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                        onClick={() => { toggleFlashcardCompleted(item._id, isFlashcardCompleted(item)); setOpenMenuId(null); }}
+                                      >
+                                        {isFlashcardCompleted(item) ? 'Mark as not completed' : 'Mark as completed'}
+                                      </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
@@ -1320,6 +1554,14 @@ function PrivateLibraryContent() {
                                     <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
                                     {item.createdAt && isNewItem(item.createdAt, item._id) && (
                                       <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
+                                    {isFlashcardCompleted(item) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
                                     )}
                                   </div>
                                 </div>
@@ -1373,6 +1615,12 @@ function PrivateLibraryContent() {
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
                                       >
                                         {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                      </button>
+                                      <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                        onClick={() => { toggleSummaryRead(summary._id, !!summary.isRead); setOpenMenuId(null); }}
+                                      >
+                                        {summary.isRead ? 'Mark as unread' : 'Mark as read'}
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
@@ -1440,6 +1688,14 @@ function PrivateLibraryContent() {
                                     <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
                                     {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
                                       <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
+                                    {isSummaryCompleted(summary) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
                                     )}
                                   </div>
                                 </div>
@@ -1582,6 +1838,12 @@ function PrivateLibraryContent() {
                                       >
                                         Move to Folder
                                       </button>
+                                      <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                        onClick={() => { toggleFlashcardCompleted(item._id, isFlashcardCompleted(item)); setOpenMenuId(null); }}
+                                      >
+                                        {isFlashcardCompleted(item) ? 'Mark as not completed' : 'Mark as completed'}
+                                      </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl"
@@ -1596,6 +1858,14 @@ function PrivateLibraryContent() {
                                     <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
                                     {item.createdAt && isNewItem(item.createdAt, item._id) && (
                                       <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
+                                    {isFlashcardCompleted(item) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
                                     )}
                                   </div>
                                 </div>
@@ -1649,6 +1919,12 @@ function PrivateLibraryContent() {
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
                                       >
                                         {summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                      </button>
+                                      <button
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
+                                        onClick={() => { toggleSummaryRead(summary._id, !!summary.isRead); setOpenMenuId(null); }}
+                                      >
+                                        {summary.isRead ? 'Mark as unread' : 'Mark as read'}
                                       </button>
                                       <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                       <button
@@ -1714,6 +1990,14 @@ function PrivateLibraryContent() {
                                     {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
                                       <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                     )}
+                                    {isSummaryCompleted(summary) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -1766,10 +2050,9 @@ function PrivateLibraryContent() {
             )}
 
             {!isLoading && (() => {
-              const favoriteFolders = folders.filter(f => f.isFavorite);
               const favoriteFlashcards = flashcards.filter(f => f.isFavorite);
               const favoriteSummaries = summaries.filter(s => s.isFavorite);
-              const totalFavorites = favoriteFolders.length + favoriteFlashcards.length + favoriteSummaries.length;
+              const totalFavorites = favoriteFlashcards.length + favoriteSummaries.length;
 
               if (totalFavorites === 0) {
                 return (
@@ -1789,30 +2072,51 @@ function PrivateLibraryContent() {
               // Folder view
               return (
                   <div className="space-y-4">
-                    {/* Favorite folders */}
+                    {/* Favorited items grouped by folder (for display purposes only - not showing folder itself) */}
                     {(() => {
-                      const sortedFav = [...favoriteFolders].sort((a, b) => {
-                        if (a.isFavorite && !b.isFavorite) return -1;
-                        if (!a.isFavorite && b.isFavorite) return 1;
+                      // Prioritize folders that are explicitly favorited by the user,
+                      // ordering those by the persisted favorite timestamp. Then include
+                      // folders that contain favorited items (but are not favorited themselves),
+                      // ordered by the active `filter`.
+                      const tsMap = getFavoriteTimestamps('folder');
 
+                      const favoritedFolders = folders.filter(folder => folder.isFavorite);
+
+                      const foldersWithFavorites = folders.filter(folder => {
+                        const hasFavFlashcards = flashcards.some(f => f.folder === folder._id && f.isFavorite);
+                        const hasFavSummaries = summaries.some(s => s.folder === folder._id && s.isFavorite);
+                        return (hasFavFlashcards || hasFavSummaries) && !folder.isFavorite;
+                      });
+
+                      // Sort explicit favorited folders by timestamp (most recent first)
+                      const sortedFavorited = [...favoritedFolders].sort((a, b) => {
+                        const at = tsMap[a._id] ?? ((a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0);
+                        const bt = tsMap[b._id] ?? ((b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0);
+                        if (bt !== at) return bt - at;
+                        return 0;
+                      });
+
+                      // Sort folders that merely contain favorited items according to the active filter
+                      const sortedContaining = [...foldersWithFavorites].sort((a, b) => {
                         if (filter === 'recent') {
                           const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                           const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
                           if (bd !== ad) return bd - ad;
                         } else if (filter === 'popular') {
-                          const aCount = (flashcards.filter(f => f.folder === a._id).length)
-                            + (summaries.filter(s => s.folder === a._id).length);
-                          const bCount = (flashcards.filter(f => f.folder === b._id).length)
-                            + (summaries.filter(s => s.folder === b._id).length);
+                          const aCount = (flashcards.filter(f => f.folder === a._id && f.isFavorite).length)
+                            + (summaries.filter(s => s.folder === a._id && s.isFavorite).length);
+                          const bCount = (flashcards.filter(f => f.folder === b._id && f.isFavorite).length)
+                            + (summaries.filter(s => s.folder === b._id && s.isFavorite).length);
                           if (bCount !== aCount) return bCount - aCount;
                         } else if (filter === 'alphabetical') {
                           const cmp = (a.title || '').localeCompare(b.title || '');
                           if (cmp !== 0) return cmp;
                         }
-
                         return 0;
                       });
-                      return sortedFav;
+
+                      // Combine: explicit favorites first, then folders that contain favorite items
+                      return [...sortedFavorited, ...sortedContaining];
                     })().map((folder) => {
                       // Get and sort favorites in this folder
                       let folderFlashcards = flashcards.filter(f => f.folder === folder._id && f.isFavorite);
@@ -2005,6 +2309,14 @@ function PrivateLibraryContent() {
                                         {item.createdAt && isNewItem(item.createdAt, item._id) && (
                                           <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                         )}
+                                    {isFlashcardCompleted(item) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
@@ -2054,6 +2366,14 @@ function PrivateLibraryContent() {
                                         {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
                                           <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                         )}
+                                    {isSummaryCompleted(summary) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
@@ -2165,6 +2485,14 @@ function PrivateLibraryContent() {
                                       {item.createdAt && isNewItem(item.createdAt, item._id) && (
                                         <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                       )}
+                                    {isFlashcardCompleted(item) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                     </div>
                                   </div>
                                   <div className="mb-2 sm:mb-3">
@@ -2224,6 +2552,14 @@ function PrivateLibraryContent() {
                                       {item.createdAt && isNewItem(item.createdAt, item._id) && (
                                         <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                       )}
+                                    {isSummaryCompleted(item) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                     </div>
                                   </div>
                                   <div className="mb-2 sm:mb-3">
@@ -2273,11 +2609,23 @@ function PrivateLibraryContent() {
             {/* Folder View for Study Notes */}
             {!isLoading && summaries.length > 0 && (
               <div className="space-y-4">
-                {/* Folders - Sort according to favorites + active filter */}
+                {/* Folders - Sort according to favorites (by timestamp) + active filter */}
                 {(() => {
+                  // Use a single comparator that orders favorites by their persisted timestamp
+                  // and falls back to the active `filter` for tie-breaking or non-favorites.
+                  const tsMap = getFavoriteTimestamps('folder');
                   const sorted = [...folders].sort((a, b) => {
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
+                    const aFav = a.isFavorite ? 1 : 0;
+                    const bFav = b.isFavorite ? 1 : 0;
+
+                    if (aFav && bFav) {
+                      const at = tsMap[a._id] ?? ((a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0);
+                      const bt = tsMap[b._id] ?? ((b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0);
+                      if (bt !== at) return bt - at;
+                    }
+
+                    if (aFav && !bFav) return -1;
+                    if (!aFav && bFav) return 1;
 
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
@@ -2516,6 +2864,14 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                    {isSummaryCompleted(summary) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -2698,6 +3054,14 @@ function PrivateLibraryContent() {
                                     {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
                                       <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                     )}
+                                    {isSummaryCompleted(summary) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -2762,11 +3126,24 @@ function PrivateLibraryContent() {
             {!isLoading && !error && folders.length > 0 && (
               <div className="space-y-4">
                 {
-                  // Sort folders according to favorites first, then the active `filter` (recent / popular / alphabetical)
+                  // Sort folders according to favorites (by timestamp) first, then the active `filter` (recent / popular / alphabetical)
                   (() => {
+                    // Use a single comparator that orders favorites by their persisted timestamp
+                    // and falls back to the active `filter` for tie-breaking or non-favorites.
+                    const tsMap = getFavoriteTimestamps('folder');
                     const sortedFolders = [...folders].sort((a, b) => {
-                      // Favorites always come first
-                      // Apply selected filter first
+                      const aFav = a.isFavorite ? 1 : 0;
+                      const bFav = b.isFavorite ? 1 : 0;
+
+                      if (aFav && bFav) {
+                        const at = tsMap[a._id] ?? ((a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0);
+                        const bt = tsMap[b._id] ?? ((b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0);
+                        if (bt !== at) return bt - at;
+                      }
+
+                      if (aFav && !bFav) return -1;
+                      if (!aFav && bFav) return 1;
+
                       if (filter === 'recent') {
                         const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                         const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -2781,10 +3158,6 @@ function PrivateLibraryContent() {
                         const cmp = (a.title || '').localeCompare(b.title || '');
                         if (cmp !== 0) return cmp;
                       }
-
-                      // Default: favorites first
-                      if (a.isFavorite && !b.isFavorite) return -1;
-                      if (!a.isFavorite && b.isFavorite) return 1;
 
                       // Fallback: preserve original order
                       return 0;
@@ -2973,6 +3346,14 @@ function PrivateLibraryContent() {
                                           {fc.createdAt && isNewItem(fc.createdAt, fc._id) && (
                                             <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
                                           )}
+                                    {isFlashcardCompleted(fc) && (
+                                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        COMPLETED
+                                      </span>
+                                    )}
                                         </div>
                                       </div>
                                       <div className="mb-2 sm:mb-3">
@@ -3023,6 +3404,14 @@ function PrivateLibraryContent() {
                                         <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {sm.wordCount} words</span>
                                         {sm.createdAt && isNewItem(sm.createdAt, sm._id) && (
                                           <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                        )}
+                                        {sm.isRead && (
+                                          <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                            READ
+                                          </span>
                                         )}
                                       </div>
                                     </div>

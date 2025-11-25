@@ -180,7 +180,9 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             publicRole,
             sharedUsers,
             shareableLink,
-            isFavorite
+            isFavorite,
+            lastReviewed,
+            repetitionCount
         } = body;
 
         const { searchParams } = new URL(request.url);
@@ -273,6 +275,17 @@ export const PATCH = async (request: NextRequest, context: {params: any}) => {
             shareableLink: shareableLink || undefined,
             isFavorite
         };
+
+        // Allow updating repetitionCount when provided
+        if (typeof repetitionCount !== 'undefined') {
+            updateData.repetitionCount = repetitionCount;
+        }
+
+        // Allow direct setting/clearing of lastReviewed when provided by client
+        if (Object.prototype.hasOwnProperty.call(body, 'lastReviewed')) {
+            // Accept null to clear lastReviewed, otherwise set provided value (let Mongoose cast)
+            updateData.lastReviewed = lastReviewed === null ? null : lastReviewed;
+        }
 
         // Handle folder field explicitly - if null, remove it; if valid ID, set it
         if (folder === null) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongoose';
+import { Summary } from '@/models/summary';
 import Activity from '@/models/activity';
-import { logger } from '@/lib/winston';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,44 +10,67 @@ export async function POST(request: NextRequest) {
     await connectToDatabase();
 
     const body = await request.json();
-    const { userId, summaryId, title } = body || {};
+    const { userId, summaryId, title } = body;
 
     if (!userId || !summaryId) {
-      return NextResponse.json({ success: false, error: 'Missing userId or summaryId' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'userId and summaryId are required' },
+        { status: 400 }
+      );
     }
 
-    // Check for an existing completion for this summary (idempotent)
-    const existing = await Activity.findOne({ 
-      user: userId, 
-      type: 'summary.read', 
-      'meta.summaryId': summaryId 
-    }).lean();
-    
-    if (existing) {
-      logger.info('Summary already marked read', { userId, summaryId });
-      return NextResponse.json({ success: true, message: 'Already marked as read', already: true });
+    // Update the summary to mark it as read
+    const summary = await Summary.findByIdAndUpdate(
+      summaryId,
+      { isRead: true },
+      { new: true }
+    );
+
+    if (!summary) {
+      return NextResponse.json(
+        { success: false, error: 'Summary not found' },
+        { status: 404 }
+      );
     }
 
-    // Create activity entry
+    // Check if activity already exists
+    const existingActivity = await Activity.findOne({
+      user: userId,
+      type: 'summary.read',
+      'meta.summaryId': summaryId
+    });
+
+    if (existingActivity) {
+      return NextResponse.json({
+        success: true,
+        already: true,
+        message: 'Summary was already marked as read'
+      });
+    }
+
+    // Log activity
     await Activity.create({
       user: userId,
       type: 'summary.read',
-      action: `Read "${title || 'summary'}"`,
+      action: 'Read summary',
       meta: {
-        summaryId: summaryId,
-        summaryTitle: title || null,
-        title: title || null
+        summaryId,
+        summaryTitle: title || summary.title
       },
       progress: 100
     });
 
-    logger.info('Summary marked as read', { userId, summaryId, title });
+    return NextResponse.json({
+      success: true,
+      already: false,
+      message: 'Summary marked as read'
+    });
 
-    // Respond success
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to mark summary read', err);
-    return NextResponse.json({ success: false, error: 'Failed to mark summary read' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Mark read error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Failed to mark summary as read' },
+      { status: 500 }
+    );
   }
 }

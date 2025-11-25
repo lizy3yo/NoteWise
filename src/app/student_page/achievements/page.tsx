@@ -401,12 +401,12 @@ export default function AchievementsPage() {
                             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">{flashcards.length}</div>
-                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Flashcards</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{flashcards.length <= 1 ? 'Flashcard' : 'Flashcards'}</div>
                                 </div>
 
                                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-1">{summaries.length}</div>
-                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Summaries</div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{summaries.length <= 1 ? 'Summary' : 'Summaries'}</div>
                                 </div>
 
                                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -416,7 +416,7 @@ export default function AchievementsPage() {
 
                                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{studyStreak}d</div>
-                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Study streak</div>
+                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Study {studyStreak <= 1 ? 'streak' : 'streaks'}</div>
                                 </div>
                             </div>
                         </div>

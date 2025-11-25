@@ -599,7 +599,7 @@ export default function UserDashboard() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">Flashcard {stats.totalFlashcards === 1 ? 'Set' : 'Sets'}</p>
+                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">Flashcard {stats.totalFlashcards <= 1 ? 'Set' : 'Sets'}</p>
                     <p className="text-lg [@media(min-width:375px)]:text-2xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {stats.totalFlashcards}
                     </p>
@@ -616,7 +616,7 @@ export default function UserDashboard() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{stats.totalSummaries === 1 ? 'Summary' : 'Summaries'}</p>
+                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{stats.totalSummaries <= 1 ? 'Summary' : 'Summaries'}</p>
                     <p className="text-lg [@media(min-width:375px)]:text-2xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {stats.totalSummaries}
                     </p>
@@ -633,7 +633,7 @@ export default function UserDashboard() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{achievements.filter(a => a.earned).length === 1 ? 'Achievement' : 'Achievements'}</p>
+                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{achievements.filter(a => a.earned).length <= 1 ? 'Achievement' : 'Achievements'}</p>
                     <p className="text-lg [@media(min-width:375px)]:text-2xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {achievements.filter(a => a.earned).length}
                     </p>
@@ -650,7 +650,7 @@ export default function UserDashboard() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{favorites.length === 1 ? 'Favorite' : 'Favorites'}</p>
+                    <p className="text-[9px] [@media(min-width:375px)]:text-xs sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{favorites.length <= 1 ? 'Favorite' : 'Favorites'}</p>
                     <p className="text-lg [@media(min-width:375px)]:text-2xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {favorites.length}
                     </p>
