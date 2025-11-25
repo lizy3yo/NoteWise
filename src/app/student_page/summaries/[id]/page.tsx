@@ -430,7 +430,11 @@ export default function SummaryViewPage() {
                                                         }
 
                                                         setHasRead(true);
-                                                        showSuccess('Marked summary as read');
+                                                        if (data.already) {
+                                                            showSuccess('This summary was already marked as read');
+                                                        } else {
+                                                            showSuccess('Marked summary as read');
+                                                        }
                                                         try {
                                                             if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
                                                                 const BC = (window as any).BroadcastChannel;
@@ -454,10 +458,19 @@ export default function SummaryViewPage() {
                                             });
                                             setShowConfirmModal(true);
                                         }}
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                        className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center justify-between ${
+                                            hasRead 
+                                                ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 cursor-default' 
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                        }`}
                                         disabled={hasRead}
                                     >
-                                        {hasRead ? 'Marked as Read ✓' : 'Mark as Read'}
+                                        <span>{hasRead ? 'Marked as Read' : 'Mark as Read'}</span>
+                                        {hasRead && (
+                                            <svg className="w-5 h-5 text-teal-600 dark:text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                        )}
                                     </button>
                                     <button
                                         onClick={() => {
@@ -483,8 +496,18 @@ export default function SummaryViewPage() {
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        <span>Created: {new Date(summary.createdAt).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                            Created: {new Date(summary.createdAt).toLocaleDateString()}
+                        </span>
+                        {hasRead && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full text-xs font-medium">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                Completed
+                            </span>
+                        )}
                     </div>
 
                     {/* Action Buttons - Hidden, keeping for backward compatibility */}

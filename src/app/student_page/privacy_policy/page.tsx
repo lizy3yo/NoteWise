@@ -1,14 +1,14 @@
-// Privacy Policy Page – Generated to reflect actual data flows in GC-Quest
-// Assumptions (can be adjusted): Contact email placeholder, no third‑party advertising, no selling of data.
+// Privacy Policy Page – Tailored for NoteWise
+// Reflects actual data flows and features in NoteWise platform
 
 // styles are now included via student.css imported in the layout
 
 export const metadata = {
-  title: 'Privacy Policy | GC-Quest'
+  title: 'Privacy Policy | NoteWise'
 };
 
 export default function PrivacyPolicyPage() {
-  const effectiveDate = 'September 11, 2025';
+  const effectiveDate = 'November 25, 2024';
   return (
     <div className="privacy-policy-container">
       <main className="privacy-content">
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
 
         <section id="overview" className="privacy-section">
           <h2 className="section-title">1. Overview</h2>
-          <p className="privacy-paragraph">GC-Quest is an educational platform that lets users create, manage, and study flashcards and related learning content. This Privacy Policy explains:</p>
+          <p className="privacy-paragraph">NoteWise is an AI-powered educational platform that helps students create, manage, and study learning materials including flashcards and AI-generated summaries. This Privacy Policy explains:</p>
           <ul className="privacy-list">
             <li>What information we collect from you</li>
             <li>How we use your personal data</li>
@@ -52,19 +52,21 @@ export default function PrivacyPolicyPage() {
           <h2 className="section-title">2. Data We Collect</h2>
           <h3 className="subsection-title">2.1 Account Information</h3>
           <ul className="privacy-list">
-            <li>Username (system-generated if not provided)</li>
             <li>First & Last Name</li>
             <li>Email Address</li>
-            <li>Role (student, teacher, admin – restricted)</li>
-            <li>Hashed Password (we never store plain text)</li>
-            <li>Optional social links (website, Facebook, Instagram)</li>
+            <li>Profile Picture (uploaded to Cloudinary, a third-party image hosting service)</li>
+            <li>Hashed Password (we never store plain text passwords)</li>
           </ul>
           <h3 className="subsection-title">2.2 Learning Content & Activity</h3>
           <ul className="privacy-list">
-            <li>Flashcards (questions, answers, optional images, tags)</li>
-            <li>Folders (titles, descriptions, access settings)</li>
-            <li>Sharing settings (access type, shared users, permissions)</li>
-            <li>Study performance metrics (review counts, correct/incorrect statistics, scheduling fields: lastReviewed, nextReview)</li>
+            <li><strong>Flashcards:</strong> Questions, answers, optional images, tags, and study statistics</li>
+            <li><strong>AI-Generated Summaries:</strong> Summaries created from your uploaded documents (PDF, Word, text files)</li>
+            <li><strong>Folders:</strong> Titles, descriptions, and organization settings</li>
+            <li><strong>Uploaded Files:</strong> Documents you upload for AI summarization (processed and not permanently stored)</li>
+            <li><strong>Study Performance:</strong> Progress tracking, review counts, correct/incorrect statistics, study streaks</li>
+            <li><strong>Achievements:</strong> Earned badges and milestones based on your study activity</li>
+            <li><strong>Favorites:</strong> Items you mark as favorites for quick access</li>
+            <li><strong>Sharing Settings:</strong> Access permissions for shared content (public, link-based, or private)</li>
           </ul>
           <h3 className="subsection-title">2.3 Authentication & Session</h3>
           <ul className="privacy-list">
@@ -72,22 +74,34 @@ export default function PrivacyPolicyPage() {
             <li>Refresh tokens (stored securely in the database; httpOnly cookie in browser)</li>
             <li>System logs for login, registration, token lifecycle (non-sensitive metadata)</li>
           </ul>
-          <h3 className="subsection-title">2.4 Automatically Collected (Minimal)</h3>
-          <p className="privacy-paragraph">Currently, GC-Quest does not intentionally collect analytics beyond what is necessary for core functionality. Standard server logs (e.g., error traces) may include IP addresses for diagnostic and security purposes.</p>
-          <h3 className="subsection-title">2.5 Optional / Future Data</h3>
-          <p className="privacy-paragraph">Additional metrics (like advanced analytics) may be added later; updates will be reflected in this policy before activation.</p>
+          <h3 className="subsection-title">2.4 AI Chatbot Interactions</h3>
+          <ul className="privacy-list">
+            <li><strong>Chat Messages:</strong> Your conversations with the NoteWise AI assistant</li>
+            <li><strong>Chat Sessions:</strong> Saved chat histories (if you choose to save them)</li>
+            <li><strong>File Uploads:</strong> Documents uploaded to the chatbot for analysis or summarization</li>
+            <li><strong>AI Processing:</strong> Your content is processed by OpenAI&apos;s API to generate responses and summaries</li>
+          </ul>
+          <h3 className="subsection-title">2.5 Notifications & Preferences</h3>
+          <ul className="privacy-list">
+            <li>Notification preferences (study reminders, progress updates)</li>
+            <li>Activity history and study session logs</li>
+          </ul>
+          <h3 className="subsection-title">2.6 Automatically Collected Data</h3>
+          <p className="privacy-paragraph">Standard server logs may include IP addresses, browser type, and access times for diagnostic and security purposes. We do not use third-party analytics or tracking cookies for advertising.</p>
         </section>
 
         <section id="how-we-use" className="privacy-section">
           <h2 className="section-title">3. How We Use Your Data</h2>
           <p className="privacy-paragraph">We use your information for the following purposes:</p>
           <ul className="privacy-list">
-            <li><strong>Account Management:</strong> Account creation, authentication, and access control</li>
-            <li><strong>Content Delivery:</strong> Rendering and organizing study materials (flashcards, folders)</li>
-            <li><strong>Learning Enhancement:</strong> Spaced repetition scheduling & progress analytics</li>
-            <li><strong>Security:</strong> Secure session management via access/refresh tokens</li>
-            <li><strong>Platform Improvement:</strong> Improving stability and security (logs, error handling)</li>
-            <li><strong>Access Control:</strong> Enforcing role-based permissions (student / teacher / admin)</li>
+            <li><strong>Account Management:</strong> Account creation, authentication, and profile management</li>
+            <li><strong>Content Delivery:</strong> Creating, organizing, and displaying your study materials (flashcards and summaries)</li>
+            <li><strong>AI Features:</strong> Processing your uploaded documents and chat messages through OpenAI&apos;s API to generate summaries, flashcards, and chatbot responses</li>
+            <li><strong>Learning Enhancement:</strong> Spaced repetition scheduling, progress tracking, achievement tracking, and study streak monitoring</li>
+            <li><strong>Notifications:</strong> Sending study reminders and progress updates based on your preferences</li>
+            <li><strong>Image Hosting:</strong> Storing profile pictures and flashcard images via Cloudinary</li>
+            <li><strong>Security:</strong> Secure session management via JWT access and refresh tokens</li>
+            <li><strong>Platform Improvement:</strong> Analyzing usage patterns to improve features and user experience</li>
           </ul>
         </section>
 
@@ -114,30 +128,42 @@ export default function PrivacyPolicyPage() {
 
         <section id="sharing" className="privacy-section">
           <h2 className="section-title">6. Data Sharing & Disclosure</h2>
-          <p className="privacy-paragraph">We do not sell your personal data. Data may be disclosed only in these specific circumstances:</p>
+          <p className="privacy-paragraph">We do not sell your personal data. Data may be shared only in these specific circumstances:</p>
           <ul className="privacy-list">
-            <li><strong>Legal Requirements:</strong> When required by law or valid legal process</li>
-            <li><strong>Platform Security:</strong> When necessary to protect platform integrity or user safety</li>
-            <li><strong>User-Initiated Sharing:</strong> When you explicitly share flashcards or folders using our sharing features:
+            <li><strong>Third-Party Service Providers:</strong>
               <ul className="privacy-list" style={{marginTop: '0.5rem', marginLeft: '1rem'}}>
-                <li>Public access mode</li>
-                <li>Link-based sharing</li>
-                <li>Restricted user sharing</li>
+                <li><strong>OpenAI:</strong> Your uploaded documents, chat messages, and content are processed through OpenAI&apos;s API to generate summaries, flashcards, and AI responses. OpenAI&apos;s data usage is governed by their privacy policy.</li>
+                <li><strong>Cloudinary:</strong> Profile pictures and flashcard images are stored on Cloudinary&apos;s servers. Cloudinary&apos;s data handling is governed by their privacy policy.</li>
+              </ul>
+            </li>
+            <li><strong>Legal Requirements:</strong> When required by law, court order, or valid legal process</li>
+            <li><strong>Platform Security:</strong> When necessary to protect platform integrity, prevent fraud, or ensure user safety</li>
+            <li><strong>User-Initiated Sharing:</strong> When you explicitly share flashcards, summaries, or folders using our sharing features:
+              <ul className="privacy-list" style={{marginTop: '0.5rem', marginLeft: '1rem'}}>
+                <li>Public access mode (visible to anyone with the link)</li>
+                <li>Link-based sharing (accessible to anyone with the specific link)</li>
+                <li>Private sharing (only you can access)</li>
               </ul>
             </li>
           </ul>
-          <p className="privacy-paragraph"><strong>Important:</strong> Public or link-based sharing exposes only the content you choose to publish (e.g., flashcard title/cards), not your password or private profile fields.</p>
+          <p className="privacy-paragraph"><strong>Important:</strong> When you share content publicly or via link, only the study materials you choose to share are exposed (e.g., flashcard questions/answers, summary content), not your password, email, or other private profile information.</p>
+          <p className="privacy-paragraph"><strong>AI Processing Notice:</strong> Content you upload or send to our AI features is transmitted to OpenAI for processing. We recommend not uploading sensitive personal information to AI features.</p>
         </section>
 
         <section id="retention" className="privacy-section">
           <h2 className="section-title">7. Data Retention</h2>
           <p className="privacy-paragraph">We retain your data according to these policies:</p>
           <ul className="privacy-list">
-            <li><strong>Active Accounts:</strong> Account & content persist while your account remains active</li>
-            <li><strong>Session Tokens:</strong> Refresh tokens are retained until expiration or manual revocation (logout, security reset)</li>
-            <li><strong>System Logs:</strong> Retained for a limited operational window (security/debugging) then automatically purged</li>
-            <li><strong>Account Deletion:</strong> Upon account deletion, associated study content is scheduled for removal unless required for legal compliance</li>
-            <li><strong>Inactive Accounts:</strong> Accounts inactive for extended periods may be subject to data archival or deletion</li>
+            <li><strong>Active Accounts:</strong> Your account, profile, and study content persist while your account remains active</li>
+            <li><strong>Study Materials:</strong> Flashcards, summaries, and folders are retained indefinitely while your account is active</li>
+            <li><strong>Chat History:</strong> Saved chat sessions are retained until you delete them or close your account</li>
+            <li><strong>Uploaded Files:</strong> Documents uploaded for AI processing are temporarily stored during processing and then deleted. We do not permanently store your uploaded files.</li>
+            <li><strong>Session Tokens:</strong> JWT refresh tokens are retained until expiration or manual revocation (logout, password change)</li>
+            <li><strong>Activity History:</strong> Study history and achievement data are retained for progress tracking purposes</li>
+            <li><strong>Images:</strong> Profile pictures and flashcard images stored on Cloudinary remain until you delete them or close your account</li>
+            <li><strong>System Logs:</strong> Server logs are retained for a limited period (typically 30-90 days) for security and debugging purposes</li>
+            <li><strong>Account Deletion:</strong> Upon account deletion, your personal data and study content are permanently removed within 30 days, except where retention is required by law</li>
+            <li><strong>Inactive Accounts:</strong> Accounts inactive for more than 2 years may be subject to data archival or deletion with prior notice</li>
           </ul>
         </section>
 
@@ -160,13 +186,15 @@ export default function PrivacyPolicyPage() {
           <h2 className="section-title">9. Your Rights & Choices</h2>
           <p className="privacy-paragraph">You have the following rights regarding your personal data (subject to region-specific laws):</p>
           <ul className="privacy-list">
-            <li><strong>Access & Update:</strong> Access or update your profile details (name, social links) through your account settings</li>
-            <li><strong>Data Deletion:</strong> Request deletion of your account and associated private content</li>
-            <li><strong>Data Export:</strong> Export or copy your flashcards manually (automated export may be added in the future)</li>
-            <li><strong>Privacy Control:</strong> Restrict sharing by keeping content private or using selective sharing options</li>
-            <li><strong>Session Management:</strong> Revoke active sessions by logging out (invalidates refresh tokens)</li>
-            <li><strong>Communication Preferences:</strong> Control how we communicate with you about platform updates</li>
-            <li><strong>Data Portability:</strong> Request your data in a structured, commonly used format</li>
+            <li><strong>Access & Update:</strong> Access and update your profile information (name, email, profile picture) through your Profile page</li>
+            <li><strong>Data Deletion:</strong> Delete your account and all associated data through your account settings or by contacting us</li>
+            <li><strong>Content Management:</strong> Create, edit, or delete your flashcards, summaries, and folders at any time</li>
+            <li><strong>Chat History:</strong> Delete individual chat sessions or clear all chat history through the chatbot interface</li>
+            <li><strong>Privacy Control:</strong> Control who can access your content by setting items to private, public, or link-based sharing</li>
+            <li><strong>Notification Preferences:</strong> Manage your notification settings for study reminders and progress updates</li>
+            <li><strong>Session Management:</strong> Log out to revoke active sessions and invalidate refresh tokens</li>
+            <li><strong>Image Management:</strong> Update or remove your profile picture and flashcard images at any time</li>
+            <li><strong>Data Export:</strong> Request a copy of your data in a portable format by contacting us</li>
           </ul>
           <p className="privacy-paragraph">To exercise any of these rights, please contact us using the information in the Contact section.</p>
         </section>
@@ -193,12 +221,12 @@ export default function PrivacyPolicyPage() {
           <h2 className="section-title">12. Contact</h2>
           <p className="privacy-paragraph">For privacy-related questions, requests, or concerns, you can reach us through:</p>
           <ul className="privacy-list">
-            <li><strong>Email:</strong> <a className="privacy-link" href="mailto:privacy@gc-quest.example">privacy@gc-quest.example</a> (Replace with your official support email)</li>
-            <li><strong>Subject Line:</strong> Please include &quot;Privacy Policy&quot; in your email subject for faster processing</li>
-            <li><strong>Response Time:</strong> We aim to respond to privacy inquiries within 3-5 business days</li>
-            <li><strong>Required Information:</strong> Please include your username or email associated with your account for verification</li>
+            <li><strong>Email:</strong> <a className="privacy-link" href="mailto:not3wis3@gmail.com">not3wis3@gmail.com</a></li>
+            <li><strong>Subject Line:</strong> Please include &quot;Privacy Request&quot; or &quot;Privacy Policy&quot; in your email subject for faster processing</li>
+            <li><strong>Response Time:</strong> We aim to respond to privacy inquiries within 5-7 business days</li>
+            <li><strong>Required Information:</strong> Please include your email address associated with your NoteWise account for verification purposes</li>
           </ul>
-          <p className="privacy-paragraph">For general support inquiries unrelated to privacy, please use our standard support channels.</p>
+          <p className="privacy-paragraph">For general support inquiries unrelated to privacy, please use the Help & Support section in your account.</p>
         </section>
 
         <footer className="privacy-footer">

@@ -19,19 +19,12 @@ interface PasswordData {
   confirmPassword: string;
 }
 
-interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-  notifications: boolean;
-  studyReminders: boolean;
-  summaryLength: 'short' | 'medium' | 'long';
-}
-
 export default function ProfilePage() {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'preferences'>('profile');
+
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -56,12 +49,7 @@ export default function ProfilePage() {
     confirmPassword: ''
   });
 
-  const [preferences, setPreferences] = useState<UserPreferences>({
-    theme: 'system',
-    notifications: true,
-    studyReminders: true,
-    summaryLength: 'medium'
-  });
+
 
   // Load user data on component mount
   useEffect(() => {
@@ -93,19 +81,7 @@ export default function ProfilePage() {
           setOriginalEmail(user.email || '');
         }
 
-        // Load preferences from localStorage
-        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' || 'system';
-        const savedPrefs = localStorage.getItem('userPreferences');
 
-        if (savedPrefs) {
-          const parsedPrefs = JSON.parse(savedPrefs);
-          setPreferences({
-            theme: savedTheme,
-            ...parsedPrefs
-          });
-        } else {
-          setPreferences(prev => ({ ...prev, theme: savedTheme }));
-        }
       } catch (error) {
         console.error('Error loading user data:', error);
         showError('Failed to load profile data', 'Loading Error');
@@ -392,50 +368,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handlePreferencesSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    hideAlert();
 
-    try {
-      // Save theme to localStorage and apply immediately
-      localStorage.setItem('theme', preferences.theme);
-
-      // Apply theme
-      if (preferences.theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else if (preferences.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        // System theme
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (systemDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-
-      // Save other preferences to localStorage
-      const prefsToSave = { ...preferences };
-      delete (prefsToSave as any).theme; // Don't save theme in preferences object
-      localStorage.setItem('userPreferences', JSON.stringify(prefsToSave));
-
-      showSuccess('Preferences saved successfully!', 'Preferences Updated');
-    } catch (error) {
-      console.error('Error saving preferences:', error);
-      showError('Failed to save preferences', 'Save Failed');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleToggle = (key: keyof UserPreferences) => {
-    setPreferences(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
 
   if (isLoading) {
     return (
@@ -454,41 +387,14 @@ export default function ProfilePage() {
             My Profile
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your profile information and preferences.
+            Manage your profile information.
           </p>
         </div>
 
         {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
 
-        {/* Tab Navigation */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'profile'
-                  ? 'border-teal-500 text-teal-600 dark:text-teal-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-              >
-                Profile Information
-              </button>
-              <button
-                onClick={() => setActiveTab('preferences')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'preferences'
-                  ? 'border-teal-500 text-teal-600 dark:text-teal-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-              >
-                Preferences
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        {/* Profile Information Tab */}
-        {activeTab === 'profile' && (
-          <div className="space-y-6">
+        {/* Profile Information */}
+        <div className="space-y-6">
             {/* Profile Information Form */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <form onSubmit={handleProfileSubmit} className="space-y-6">
@@ -767,127 +673,6 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-        )}
-
-        {/* Preferences Tab */}
-        {activeTab === 'preferences' && (
-          <div className="space-y-6">
-            <form onSubmit={handlePreferencesSubmit}>
-              {/* Theme Settings */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Appearance
-                </h2>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Theme
-                    </label>
-                    <select
-                      value={preferences.theme}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        theme: e.target.value as 'light' | 'dark' | 'system'
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="system">System</option>
-                      <option value="light">Light</option>
-                      <option value="dark">Dark</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Summary Length
-                    </label>
-                    <select
-                      value={preferences.summaryLength}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        summaryLength: e.target.value as 'short' | 'medium' | 'long'
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="short">Short</option>
-                      <option value="medium">Medium</option>
-                      <option value="long">Long</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notification Settings */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mt-8">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Notifications
-                </h2>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Notifications
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Receive notifications about your study progress
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleToggle('notifications')}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${preferences.notifications ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${preferences.notifications ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Study Reminders
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Get reminded to study your flashcards
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleToggle('studyReminders')}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${preferences.studyReminders ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${preferences.studyReminders ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                      />
-                    </button>
-                  </div>
-
-
-                </div>
-              </div>
-
-
-
-              {/* Submit Button */}
-              <div className="flex justify-end mt-8">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSaving ? 'Saving...' : 'Save Preferences'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
 
         {/* Email Change Confirmation Modal */}
         {showEmailChangeConfirm && (

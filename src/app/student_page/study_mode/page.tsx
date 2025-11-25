@@ -496,7 +496,7 @@ function StudyModeContent() {
           <div className="flex gap-3">
             <button
               onClick={() => setCreateType('summary')}
-              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'summary' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white/0 dark:bg-transparent'} transition-colors`}
+              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'summary' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700'} transition-colors`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-5 h-5 text-teal-600">
@@ -510,7 +510,7 @@ function StudyModeContent() {
             </button>
             <button
               onClick={() => setCreateType('flashcards')}
-              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'flashcards' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white/0 dark:bg-transparent'} transition-colors`}
+              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'flashcards' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700'} transition-colors`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-5 h-5 text-orange-600">

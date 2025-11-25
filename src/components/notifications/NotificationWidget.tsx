@@ -18,6 +18,7 @@ interface NotificationWidgetProps {
 export default function NotificationWidget({ userId }: NotificationWidgetProps) {
   const [latestNotification, setLatestNotification] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -144,8 +145,30 @@ export default function NotificationWidget({ userId }: NotificationWidgetProps) 
     };
   }, [userId]);
 
-  if (loading || !latestNotification) {
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    // Store dismissed notification ID in localStorage
+    if (latestNotification) {
+      try {
+        localStorage.setItem('dismissed_notification', latestNotification._id);
+      } catch (e) {
+        console.error('Failed to save dismissed notification:', e);
+      }
+    }
+  };
+
+  if (loading || !latestNotification || isDismissed) {
     return null;
+  }
+
+  // Check if this notification was already dismissed
+  try {
+    const dismissedId = localStorage.getItem('dismissed_notification');
+    if (dismissedId === latestNotification._id) {
+      return null;
+    }
+  } catch (e) {
+    console.error('Failed to check dismissed notification:', e);
   }
 
   const title = latestNotification.meta?.title || latestNotification.action || 'New Notification';
@@ -158,7 +181,18 @@ export default function NotificationWidget({ userId }: NotificationWidgetProps) 
 
   return (
     <div className="flex-shrink-0 px-6 pb-4">
-      <div className="notification-card bg-transparent rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
+      <div className="notification-card bg-transparent rounded-2xl p-4 border border-slate-200 dark:border-slate-800 relative">
+        {/* Close button */}
+        <button
+          onClick={handleDismiss}
+          className="absolute top-2 right-2 w-6 h-6 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+          aria-label="Dismiss notification"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         <div className="flex items-start gap-3">
           <div className="flex-1">
             {isNew && (
@@ -174,6 +208,7 @@ export default function NotificationWidget({ userId }: NotificationWidgetProps) 
             </p>
             <Link
               href={actionLink}
+              onClick={handleDismiss}
               className="notification-action block w-full bg-transparent border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-600 focus:ring-offset-2 focus:ring-offset-transparent text-center no-underline"
             >
               {actionText}

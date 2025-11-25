@@ -17,7 +17,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for an existing completion for this summary (idempotent)
-    const existing = await Activity.findOne({ user: userId, type: 'summary.read', 'meta.summaryId': String(summaryId) }).lean();
+    const existing = await Activity.findOne({ 
+      user: userId, 
+      type: 'summary.read', 
+      'meta.summaryId': summaryId 
+    }).lean();
+    
     if (existing) {
       logger.info('Summary already marked read', { userId, summaryId });
       return NextResponse.json({ success: true, message: 'Already marked as read', already: true });
@@ -27,9 +32,10 @@ export async function POST(request: NextRequest) {
     await Activity.create({
       user: userId,
       type: 'summary.read',
-      action: 'completed',
+      action: `Read "${title || 'summary'}"`,
       meta: {
-        summaryId: String(summaryId),
+        summaryId: summaryId,
+        summaryTitle: title || null,
         title: title || null
       },
       progress: 100

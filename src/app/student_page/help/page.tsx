@@ -25,7 +25,43 @@ export default function HelpPage() {
                                     How do I create flashcards?
                                 </h3>
                                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                                    You can create flashcards by going to the Flashcards section and choosing either "Create by Hand" for manual creation or "Upload File" to import from existing documents.
+                                    Go to the Library page and click "+ Create Set" to create flashcards manually. You can add questions, answers, and optional images to each card.
+                                </p>
+                            </div>
+
+                            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    How do I generate AI summaries?
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    Click on "Generate" in the sidebar or go to Study Mode. Upload your document (PDF, Word, or text file) and our AI will generate a comprehensive summary with key concepts highlighted.
+                                </p>
+                            </div>
+
+                            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    How do I use the AI chatbot?
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    Click the chat icon in the bottom-right corner of any page. You can ask questions, upload documents for analysis, or get study help. Your chat sessions can be saved for later reference.
+                                </p>
+                            </div>
+
+                            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    How do I organize my study materials?
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    Use folders to organize your flashcards and summaries. In the Library, you can create folders, move items between folders, and mark important items as favorites for quick access.
+                                </p>
+                            </div>
+
+                            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    How does spaced repetition work?
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    When you study flashcards, our algorithm tracks your performance and schedules reviews at optimal intervals to maximize retention. Cards you struggle with appear more frequently.
                                 </p>
                             </div>
 
@@ -34,16 +70,25 @@ export default function HelpPage() {
                                     How do I change the theme?
                                 </h3>
                                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                                    You can change between light, dark, and system themes in your Profile settings under the Preferences tab, or in the Settings page.
+                                    Click on your profile picture in the top-right corner and toggle the "Dark mode" switch to change between light and dark themes.
+                                </p>
+                            </div>
+
+                            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    What are achievements and streaks?
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    Achievements are badges you earn by completing study milestones. Study streaks track consecutive days of studying. Check your Achievements page to see your progress and unlock new badges!
                                 </p>
                             </div>
 
                             <div className="pb-4">
                                 <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                    Can I organize my flashcards by subject?
+                                    How do I share my flashcards?
                                 </h3>
                                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                                    Yes! When creating flashcards, you can assign them to different subjects. Your Library will automatically organize them into folders by subject.
+                                    In the Library, click the menu (three dots) on any flashcard set or folder. You can set it to Public (anyone can view), Link-based (only people with the link), or Private (only you).
                                 </p>
                             </div>
                         </div>
@@ -55,15 +100,12 @@ export default function HelpPage() {
                             Need More Help?
                         </h2>
                         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
-                            Can't find what you're looking for? Contact our support team.
+                            Can't find what you're looking for? Contact our support team at <a href="mailto:not3wis3@gmail.com" className="text-teal-600 dark:text-teal-400 hover:underline font-medium">not3wis3@gmail.com</a>
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                            <button className="w-full sm:w-auto bg-teal-600 text-white px-4 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium">
-                                Contact Support
-                            </button>
-                            <button className="w-full sm:w-auto bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">
-                                Send Feedback
-                            </button>
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <strong className="text-gray-900 dark:text-white">Pro Tip:</strong> You can also use the AI chatbot (bottom-right corner) to get instant answers to your questions!
+                            </p>
                         </div>
                     </div>
                 </div>

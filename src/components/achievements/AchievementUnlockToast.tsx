@@ -95,7 +95,10 @@ export default function AchievementUnlockToast({ achievement, onClose }: Achieve
       }`}
       style={{ maxWidth: '400px' }}
     >
-      <div className="bg-gradient-to-br from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700 rounded-2xl shadow-2xl p-6 border-2 border-teal-400 dark:border-teal-500 relative overflow-hidden">
+      <div 
+        className="bg-gradient-to-br from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700 rounded-2xl shadow-2xl p-6 border-2 border-teal-400 dark:border-teal-500 relative overflow-hidden cursor-pointer"
+        onClick={handleClose}
+      >
         {/* Animated background sparkles */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-2 left-2 w-2 h-2 bg-white rounded-full animate-ping"></div>

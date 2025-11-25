@@ -411,8 +411,8 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold">NoteWise AI</h3>
-                <p className="text-xs text-white/80">Your study assistant</p>
+                <h3 className="font-semibold text-white">NoteWise AI</h3>
+                <p className="text-xs text-white opacity-100" style={{ color: '#ffffff' }}>Your study assistant</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

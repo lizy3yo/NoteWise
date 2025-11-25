@@ -63,8 +63,8 @@ export default function AboutPage() {
                     </h3>
                   </div>
                   <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Transform your raw notes and documents into organized, comprehensive study guides 
-                    with key concepts highlighted.
+                    Upload your documents (PDF, Word, or text files) and let our AI generate comprehensive 
+                    study summaries with key concepts highlighted and organized.
                   </p>
                 </div>
 
@@ -72,16 +72,16 @@ export default function AboutPage() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                       </svg>
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                      Practice Tests
+                      AI Study Assistant
                     </h3>
                   </div>
                   <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Generate practice quizzes and tests from your study materials to assess your 
-                    understanding and identify areas for improvement.
+                    Chat with our AI assistant to get instant help with your studies, generate summaries 
+                    from documents, and receive personalized study recommendations.
                   </p>
                 </div>
 
@@ -93,12 +93,12 @@ export default function AboutPage() {
                       </svg>
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                      Progress Tracking
+                      Progress & Achievements
                     </h3>
                   </div>
                   <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Monitor your learning progress with detailed analytics and insights to help you 
-                    stay motivated and focused on your goals.
+                    Track your study streaks, earn achievements, and monitor your learning progress 
+                    with detailed analytics to stay motivated and reach your goals.
                   </p>
                 </div>
               </div>
@@ -109,13 +109,15 @@ export default function AboutPage() {
                 Our Technology
               </h2>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                NoteWise leverages advanced artificial intelligence and machine learning algorithms to 
-                provide personalized learning experiences. Our platform uses natural language processing 
-                to understand your study materials and generate relevant, high-quality educational content.
+                NoteWise is powered by OpenAI's advanced language models to provide intelligent study assistance. 
+                Our platform uses natural language processing to understand your study materials, generate 
+                high-quality summaries, create effective flashcards, and provide personalized learning support 
+                through our AI chatbot.
               </p>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                We're committed to continuously improving our AI capabilities while maintaining the highest 
-                standards of data privacy and security for our users.
+                We combine AI technology with proven learning techniques like spaced repetition to maximize 
+                your study efficiency. Your data privacy and security are our top priorities, and we're 
+                committed to maintaining the highest standards of protection for all user information.
               </p>
             </section>
 
@@ -132,13 +134,7 @@ export default function AboutPage() {
                     <svg className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400">support@notewise.com</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-                    </svg>
-                    <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400">www.notewise.com</span>
+                    <a href="mailto:not3wis3@gmail.com" className="text-sm sm:text-base text-teal-600 dark:text-teal-400 hover:underline">not3wis3@gmail.com</a>
                   </div>
                 </div>
               </div>
@@ -147,7 +143,7 @@ export default function AboutPage() {
             <section className="border-t border-gray-200 dark:border-gray-700 pt-6 sm:pt-8">
               <div className="text-center">
                 <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
-                  © 2025 NoteWise. All rights reserved. Made with ❤️ for students everywhere.
+                  © 2024 NoteWise. All rights reserved. Made with ❤️ for students everywhere.
                 </p>
               </div>
             </section>

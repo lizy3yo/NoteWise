@@ -98,6 +98,49 @@ function PrivateLibraryContent() {
   const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
 
   const router = useRouter();
+
+  // Helper function to format date and time
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${dateStr} - ${timeStr}`;
+  };
+
+  // Track viewed items
+  const [viewedItems, setViewedItems] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('viewed_library_items');
+        return stored ? new Set(JSON.parse(stored)) : new Set();
+      } catch (e) {
+        return new Set();
+      }
+    }
+    return new Set();
+  });
+
+  // Helper function to check if item is new (created within last 24 hours and not viewed)
+  const isNewItem = (dateString: string, itemId: string) => {
+    const itemDate = new Date(dateString);
+    const now = new Date();
+    const hoursDiff = (now.getTime() - itemDate.getTime()) / (1000 * 60 * 60);
+    return hoursDiff < 24 && !viewedItems.has(itemId);
+  };
+
+  // Mark item as viewed
+  const markAsViewed = (itemId: string) => {
+    const newViewed = new Set(viewedItems);
+    newViewed.add(itemId);
+    setViewedItems(newViewed);
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('viewed_library_items', JSON.stringify(Array.from(newViewed)));
+    } catch (e) {
+      console.error('Failed to save viewed items:', e);
+    }
+  };
   const searchParams = useSearchParams();
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -291,7 +334,7 @@ function PrivateLibraryContent() {
           console.log(`Flashcard ${idx + 1}: "${fc.title}" - Subject: "${fc.subject || 'MISSING'}"`, fc);
         });
 
-        setFlashcards(Array.isArray(data?.flashcards) ? sortFavoritesByTimestamps(data.flashcards, 'flashcard') : []);
+        setFlashcards(Array.isArray(data?.flashcards) ? data.flashcards : []);
 
         // Fetch summaries
         const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, {
@@ -305,7 +348,7 @@ function PrivateLibraryContent() {
           const summariesData = await summariesRes.json();
           if (isMounted && summariesData.success) {
             console.log('📄 Loaded summaries:', summariesData.summaries);
-            setSummaries(Array.isArray(summariesData?.summaries) ? sortFavoritesByTimestamps(summariesData.summaries, 'summary') : []);
+            setSummaries(Array.isArray(summariesData?.summaries) ? summariesData.summaries : []);
           }
         } else {
           console.warn('Failed to load summaries');
@@ -323,7 +366,7 @@ function PrivateLibraryContent() {
           const foldersData = await foldersRes.json();
           if (isMounted) {
             console.log('📁 Loaded folders:', foldersData);
-            setFolders(Array.isArray(foldersData.folders) ? sortFavoritesByTimestamps(foldersData.folders, 'folder') : []);
+            setFolders(Array.isArray(foldersData.folders) ? foldersData.folders : []);
           }
         } else {
           console.warn('Failed to load folders');
@@ -602,20 +645,11 @@ function PrivateLibraryContent() {
       // newly-favorited items move to the front and when unfavoriting the
       // remaining favorites reorder correctly.
       if (type === 'flashcard') {
-        setFlashcards(prev => {
-          const updated = prev.map(f => f._id === id ? { ...f, isFavorite: !currentFavorite } : f);
-          return sortFavoritesByTimestamps(updated, 'flashcard') as FlashcardItem[];
-        });
+        setFlashcards(prev => prev.map(f => f._id === id ? { ...f, isFavorite: !currentFavorite } : f));
       } else if (type === 'summary') {
-        setSummaries(prev => {
-          const updated = prev.map(s => s._id === id ? { ...s, isFavorite: !currentFavorite } : s);
-          return sortFavoritesByTimestamps(updated, 'summary') as SummaryItem[];
-        });
+        setSummaries(prev => prev.map(s => s._id === id ? { ...s, isFavorite: !currentFavorite } : s));
       } else if (type === 'folder') {
-        setFolders(prev => {
-          const updated = prev.map(f => f._id === id ? { ...f, isFavorite: !currentFavorite } : f);
-          return sortFavoritesByTimestamps(updated, 'folder');
-        });
+        setFolders(prev => prev.map(f => f._id === id ? { ...f, isFavorite: !currentFavorite } : f));
       }
 
       console.log(`✅ Local state updated for ${type} ${id}`);
@@ -816,20 +850,17 @@ function PrivateLibraryContent() {
 
     // Sort flashcards within each subject
     grouped.forEach((items, subject) => {
-      if (filter === 'recent') {
-        items.sort((a, b) => {
-          const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-          const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
-          return bd - ad;
-        });
-      } else if (filter === 'popular') {
-        items.sort((a, b) => (b.cards?.length || 0) - (a.cards?.length || 0));
-      } else if (filter === 'alphabetical') {
-        items.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-      }
-
-      // Always sort favorites first within each subject/folder
       items.sort((a, b) => {
+        if (filter === 'recent') {
+          const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+          const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+          return bd - ad;
+        } else if (filter === 'popular') {
+          return (b.cards?.length || 0) - (a.cards?.length || 0);
+        } else if (filter === 'alphabetical') {
+          return (a.title || '').localeCompare(b.title || '');
+        }
+        // Default: favorites first within each subject/folder
         if (a.isFavorite && !b.isFavorite) return -1;
         if (!a.isFavorite && b.isFavorite) return 1;
         return 0;
@@ -847,21 +878,18 @@ function PrivateLibraryContent() {
       list = list.filter(f => f.subject === selectedSubject);
     }
 
-    // Sort
-    if (filter === 'recent') {
-      list.sort((a, b) => {
-        const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-        const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
-        return bd - ad;
-      });
-    } else if (filter === 'popular') {
-      list.sort((a, b) => (b.cards?.length || 0) - (a.cards?.length || 0));
-    } else if (filter === 'alphabetical') {
-      list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-    }
-
-    // Always sort favorites first
+    // Sort based on filter
     list.sort((a, b) => {
+      if (filter === 'recent') {
+        const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+        const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+        return bd - ad;
+      } else if (filter === 'popular') {
+        return (b.cards?.length || 0) - (a.cards?.length || 0);
+      } else if (filter === 'alphabetical') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      // Default: favorites first
       if (a.isFavorite && !b.isFavorite) return -1;
       if (!a.isFavorite && b.isFavorite) return 1;
       return 0;
@@ -878,21 +906,18 @@ function PrivateLibraryContent() {
       list = list.filter(s => s.subject === selectedSubject);
     }
 
-    // Sort
-    if (filter === 'recent') {
-      list.sort((a, b) => {
-        const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-        const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
-        return bd - ad;
-      });
-    } else if (filter === 'popular') {
-      list.sort((a, b) => (b.wordCount || 0) - (a.wordCount || 0));
-    } else if (filter === 'alphabetical') {
-      list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-    }
-
-    // Always sort favorites first
+    // Sort based on filter
     list.sort((a, b) => {
+      if (filter === 'recent') {
+        const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+        const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+        return bd - ad;
+      } else if (filter === 'popular') {
+        return (b.wordCount || 0) - (a.wordCount || 0);
+      } else if (filter === 'alphabetical') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      // Default: favorites first
       if (a.isFavorite && !b.isFavorite) return -1;
       if (!a.isFavorite && b.isFavorite) return 1;
       return 0;
@@ -914,16 +939,26 @@ function PrivateLibraryContent() {
   }, [filteredSummaries]);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <>
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Library</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage and organize your study materials</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">Library</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage and organize your study materials</p>
       </div>
 
       {/* Navigation Tabs - matching Student Class page style */}
-      <div className="mb-8 bg-transparent">
-        <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="mb-6 sm:mb-8 bg-transparent -mx-4 sm:mx-0">
+        <div className="flex gap-3 sm:gap-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto px-4 sm:px-0 scrollbar-hide">
           {(['favorites', 'flashcards', 'study_notes', 'folders'] as const).map((tab) => {
             // Show a user-friendly label for the tabs. Keep the internal tab key unchanged.
             const label = tab === 'study_notes'
@@ -937,14 +972,14 @@ function PrivateLibraryContent() {
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`py-3 text-sm font-medium transition-colors ${activeTab === tab
+                className={`py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab
                   ? 'text-gray-900 dark:text-white border-b-2 border-teal-500 -mb-[2px]'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
               >
                 {tab === 'favorites' ? (
-                  <span className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${activeTab === 'favorites' ? 'text-yellow-400' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                  <span className="flex items-center gap-1.5 sm:gap-2">
+                    <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'favorites' ? 'text-yellow-400' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     <span>{label}</span>
@@ -957,24 +992,30 @@ function PrivateLibraryContent() {
       </div>
 
       {/* Filter and Actions */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
         {/* Use a horizontal, wrapping layout so controls align on small screens */}
-        <div className="flex flex-row flex-wrap items-center gap-4">
+        <div className="flex flex-row flex-wrap items-center gap-3 sm:gap-4">
           {/* Keep selects compact and allow them to sit inline on mobile */}
-          <div className="flex flex-row flex-wrap gap-2 items-center">
+          <div className="flex flex-row flex-wrap gap-2 sm:gap-3 items-center w-full sm:w-auto">
 
             <select
               id="filter"
               value={filter}
               onChange={handleFilterChange}
-              className="px-2 py-1 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm min-w-[7rem] sm:px-3 sm:py-2 sm:text-sm sm:rounded-xl sm:min-w-[10rem]"
+              className="flex-1 sm:flex-none px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm min-w-[120px] sm:min-w-[140px]"
             >
               <option value="recent">Recent</option>
-              <option value="popular">Most Cards</option>
+              <option value="popular">
+                {activeTab === 'flashcards' ? 'Most Cards' : 
+                 activeTab === 'study_notes' ? 'Most Words' : 
+                 activeTab === 'folders' ? 'Most Items' : 
+                 activeTab === 'favorites' ? 'Most Cards' :
+                 'Most Popular'}
+              </option>
               <option value="alphabetical">A-Z</option>
             </select>
 
-            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 order-first sm:order-none">
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 order-first sm:order-none w-full sm:w-auto">
               {activeTab === 'flashcards' && `${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}, ${flashcards.length} ${flashcards.length === 1 ? 'set' : 'sets'}`}
               {activeTab === 'study_notes' && `${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}, ${summaries.length} ${summaries.length === 1 ? 'summary' : 'summaries'}`}
               {activeTab === 'folders' && `${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}`}
@@ -1057,8 +1098,8 @@ function PrivateLibraryContent() {
                     if (!a.isFavorite && b.isFavorite) return 1;
 
                     if (filter === 'recent') {
-                      const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-                      const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
                       if (bd !== ad) return bd - ad;
                     } else if (filter === 'popular') {
                       const aCount = (flashcards.filter(f => f.folder === a._id).length)
@@ -1075,10 +1116,43 @@ function PrivateLibraryContent() {
                   });
                   return sorted;
                 })().map((folder) => {
-                  // Get all items in this folder
-                  // Use the globally-sorted `flashcards` array (toggleFavorite re-sorts globals)
-                  const folderFlashcards = flashcards.filter(f => f.folder === folder._id);
-                  const folderSummaries = sortFavoritesByTimestamps(summaries.filter(s => s.folder === folder._id), 'summary');
+                  // Get all items in this folder and sort them
+                  let folderFlashcards = flashcards.filter(f => f.folder === folder._id);
+                  let folderSummaries = summaries.filter(s => s.folder === folder._id);
+
+                  // Sort folder flashcards
+                  folderFlashcards = [...folderFlashcards].sort((a, b) => {
+                    if (filter === 'recent') {
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                      return bd - ad;
+                    } else if (filter === 'popular') {
+                      return (b.cards?.length || 0) - (a.cards?.length || 0);
+                    } else if (filter === 'alphabetical') {
+                      return (a.title || '').localeCompare(b.title || '');
+                    }
+                    // Default: favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    return 0;
+                  });
+
+                  // Sort folder summaries
+                  folderSummaries = [...folderSummaries].sort((a, b) => {
+                    if (filter === 'recent') {
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                      return bd - ad;
+                    } else if (filter === 'popular') {
+                      return (b.wordCount || 0) - (a.wordCount || 0);
+                    } else if (filter === 'alphabetical') {
+                      return (a.title || '').localeCompare(b.title || '');
+                    }
+                    // Default: favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    return 0;
+                  });
 
                   // Determine which types to show depending on the active tab.
                   const showFlashcards = (activeTab as string) === 'flashcards' || (activeTab as string) === 'folders';
@@ -1097,14 +1171,14 @@ function PrivateLibraryContent() {
                       {/* Folder Header */}
                       <div
                         onClick={() => setExpandedFolder(expandedFolder === folder._id ? null : folder._id)}
-                        className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors relative ${expandedFolder === folder._id
                             ? 'bg-teal-600 text-white'
                             : 'bg-teal-600/10 text-teal-600'
                             }`}>
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                             </svg>
                             {folder.isFavorite && (
@@ -1116,7 +1190,7 @@ function PrivateLibraryContent() {
                             )}
                           </div>
                           <div className="text-left">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                               {folder.title}
                               {folder.isFavorite && <span className="text-yellow-500 text-sm">★</span>}
                             </h3>
@@ -1180,8 +1254,8 @@ function PrivateLibraryContent() {
                             {showFlashcards && folderFlashcards.map((item) => (
                               <div
                                 key={`flashcard-${item._id}`}
-                                onClick={() => router.push(`/student_page/library/${item._id}`)}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1206,7 +1280,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === item._id && (
-                                    <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
@@ -1242,10 +1316,11 @@ function PrivateLibraryContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
+                                    {item.createdAt && isNewItem(item.createdAt, item._id) && (
+                                      <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -1254,6 +1329,11 @@ function PrivateLibraryContent() {
                                     <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
                                   )}
                                 </div>
+                                {item.createdAt && (
+                                  <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                    {formatDateTime(item.createdAt)}
+                                  </div>
+                                )}
                               </div>
                             ))}
 
@@ -1261,8 +1341,8 @@ function PrivateLibraryContent() {
                             {showSummaries && folderSummaries.map((summary) => (
                               <div
                                 key={`summary-${summary._id}`}
-                                onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1287,7 +1367,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -1356,10 +1436,11 @@ function PrivateLibraryContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                    {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
+                                      <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -1373,6 +1454,11 @@ function PrivateLibraryContent() {
                                     </span>
                                   </div>
                                 </div>
+                                {summary.createdAt && (
+                                  <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                    {formatDateTime(summary.createdAt)}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -1385,8 +1471,42 @@ function PrivateLibraryContent() {
                 {/* Uncategorized Items - just cards at the bottom */}
                 {(() => {
                   // Use the globally-sorted `flashcards` array for uncategorized items
-                  const uncategorizedFlashcards = flashcards.filter(f => !f.folder);
-                  const uncategorizedSummaries = summaries.filter(s => !s.folder);
+                  let uncategorizedFlashcards = flashcards.filter(f => !f.folder);
+                  let uncategorizedSummaries = summaries.filter(s => !s.folder);
+
+                  // Sort uncategorized flashcards
+                  uncategorizedFlashcards = [...uncategorizedFlashcards].sort((a, b) => {
+                    if (filter === 'recent') {
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                      return bd - ad;
+                    } else if (filter === 'popular') {
+                      return (b.cards?.length || 0) - (a.cards?.length || 0);
+                    } else if (filter === 'alphabetical') {
+                      return (a.title || '').localeCompare(b.title || '');
+                    }
+                    // Default: favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    return 0;
+                  });
+
+                  // Sort uncategorized summaries
+                  uncategorizedSummaries = [...uncategorizedSummaries].sort((a, b) => {
+                    if (filter === 'recent') {
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                      return bd - ad;
+                    } else if (filter === 'popular') {
+                      return (b.wordCount || 0) - (a.wordCount || 0);
+                    } else if (filter === 'alphabetical') {
+                      return (a.title || '').localeCompare(b.title || '');
+                    }
+                    // Default: favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    return 0;
+                  });
 
                   const showFlashcards = (activeTab as string) === 'flashcards' || (activeTab as string) === 'folders';
                   const showSummaries = (activeTab as string) === 'study_notes' || (activeTab as string) === 'folders';
@@ -1410,8 +1530,8 @@ function PrivateLibraryContent() {
                             {showFlashcards && uncategorizedFlashcards.map((item) => (
                               <div
                                 key={`uncategorized-flashcard-${item._id}`}
-                                onClick={() => router.push(`/student_page/library/${item._id}`)}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (uncategorized flashcard) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1436,7 +1556,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === item._id && (
-                                    <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
@@ -1472,10 +1592,11 @@ function PrivateLibraryContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
+                                    {item.createdAt && isNewItem(item.createdAt, item._id) && (
+                                      <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -1484,6 +1605,11 @@ function PrivateLibraryContent() {
                                     <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
                                   )}
                                 </div>
+                                {item.createdAt && (
+                                  <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                    {formatDateTime(item.createdAt)}
+                                  </div>
+                                )}
                               </div>
                             ))}
 
@@ -1491,8 +1617,8 @@ function PrivateLibraryContent() {
                             {showSummaries && uncategorizedSummaries.map((summary) => (
                               <div
                                 key={`uncategorized-summary-${summary._id}`}
-                                onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (uncategorized summary) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1517,7 +1643,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -1583,10 +1709,11 @@ function PrivateLibraryContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                    {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
+                                      <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -1597,10 +1724,24 @@ function PrivateLibraryContent() {
                                         'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                       }`}>
                                       {summary.difficulty}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
+
+                                      </span>
+
+                                      </div>
+
+                                      {summary.createdAt && (
+
+                                        <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+
+                                          {formatDateTime(summary.createdAt)}
+
+                                        </div>
+
+                                      )}
+
+                                      </div>
+
+                                      </div>
                             ))}
                       </div>
                     </>
@@ -1655,8 +1796,8 @@ function PrivateLibraryContent() {
                         if (!a.isFavorite && b.isFavorite) return 1;
 
                         if (filter === 'recent') {
-                          const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-                          const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                          const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                          const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
                           if (bd !== ad) return bd - ad;
                         } else if (filter === 'popular') {
                           const aCount = (flashcards.filter(f => f.folder === a._id).length)
@@ -1673,9 +1814,38 @@ function PrivateLibraryContent() {
                       });
                       return sortedFav;
                     })().map((folder) => {
-                      // Use globally-sorted flashcards and filter for favorites in this folder
-                      const folderFlashcards = flashcards.filter(f => f.folder === folder._id && f.isFavorite);
-                      const folderSummaries = summaries.filter(s => s.folder === folder._id && s.isFavorite);
+                      // Get and sort favorites in this folder
+                      let folderFlashcards = flashcards.filter(f => f.folder === folder._id && f.isFavorite);
+                      let folderSummaries = summaries.filter(s => s.folder === folder._id && s.isFavorite);
+
+                      // Sort folder flashcards
+                      folderFlashcards = [...folderFlashcards].sort((a, b) => {
+                        if (filter === 'recent') {
+                          const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                          const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                          return bd - ad;
+                        } else if (filter === 'popular') {
+                          return (b.cards?.length || 0) - (a.cards?.length || 0);
+                        } else if (filter === 'alphabetical') {
+                          return (a.title || '').localeCompare(b.title || '');
+                        }
+                        return 0;
+                      });
+
+                      // Sort folder summaries
+                      folderSummaries = [...folderSummaries].sort((a, b) => {
+                        if (filter === 'recent') {
+                          const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                          const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                          return bd - ad;
+                        } else if (filter === 'popular') {
+                          return (b.wordCount || 0) - (a.wordCount || 0);
+                        } else if (filter === 'alphabetical') {
+                          return (a.title || '').localeCompare(b.title || '');
+                        }
+                        return 0;
+                      });
+
                       const displayedCount = folderFlashcards.length + folderSummaries.length;
 
                       return (
@@ -1686,14 +1856,14 @@ function PrivateLibraryContent() {
                         >
                           <div
                             onClick={() => setExpandedFolder(expandedFolder === folder._id ? null : folder._id)}
-                            className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                            className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-4">
                               <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors relative ${expandedFolder === folder._id
                                 ? 'bg-teal-600 text-white'
                                 : 'bg-teal-600/10 text-teal-600'
                                 }`}>
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                 </svg>
                                 {folder.isFavorite && (
@@ -1705,7 +1875,7 @@ function PrivateLibraryContent() {
                                 )}
                               </div>
                               <div className="text-left">
-                                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                                   {folder.title}
                                   {folder.isFavorite && <span className="text-yellow-500 text-sm">★</span>}
                                 </h3>
@@ -1768,8 +1938,8 @@ function PrivateLibraryContent() {
                                 {folderFlashcards.map((item) => (
                                   <div
                                     key={`fav-flash-${item._id}`}
-                                    onClick={() => router.push(`/student_page/library/${item._id}`)}
-                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                    onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                                   >
                                     {/* Favorite + actions (inside folder) */}
                                     <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -1794,7 +1964,7 @@ function PrivateLibraryContent() {
                                       </button>
 
                                       {openMenuId === item._id && (
-                                        <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                        <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                           <button
                                             className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                             onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}
@@ -1830,16 +2000,22 @@ function PrivateLibraryContent() {
                                         </div>
                                       )}
                                     </div>
-                                    <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                         <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
+                                        {item.createdAt && isNewItem(item.createdAt, item._id) && (
+                                          <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                        )}
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
                                       <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
                                       {item.description && (
                                         <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                                      )}
+                                      {item.createdAt && (
+                                        <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                          {formatDateTime(item.createdAt)}
+                                        </div>
                                       )}
                                     </div>
                                   </div>
@@ -1848,8 +2024,8 @@ function PrivateLibraryContent() {
                                 {folderSummaries.map((summary) => (
                                   <div
                                     key={`fav-sum-${summary._id}`}
-                                    onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
-                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                    onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                                   >
                                     <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                       <button onClick={(e) => { e.stopPropagation(); toggleFavorite(summary._id, 'summary', summary.isFavorite || false); }} className={`p-1 rounded-lg transition-colors ${summary.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`} title={summary.isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
@@ -1861,7 +2037,7 @@ function PrivateLibraryContent() {
                                       </button>
 
                                       {openMenuId === summary._id && (
-                                        <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                        <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}>{summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}>View</button>
@@ -1873,15 +2049,21 @@ function PrivateLibraryContent() {
                                         </div>
                                       )}
                                     </div>
-                                    <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                    <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                         <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                        {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
+                                          <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                        )}
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
                                       <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
                                     </div>
+                                    {summary.createdAt && (
+                                      <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                        {formatDateTime(summary.createdAt)}
+                                      </div>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -1893,9 +2075,39 @@ function PrivateLibraryContent() {
 
                     {/* Uncategorized favorites - just cards at the bottom */}
                     {(() => {
-                      const uncategorizedFlashcards = sortFavoritesByTimestamps(favoriteFlashcards.filter(f => !f.folder), 'flashcard');
-                      const uncategorizedSummaries = favoriteSummaries.filter(s => !s.folder);
-                      const uncategorizedTotal = uncategorizedFlashcards.length + uncategorizedSummaries.length;
+                      let uncategorizedFlashcards = favoriteFlashcards.filter(f => !f.folder);
+                      let uncategorizedSummaries = favoriteSummaries.filter(s => !s.folder);
+                      
+                      // Combine and sort all uncategorized items together
+                      const combined: any[] = [
+                        ...uncategorizedFlashcards.map(f => ({ ...f, __type: 'flashcard' })),
+                        ...uncategorizedSummaries.map(s => ({ ...s, __type: 'summary' }))
+                      ];
+                      
+                      // Sort the combined array based on the active filter
+                      const sortedCombined = [...combined].sort((a, b) => {
+                        if (filter === 'recent') {
+                          // Use createdAt as primary, fallback to updatedAt
+                          const aDate = a.createdAt || a.updatedAt;
+                          const bDate = b.createdAt || b.updatedAt;
+                          if (!aDate && !bDate) return 0;
+                          if (!aDate) return 1;
+                          if (!bDate) return -1;
+                          const aTime = new Date(aDate).getTime();
+                          const bTime = new Date(bDate).getTime();
+                          // Newest first (larger timestamp first)
+                          return bTime - aTime;
+                        } else if (filter === 'popular') {
+                          const aVal = a.__type === 'flashcard' ? (a.cards?.length || 0) : (a.wordCount || 0);
+                          const bVal = b.__type === 'flashcard' ? (b.cards?.length || 0) : (b.wordCount || 0);
+                          return bVal - aVal;
+                        } else if (filter === 'alphabetical') {
+                          return (a.title || '').localeCompare(b.title || '');
+                        }
+                        return 0;
+                      });
+                      
+                      const uncategorizedTotal = sortedCombined.length;
                       if (uncategorizedTotal === 0) return null;
 
                       return (
@@ -1908,11 +2120,11 @@ function PrivateLibraryContent() {
 
                           {/* Cards displayed directly without folder container */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-visible">
-                                {uncategorizedFlashcards.map((item) => (
+                                {sortedCombined.map((item) => item.__type === 'flashcard' ? (
                                   <div
                                     key={`uncat-fav-flash-${item._id}`}
-                                    onClick={() => router.push(`/student_page/library/${item._id}`)}
-                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                    onClick={() => { markAsViewed(item._id); router.push(`/student_page/library/${item._id}`); }}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                                   >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
@@ -1934,7 +2146,7 @@ function PrivateLibraryContent() {
                                     </button>
 
                                     {openMenuId === item._id && (
-                                      <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                      <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { toggleFavorite(item._id, 'flashcard', item.isFavorite || false); setOpenMenuId(null); }}>{item.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                         <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRename(item); setOpenMenuId(null); }}>Rename</button>
@@ -1950,6 +2162,9 @@ function PrivateLibraryContent() {
                                     <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                       <div className="w-2 h-2 bg-blue-500 rounded-full" />
                                       <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {item.cards?.length || 0} cards</span>
+                                      {item.createdAt && isNewItem(item.createdAt, item._id) && (
+                                        <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                      )}
                                     </div>
                                   </div>
                                   <div className="mb-2 sm:mb-3">
@@ -1957,27 +2172,30 @@ function PrivateLibraryContent() {
                                     {item.description && (
                                       <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
                                     )}
+                                    {item.createdAt && (
+                                      <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                        {formatDateTime(item.createdAt)}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-                              ))}
-
-                              {uncategorizedSummaries.map((summary) => (
+                              ) : (
                                 <div
-                                  key={`uncat-fav-sum-${summary._id}`}
-                                  onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
-                                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                  key={`uncat-fav-sum-${item._id}`}
+                                  onClick={() => { markAsViewed(item._id); router.push(`/student_page/summaries/${item._id}`); }}
+                                  className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === item._id ? 'z-50' : 'z-0'}`}
                                 >
                                   <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); toggleFavorite(summary._id, 'summary', summary.isFavorite || false); }}
-                                      className={`p-1 rounded-lg transition-colors ${summary.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
-                                      title={summary.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                      onClick={(e) => { e.stopPropagation(); toggleFavorite(item._id, 'summary', item.isFavorite || false); }}
+                                      className={`p-1 rounded-lg transition-colors ${item.isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
+                                      title={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                                     >
-                                      <svg className="w-4 h-4" fill={summary.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                      <svg className="w-4 h-4" fill={item.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                                     </button>
 
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === summary._id ? null : summary._id); }}
+                                      onClick={(e) => { e.stopPropagation(); setOpenMenuId(prev => prev === item._id ? null : item._id); }}
                                       className="p-1.5 rounded-lg hover:bg-teal-600/10 text-gray-400 dark:text-slate-500 hover:text-teal-600 transition-all"
                                       aria-label="Open actions"
                                     >
@@ -1986,15 +2204,15 @@ function PrivateLibraryContent() {
                                       </svg>
                                     </button>
 
-                                    {openMenuId === summary._id && (
-                                      <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
-                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}>{summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
+                                    {openMenuId === item._id && (
+                                      <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
+                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(item._id, 'summary', item.isFavorite || false); setOpenMenuId(null); }}>{item.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
-                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${summary._id}`); setOpenMenuId(null); }}>View</button>
-                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}>Rename</button>
-                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(summary._id, 'summary', summary.title); setOpenMenuId(null); }}>Move to Folder</button>
+                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { router.push(`/student_page/summaries/${item._id}`); setOpenMenuId(null); }}>View</button>
+                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(item); setOpenMenuId(null); }}>Rename</button>
+                                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(item._id, 'summary', item.title); setOpenMenuId(null); }}>Move to Folder</button>
                                         <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
-                                        <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDeleteSummary(summary._id); setOpenMenuId(null); }}>Delete</button>
+                                        <button className="w-full text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl" onClick={() => { handleDeleteSummary(item._id); setOpenMenuId(null); }}>Delete</button>
                                       </div>
                                     )}
                                   </div>
@@ -2002,12 +2220,20 @@ function PrivateLibraryContent() {
                                   <div className="flex items-start justify-between mb-2 sm:mb-3">
                                     <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                       <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                                      <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                      <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {item.wordCount} words</span>
+                                      {item.createdAt && isNewItem(item.createdAt, item._id) && (
+                                        <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                      )}
                                     </div>
                                   </div>
                                   <div className="mb-2 sm:mb-3">
-                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{summary.title}</h4>
+                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{item.title}</h4>
                                   </div>
+                                  {item.createdAt && (
+                                    <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                      {formatDateTime(item.createdAt)}
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                           </div>
@@ -2054,8 +2280,8 @@ function PrivateLibraryContent() {
                     if (!a.isFavorite && b.isFavorite) return 1;
 
                     if (filter === 'recent') {
-                      const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-                      const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
                       if (bd !== ad) return bd - ad;
                     } else if (filter === 'popular') {
                       const aCount = (flashcards.filter(f => f.folder === a._id).length)
@@ -2072,8 +2298,25 @@ function PrivateLibraryContent() {
                   });
                   return sorted;
                 })().map((folder) => {
-                  // Get all summaries in this folder
-                  const folderSummaries = summaries.filter(s => s.folder === folder._id);
+                  // Get all summaries in this folder and sort them
+                  let folderSummaries = summaries.filter(s => s.folder === folder._id);
+                  
+                  // Sort folder summaries
+                  folderSummaries = [...folderSummaries].sort((a, b) => {
+                    if (filter === 'recent') {
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                      return bd - ad;
+                    } else if (filter === 'popular') {
+                      return (b.wordCount || 0) - (a.wordCount || 0);
+                    } else if (filter === 'alphabetical') {
+                      return (a.title || '').localeCompare(b.title || '');
+                    }
+                    // Default: favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    return 0;
+                  });
 
                   // Only show folder if it has summaries
                   if (folderSummaries.length === 0) return null;
@@ -2086,14 +2329,14 @@ function PrivateLibraryContent() {
                       {/* Folder Header */}
                       <div
                         onClick={() => setExpandedFolder(expandedFolder === folder._id ? null : folder._id)}
-                        className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors relative ${expandedFolder === folder._id
                             ? 'bg-teal-600 text-white'
                             : 'bg-teal-600/10 text-teal-600'
                             }`}>
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                             </svg>
                             {folder.isFavorite && (
@@ -2105,7 +2348,7 @@ function PrivateLibraryContent() {
                             )}
                           </div>
                           <div className="text-left">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                               {folder.title}
                               {folder.isFavorite && <span className="text-yellow-500 text-sm">★</span>}
                             </h3>
@@ -2167,8 +2410,8 @@ function PrivateLibraryContent() {
                             {folderSummaries.map((summary) => (
                               <div
                                 key={`summary-${summary._id}`}
-                                onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -2193,7 +2436,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -2271,9 +2514,7 @@ function PrivateLibraryContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
                                   </div>
                                 </div>
@@ -2285,10 +2526,24 @@ function PrivateLibraryContent() {
                                         'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                       }`}>
                                       {summary.difficulty}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
+
+                                      </span>
+
+                                      </div>
+
+                                      {summary.createdAt && (
+
+                                        <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+
+                                          {formatDateTime(summary.createdAt)}
+
+                                        </div>
+
+                                      )}
+
+                                      </div>
+
+                                      </div>
                             ))}
                           </div>
                         </div>
@@ -2299,7 +2554,24 @@ function PrivateLibraryContent() {
 
                 {/* Uncategorized Items */}
                 {(() => {
-                  const uncategorizedSummaries = summaries.filter(s => !s.folder);
+                  let uncategorizedSummaries = summaries.filter(s => !s.folder);
+
+                  // Sort uncategorized summaries
+                  uncategorizedSummaries = [...uncategorizedSummaries].sort((a, b) => {
+                    if (filter === 'recent') {
+                      const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                      const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
+                      return bd - ad;
+                    } else if (filter === 'popular') {
+                      return (b.wordCount || 0) - (a.wordCount || 0);
+                    } else if (filter === 'alphabetical') {
+                      return (a.title || '').localeCompare(b.title || '');
+                    }
+                    // Default: favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    return 0;
+                  });
 
                   if (uncategorizedSummaries.length === 0) return null;
 
@@ -2317,8 +2589,8 @@ function PrivateLibraryContent() {
                             {uncategorizedSummaries.map((summary) => (
                               <div
                                 key={`uncategorized-summary-${summary._id}`}
-                                onClick={() => router.push(`/student_page/summaries/${summary._id}`)}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                onClick={() => { markAsViewed(summary._id); router.push(`/student_page/summaries/${summary._id}`); }}
+                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === summary._id ? 'z-50' : 'z-0'}`}
                               >
                                 {/* Favorite + actions (inside folder - uncategorized) */}
                                 <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
@@ -2343,7 +2615,7 @@ function PrivateLibraryContent() {
                                   </button>
 
                                   {openMenuId === summary._id && (
-                                    <div className="absolute top-10 right-0 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
                                         onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}
@@ -2421,10 +2693,11 @@ function PrivateLibraryContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                     <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {summary.wordCount} words</span>
+                                    {summary.createdAt && isNewItem(summary.createdAt, summary._id) && (
+                                      <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="mb-2 sm:mb-3">
@@ -2435,10 +2708,24 @@ function PrivateLibraryContent() {
                                         'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                       }`}>
                                       {summary.difficulty}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
+
+                                      </span>
+
+                                      </div>
+
+                                      {summary.createdAt && (
+
+                                        <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+
+                                          {formatDateTime(summary.createdAt)}
+
+                                        </div>
+
+                                      )}
+
+                                      </div>
+
+                                      </div>
                             ))}
                       </div>
                     </>
@@ -2479,13 +2766,10 @@ function PrivateLibraryContent() {
                   (() => {
                     const sortedFolders = [...folders].sort((a, b) => {
                       // Favorites always come first
-                      if (a.isFavorite && !b.isFavorite) return -1;
-                      if (!a.isFavorite && b.isFavorite) return 1;
-
-                      // Then apply selected filter
+                      // Apply selected filter first
                       if (filter === 'recent') {
-                        const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
-                        const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                        const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
+                        const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
                         if (bd !== ad) return bd - ad;
                       } else if (filter === 'popular') {
                         const aCount = (flashcards.filter(f => f.folder === a._id).length)
@@ -2497,6 +2781,10 @@ function PrivateLibraryContent() {
                         const cmp = (a.title || '').localeCompare(b.title || '');
                         if (cmp !== 0) return cmp;
                       }
+
+                      // Default: favorites first
+                      if (a.isFavorite && !b.isFavorite) return -1;
+                      if (!a.isFavorite && b.isFavorite) return 1;
 
                       // Fallback: preserve original order
                       return 0;
@@ -2521,14 +2809,14 @@ function PrivateLibraryContent() {
                       {/* Folder Header */}
                       <div
                         onClick={() => setExpandedFolder(expandedFolder === folder._id ? null : folder._id)}
-                        className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors relative ${expandedFolder === folder._id
                             ? 'bg-teal-600 text-white'
                             : 'bg-teal-600/10 text-teal-600'
                             }`}>
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                             </svg>
                             {folder.isFavorite && (
@@ -2540,7 +2828,7 @@ function PrivateLibraryContent() {
                             )}
                           </div>
                           <div className="text-left">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                               {folder.title}
                               {folder.isFavorite && <span className="text-yellow-500 text-sm">★</span>}
                             </h3>
@@ -2606,7 +2894,7 @@ function PrivateLibraryContent() {
                               const tsSum = getFavoriteTimestamps('summary');
 
                               const combined: any[] = [
-                                ...sortFavoritesByTimestamps(folderFlashcards, 'flashcard').map(i => ({ ...i, __type: 'flashcard' })),
+                                ...folderFlashcards.map(i => ({ ...i, __type: 'flashcard' })),
                                 ...folderSummaries.map(i => ({ ...i, __type: 'summary' })),
                               ];
 
@@ -2621,22 +2909,16 @@ function PrivateLibraryContent() {
                               };
 
                               combined.sort((a, b) => {
-                                // Favorites always come first and are ordered by favorite timestamp
-                                if (a.isFavorite && b.isFavorite) return getTs(b) - getTs(a);
-                                if (a.isFavorite && !b.isFavorite) return -1;
-                                if (!a.isFavorite && b.isFavorite) return 1;
-
-                                // For non-favorites, respect the active filter
-                                const getUpdated = (it: any) => new Date(it.updatedAt || it.createdAt || 0).getTime();
+                                const getCreated = (it: any) => new Date(it.createdAt || it.updatedAt || 0).getTime();
                                 const getPopularity = (it: any) => {
                                   if (it.__type === 'flashcard') return it.cards?.length || 0;
-
                                   return it.wordCount || 0;
                                 };
 
+                                // Apply filter first
                                 if (filter === 'recent') {
-                                  const ra = getUpdated(a);
-                                  const rb = getUpdated(b);
+                                  const ra = getCreated(a);
+                                  const rb = getCreated(b);
                                   if (rb !== ra) return rb - ra;
                                 } else if (filter === 'popular') {
                                   const pa = getPopularity(a);
@@ -2646,6 +2928,11 @@ function PrivateLibraryContent() {
                                   const cmp = (a.title || '').localeCompare(b.title || '');
                                   if (cmp !== 0) return cmp;
                                 }
+
+                                // Default: favorites first, ordered by favorite timestamp
+                                if (a.isFavorite && b.isFavorite) return getTs(b) - getTs(a);
+                                if (a.isFavorite && !b.isFavorite) return -1;
+                                if (!a.isFavorite && b.isFavorite) return 1;
 
                                 // Fallback: preserve global order
                                 return (getGlobalIndex(a) - getGlobalIndex(b));
@@ -2657,8 +2944,8 @@ function PrivateLibraryContent() {
                                   return (
                                     <div
                                       key={`flashcard-${fc._id}`}
-                                      onClick={() => router.push(`/student_page/library/${fc._id}`)}
-                                      className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                      onClick={() => { markAsViewed(fc._id); router.push(`/student_page/library/${fc._id}`); }}
+                                      className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === fc._id ? 'z-50' : 'z-0'}`}
                                     >
                                       <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                         <button
@@ -2681,10 +2968,11 @@ function PrivateLibraryContent() {
                                           </svg>
                                         </button>
                                       </div>
-                                      <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                      <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                           <span className="text-xs sm:text-sm font-medium text-blue-500">Flashcard • {fc.cards?.length || 0} cards</span>
+                                          {fc.createdAt && isNewItem(fc.createdAt, fc._id) && (
+                                            <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                          )}
                                         </div>
                                       </div>
                                       <div className="mb-2 sm:mb-3">
@@ -2693,6 +2981,11 @@ function PrivateLibraryContent() {
                                           <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2">{fc.description}</p>
                                         )}
                                       </div>
+                                      {fc.createdAt && (
+                                        <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                          {formatDateTime(fc.createdAt)}
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 }
@@ -2702,8 +2995,8 @@ function PrivateLibraryContent() {
                                 return (
                                   <div
                                     key={`summary-${sm._id}`}
-                                    onClick={() => router.push(`/student_page/summaries/${sm._id}`)}
-                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative"
+                                    onClick={() => { markAsViewed(sm._id); router.push(`/student_page/summaries/${sm._id}`); }}
+                                    className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:border-teal-600/20 dark:hover:border-teal-600/40 transition-all duration-200 group relative ${openMenuId === sm._id ? 'z-50' : 'z-0'}`}
                                   >
                                     <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
                                       <button
@@ -2726,15 +3019,21 @@ function PrivateLibraryContent() {
                                         </svg>
                                       </button>
                                     </div>
-                                    <div className="flex items-start justify-between mb-2 sm:mb-3">
-                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                    <div className="flex items-start justify-between mb-2 sm:mb-3 pr-16"><div className="flex items-center gap-1 sm:gap-2 flex-wrap"><div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                                         <span className="text-xs sm:text-sm font-medium text-purple-500">Summary • {sm.wordCount} words</span>
+                                        {sm.createdAt && isNewItem(sm.createdAt, sm._id) && (
+                                          <span className="px-2 py-0.5 bg-teal-500 text-white text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">NEW</span>
+                                        )}
                                       </div>
                                     </div>
                                     <div className="mb-2 sm:mb-3">
                                       <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2">{sm.title}</h4>
                                     </div>
+                                    {sm.createdAt && (
+                                      <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                                        {formatDateTime(sm.createdAt)}
+                                      </div>
+                                    )}
                                   </div>
                                 );
                               });
@@ -3022,6 +3321,7 @@ function PrivateLibraryContent() {
 
       {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
     </div>
+    </>
   );
 }
 
@@ -3045,6 +3345,12 @@ export default function PrivateLibraryPage() {
     </Suspense>
   );
 }
+
+
+
+
+
+
 
 
 
