@@ -1305,11 +1305,8 @@ function CompletionSummary({ totalReviewed, counts, mastered, stillLearning, onR
           <SummaryTile label="Still learning" value={stillLearning} className="bg-amber-50 text-amber-700 dark:bg-amber-900/20" />
         </div>
 
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <button onClick={onRestart} className="w-full px-4 py-3 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:brightness-105">Restart deck</button>
-          <button onClick={onReviewHardAgain} className="w-full px-4 py-3 rounded-md bg-amber-500 text-white hover:brightness-110">Review only Hard/Again</button>
-          <button onClick={onNextDeck} className="w-full px-4 py-3 rounded-md bg-teal-600 text-white hover:brightness-110">Go to next deck</button>
-          <button onClick={onExplore} className="w-full px-4 py-3 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100 hover:brightness-110">Explore related topics</button>
+        <div className="mt-8">
+          <button onClick={onRestart} className="w-full px-4 py-3 rounded-md bg-teal-600 text-white hover:brightness-110">Restart deck</button>
         </div>
       </div>
     </section>
@@ -1319,7 +1316,7 @@ function CompletionSummary({ totalReviewed, counts, mastered, stillLearning, onR
 function SummaryTile({ label, value, className }: { label: string; value: number; className?: string }) {
   return (
     <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 ${className || ''}`}>
-      <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">{label}</div>
       <div className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">{value}</div>
     </div>
   );

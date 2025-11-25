@@ -1833,14 +1833,6 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="mb-2 sm:mb-3">
                                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                      summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                      }`}>
-                                      {summary.difficulty}
-                                    </span>
-                                  </div>
                                 </div>
                                 {summary.createdAt && (
                                   <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2158,16 +2150,6 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="mb-2 sm:mb-3">
                                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                      summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                      }`}>
-                                      {summary.difficulty}
-
-                                      </span>
-
-                                      </div>
 
                                       {summary.createdAt && (
 
@@ -3054,16 +3036,6 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="mb-2 sm:mb-3">
                                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                      summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                      }`}>
-                                      {summary.difficulty}
-
-                                      </span>
-
-                                      </div>
 
                                       {summary.createdAt && (
 
@@ -3247,16 +3219,6 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="mb-2 sm:mb-3">
                                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{summary.title}</h4>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 text-xs rounded-full ${summary.difficulty === 'easy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                      summary.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                      }`}>
-                                      {summary.difficulty}
-
-                                      </span>
-
-                                      </div>
 
                                       {summary.createdAt && (
 

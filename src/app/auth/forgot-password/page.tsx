@@ -69,7 +69,7 @@ export default function ForgotPassword() {
         onClose={hideAlert}
         autoClose={alert.type === "success"}
         autoCloseDelay={3000}
-        position="bottom-right"
+        position="top-right"
       />
 
       {/* NoteWise Title */}
