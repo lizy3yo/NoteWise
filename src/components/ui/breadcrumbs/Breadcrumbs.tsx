@@ -13,7 +13,7 @@ const LABEL_MAP: Record<string, string> = {
   create: "Create",
   upload: "Upload",
   practice_tests: "Practice Tests",
-  study_mode: "Study Notes",
+  study_mode: "Generate",
   library: "Library",
 
   profile: "Profile",
@@ -28,6 +28,8 @@ const LABEL_MAP: Record<string, string> = {
   match: "Match",
   test: "Test",
   analyze: "Analyze",
+  history: "History",
+  about: "About",
 };
 
 // Inline SVG icons matching those used in the sidebar (scaled to 16px for breadcrumbs)
@@ -80,12 +82,50 @@ const ICON_MAP: Record<string, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5-6v6a7 7 0 11-14 0V6a7 7 0 1114 0z" />
     </svg>
   ),
+  summary: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  set_preview: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  ),
+  flashcard: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+  ),
+  history: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 3v4M8 3v4" />
+    </svg>
+  ),
+  profile: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  ),
+  about: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
 };
 
-function humanize(segment: string): string {
+function humanize(segment: string, prevSegment?: string): string {
   if (LABEL_MAP[segment]) return LABEL_MAP[segment];
   // Heuristic: treat likely IDs (mongo/object/uuid-ish) generically
-  if (/^[a-f0-9]{24}$/i.test(segment)) return "Item"; // Mongo ObjectId
+  if (/^[a-f0-9]{24}$/i.test(segment)) {
+    // If previous segment is "library", this is a flashcard set
+    if (prevSegment === "library") return "Set Preview";
+    // If previous segment is "summaries", this is a summary
+    if (prevSegment === "summaries") return "Summary";
+    return "Item"; // Mongo ObjectId
+  }
   if (/^[0-9a-f-]{8,}$/i.test(segment)) return segment.slice(0, 8) + "…"; // UUID/truncate
   return segment
     .replace(/[-_]+/g, " ")
@@ -108,11 +148,16 @@ export default function Breadcrumbs() {
 
     // Remove top-level 'assessment' and the next segment after it when present.
     // This prevents showing "Assessment > Item" at the top of the breadcrumb trail.
+    // For summaries: keep 'library' but remove 'summaries' segment itself.
     const filtered: string[] = [];
     for (let i = 0; i < tail.length; i++) {
       if (tail[i] === 'assessment') {
         // skip this segment and also skip the immediate next segment if present
         i++; // increment to skip the next segment as well
+        continue;
+      }
+      if (tail[i] === 'summaries') {
+        // skip 'summaries' but keep the next segment (the ID)
         continue;
       }
       filtered.push(tail[i]);
@@ -124,10 +169,21 @@ export default function Breadcrumbs() {
     ];
 
     let accPath = "/student_page";
+    // Track the original segments to determine context for humanize
+    const originalTail = segments.slice(studentIdx + 1);
     tail.forEach((seg, i) => {
       accPath += `/${seg}`;
       const isLast = i === tail.length - 1;
-      list.push({ label: humanize(seg), href: isLast ? undefined : accPath, icon: ICON_MAP[seg] });
+      // Find the previous segment in the original path (before filtering)
+      const segIdx = originalTail.indexOf(seg);
+      const prevSeg = segIdx > 0 ? originalTail[segIdx - 1] : undefined;
+      const label = humanize(seg, prevSeg);
+      // Use appropriate icon based on label
+      let icon = ICON_MAP[seg];
+      if (label === "Summary") icon = ICON_MAP["summary"];
+      else if (label === "Set Preview") icon = ICON_MAP["set_preview"];
+      else if (label === "Flashcard") icon = ICON_MAP["flashcard"];
+      list.push({ label, href: isLast ? undefined : accPath, icon });
     });
     return list;
   }, [pathname]);
