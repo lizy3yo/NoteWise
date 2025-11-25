@@ -33,8 +33,6 @@ const activityIcons: Record<string, any> = {
   'summary.generate': FileText,
   'summary.update': Edit,
   'summary.delete': Trash2,
-  'practice_test.submit': ClipboardCheck,
-  'practice_test.generate': Plus,
   'folder.create': Folder,
   'folder.rename': FolderEdit,
   'folder.delete': Trash2,
@@ -52,8 +50,6 @@ const activityColors: Record<string, string> = {
   'summary.generate': 'text-green-600 bg-green-50 dark:bg-green-900/20',
   'summary.update': 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
   'summary.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
-  'practice_test.submit': 'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
-  'practice_test.generate': 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20',
   'folder.create': 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20',
   'folder.rename': 'text-sky-600 bg-sky-50 dark:bg-sky-900/20',
   'folder.delete': 'text-red-600 bg-red-50 dark:bg-red-900/20',
@@ -126,7 +122,6 @@ export default function HistoryPage() {
     // fallback: try to infer category from action words
     if (action.includes('flashcard')) return `flashcard.${action.replace(/\s+/g, '_')}`;
     if (action.includes('summary')) return `summary.${action.replace(/\s+/g, '_')}`;
-    if (action.includes('practice') || action.includes('test')) return `practice_test.${action.replace(/\s+/g, '_')}`;
 
     // Last resort: return the raw action or empty
     return action || '';
@@ -221,19 +216,17 @@ export default function HistoryPage() {
 
   // Calculate stats
   const stats = useMemo(() => {
-    if (!activities) return { total: 0, flashcards: 0, summaries: 0, tests: 0 };
-    let flashcards = 0, summaries = 0, tests = 0;
+    if (!activities) return { total: 0, flashcards: 0, summaries: 0 };
+    let flashcards = 0, summaries = 0;
     activities.forEach(a => {
       const rt = resolveActivityType(a);
       if (rt.startsWith('flashcard')) flashcards++;
       if (rt.startsWith('summary')) summaries++;
-      if (rt.startsWith('practice_test')) tests++;
     });
     return {
       total: activities.length,
       flashcards,
       summaries,
-      tests,
     };
   }, [activities]);
 
@@ -273,7 +266,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border border-teal-200 dark:border-teal-700 rounded-xl p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -304,15 +297,7 @@ export default function HistoryPage() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Tests</p>
-                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.tests}</p>
-              </div>
-              <ClipboardCheck className="w-8 h-8 text-amber-600 dark:text-amber-400" />
-            </div>
-          </div>
+          {/* Tests stats removed */}
         </div>
 
         {/* Filters */}
@@ -328,9 +313,9 @@ export default function HistoryPage() {
               <option value="all">All Activities</option>
               <option value="flashcard">Flashcards</option>
               <option value="summary">Summaries</option>
-              <option value="practice_test">Practice Tests</option>
+              {/* Practice Tests option removed */}
               <option value="folder">Folders</option>
-              <option value="profile">Profile</option>
+              {/* Profile filter removed */}
               
             </select>
           </div>
@@ -522,7 +507,7 @@ export default function HistoryPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
                   {filterType !== 'all' || timeFilter !== 'all' 
                     ? 'No activities found for the selected filters. Try adjusting your filters.'
-                    : 'Start creating flashcards, summaries, or taking practice tests to see your activity here.'}
+                    : 'Start creating flashcards or summaries to see your activity here.'}
                 </p>
               </div>
               {(filterType !== 'all' || timeFilter !== 'all') && (
