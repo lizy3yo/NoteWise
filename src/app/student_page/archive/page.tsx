@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAlert } from '@/hooks/useAlert';
+import { useFlashcardRequest, useSummaryRequest } from '@/hooks';
+import { requestService } from '@/services/RequestService';
 
 type FlashcardItem = {
   _id: string;
@@ -39,113 +41,89 @@ export default function ArchivePage() {
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
 
+  // Get userId
   useEffect(() => {
-    let isMounted = true;
+    const getUserId = async () => {
+      let uid: string | null = null;
 
-    async function loadData() {
-      setIsLoading(true);
-      setError(null);
       try {
-        let uid: string | null = null;
-
-        // Try authenticated API call with token
-        try {
-          const token = localStorage.getItem('accessToken');
-          if (token) {
-            const currentRes = await fetch('/api/v1/users/current', {
-              credentials: 'include',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            if (currentRes.ok) {
-              const currentJson = await currentRes.json().catch(() => ({}));
-              uid = currentJson?.user?._id ?? null;
-            }
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          const response = await requestService.get('/api/v1/users/current');
+          if (response.success && response.data?.user) {
+            uid = response.data.user._id || response.data.user.id;
           }
-        } catch (err) {
-          console.warn("Archive: JWT authentication failed:", err);
         }
-
-        // Fallback to localStorage userId
-        if (!uid) {
-          uid = localStorage.getItem('userId');
-        }
-
-        if (!isMounted) return;
-        setUserId(uid);
-
-        if (!uid) {
-          throw new Error('User not authenticated');
-        }
-
-        // Fetch flashcards and filter archived ones
-        const flashcardsRes = await fetch(`/api/student_page/flashcard?userId=${uid}`, {
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store',
-        });
-        if (flashcardsRes.ok) {
-          const data = await flashcardsRes.json();
-          const archivedFlashcards = (data.flashcards || []).filter((f: FlashcardItem) => f.isArchived);
-          if (isMounted) setFlashcards(archivedFlashcards);
-        }
-
-        // Fetch summaries and filter archived ones
-        const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, {
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store',
-        });
-        if (summariesRes.ok) {
-          const data = await summariesRes.json();
-          const archivedSummaries = (data.summaries || []).filter((s: SummaryItem) => s.isArchived);
-          if (isMounted) setSummaries(archivedSummaries);
-        }
-      } catch (e: unknown) {
-        if (!isMounted) return;
-        setError(e instanceof Error ? e.message : 'Failed to load archived items.');
-      } finally {
-        if (isMounted) setIsLoading(false);
+      } catch (err) {
+        console.warn("Archive: JWT authentication failed:", err);
       }
-    }
 
-    loadData();
+      if (!uid) {
+        uid = localStorage.getItem('userId');
+      }
 
-    return () => {
-      isMounted = false;
+      setUserId(uid);
     };
+
+    getUserId();
   }, []);
+
+  // Use hooks for data fetching
+  const { 
+    flashcards: hookFlashcards, 
+    isLoading: flashcardsLoading 
+  } = useFlashcardRequest(userId || undefined);
+
+  const { 
+    summaries: hookSummaries, 
+    isLoading: summariesLoading 
+  } = useSummaryRequest(userId || undefined);
+
+  // Filter archived items
+  useEffect(() => {
+    if (hookFlashcards) {
+      const archivedFlashcards = hookFlashcards.filter(f => f.isArchived);
+      setFlashcards(archivedFlashcards);
+    }
+  }, [hookFlashcards]);
+
+  useEffect(() => {
+    if (hookSummaries) {
+      const archivedSummaries = hookSummaries.filter(s => s.isArchived);
+      setSummaries(archivedSummaries);
+    }
+  }, [hookSummaries]);
+
+  // Combined loading state
+  useEffect(() => {
+    setIsLoading(flashcardsLoading || summariesLoading);
+  }, [flashcardsLoading, summariesLoading]);
+
+  const { updateFlashcard, deleteFlashcard } = useFlashcardRequest(userId || undefined);
+  const { updateSummary, deleteSummary } = useSummaryRequest(userId || undefined);
 
   const handleUnarchive = async (id: string, type: 'flashcard' | 'summary') => {
     if (!userId) return;
 
     try {
-      let endpoint = '';
+      let response;
       if (type === 'flashcard') {
-        endpoint = `/api/student_page/flashcard/${id}?userId=${userId}`;
+        response = await updateFlashcard(id, { isArchived: false });
       } else {
-        endpoint = `/api/student_page/summary?userId=${userId}&summaryId=${id}`;
+        response = await updateSummary(id, { isArchived: false });
       }
 
-      const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isArchived: false }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'Failed to unarchive item');
-      }
-
-      // Update local state
-      if (type === 'flashcard') {
-        setFlashcards(prev => prev.filter(f => f._id !== id));
+      if (response.success) {
+        // Update local state
+        if (type === 'flashcard') {
+          setFlashcards(prev => prev.filter(f => f._id !== id));
+        } else {
+          setSummaries(prev => prev.filter(s => s._id !== id));
+        }
+        showSuccess('Item restored successfully');
       } else {
-        setSummaries(prev => prev.filter(s => s._id !== id));
+        throw new Error(response.error || 'Failed to unarchive item');
       }
-
-      showSuccess('Item restored successfully');
     } catch (error) {
       console.error('Failed to unarchive item:', error);
       showError(error instanceof Error ? error.message : 'Failed to restore item');
@@ -157,31 +135,24 @@ export default function ArchivePage() {
     if (!confirm('Are you sure you want to permanently delete this item? This action cannot be undone.')) return;
 
     try {
-      let endpoint = '';
+      let response;
       if (type === 'flashcard') {
-        endpoint = `/api/student_page/flashcard/${id}?userId=${userId}`;
+        response = await deleteFlashcard(id);
       } else {
-        endpoint = `/api/student_page/summary?userId=${userId}&summaryId=${id}`;
+        response = await deleteSummary(id);
       }
 
-      const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'Failed to delete item');
-      }
-
-      // Update local state
-      if (type === 'flashcard') {
-        setFlashcards(prev => prev.filter(f => f._id !== id));
+      if (response.success) {
+        // Update local state
+        if (type === 'flashcard') {
+          setFlashcards(prev => prev.filter(f => f._id !== id));
+        } else {
+          setSummaries(prev => prev.filter(s => s._id !== id));
+        }
+        showSuccess('Item deleted permanently');
       } else {
-        setSummaries(prev => prev.filter(s => s._id !== id));
+        throw new Error(response.error || 'Failed to delete item');
       }
-
-      showSuccess('Item deleted permanently');
     } catch (error) {
       console.error('Failed to delete item:', error);
       showError(error instanceof Error ? error.message : 'Failed to delete item');

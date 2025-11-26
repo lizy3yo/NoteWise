@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Alert from "@/components/ui/alert_template/Alert";
 import { useAlert } from "@/hooks/useAlert";
+import { useAuthRequest } from "@/hooks";
+import { requestService } from "@/services/RequestService";
 import "./login-mobile.css";
 
 
@@ -42,10 +44,10 @@ export default function Login() {
     role: "student",
   });
 
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const { alert, showError, showSuccess, showInfo, hideAlert } = useAlert();
+  const { login, isLoading } = useAuthRequest();
   const router = useRouter();
 
   // Check for URL parameters on component mount
@@ -145,38 +147,28 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     hideAlert();
 
     try {
-      const response = await fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      const response = await login({
+        email: formData.email,
+        password: formData.password,
+        rememberMe
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        const errorData = data as ApiError;
-
+      if (!response.success) {
         // Handle email verification requirement
-        if (errorData.code === 'EMAIL_NOT_VERIFIED') {
+        if (response.error?.includes('EMAIL_NOT_VERIFIED') || response.error?.includes('not verified')) {
           showInfo("Sending verification code to your email...", "Email Verification Required");
 
           // Automatically send verification email
           try {
-            const verificationResponse = await fetch("/api/v1/auth/send-verification", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ email: formData.email }),
-            });
+            const verificationResponse = await requestService.post("/api/v1/auth/send-verification", 
+              { email: formData.email },
+              { skipAuth: true }
+            );
 
-            if (verificationResponse.ok) {
+            if (verificationResponse.success) {
               showInfo("Verification code sent! Please check your email.", "Check Your Email");
               setTimeout(() => {
                 router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
@@ -197,18 +189,11 @@ export default function Login() {
           return;
         }
 
-        showError(errorData.message || "Login failed", "Login Failed");
+        showError(response.error || "Login failed", "Login Failed");
         return;
       }
 
-      const loginData = data as LoginResponse;
-
-      console.log("Login response received:", loginData);
-
-      // Store user data and tokens
-      localStorage.setItem("user", JSON.stringify(loginData.Student));
-      localStorage.setItem("userId", loginData.Student._id);
-      localStorage.setItem("accessToken", loginData.accessToken);
+      console.log("Login successful");
 
       // Handle Remember Me functionality
       if (rememberMe) {
@@ -220,12 +205,6 @@ export default function Login() {
         localStorage.removeItem("rememberedPassword");
         localStorage.removeItem("rememberMe");
       }
-
-      console.log("Data stored in localStorage:", {
-        user: localStorage.getItem("user"),
-        userId: localStorage.getItem("userId"),
-        accessToken: localStorage.getItem("accessToken")
-      });
 
       // Note: Refresh token is stored as HTTP-only cookie by the server
 
@@ -245,8 +224,6 @@ export default function Login() {
         "Network error. Please check your connection and try again.",
         "Connection Error"
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 

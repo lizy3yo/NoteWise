@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PrimaryActionButton from '@/components/ui/buttons/PrimaryActionButton';
 import { useAlert } from '@/hooks/useAlert';
+import { useFlashcardRequest, useSummaryRequest } from '@/hooks';
+import { requestService } from '@/services/RequestService';
 // Alert rendering removed here; use the global Alert in student_page/layout.tsx
 
 type FlashcardItem = {
@@ -189,48 +191,24 @@ function PrivateLibraryContent() {
   // Toggle flashcard completed state (uses lastReviewed as 'completed' flag)
   const toggleFlashcardCompleted = async (id: string, currentCompleted: boolean) => {
     if (!userId) return;
-    try {
-      const endpoint = `/api/student_page/flashcard/${id}?userId=${userId}`;
-      const body: any = currentCompleted
-        ? { lastReviewed: null, repetitionCount: 0 }
-        : { lastReviewed: new Date().toISOString() };
-      const res = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Failed to update flashcard');
-      }
-
-      // Update local state
-      setFlashcards(prev => prev.map(f => f._id === id ? { ...f, lastReviewed: currentCompleted ? undefined : new Date().toISOString(), repetitionCount: currentCompleted ? 0 : (f.repetitionCount || 0) } : f));
+    const updateData = currentCompleted
+      ? { lastReviewed: undefined, repetitionCount: 0 }
+      : { lastReviewed: new Date().toISOString() };
+    
+    const response = await hookUpdateFlashcard(id, updateData);
+    if (response.success) {
       showSuccess(currentCompleted ? 'Marked as not completed' : 'Marked as completed');
-    } catch (e: unknown) {
-      console.error('Failed to toggle completed state:', e);
-      showError(e instanceof Error ? e.message : 'Failed to update completed state');
+    } else {
+      showError(response.error || 'Failed to update completed state');
     }
   };
 
   // Toggle summary read/unread
   const toggleSummaryRead = async (id: string, currentRead: boolean) => {
     if (!userId) return;
-    try {
-      const endpoint = `/api/student_page/summary?userId=${userId}&summaryId=${id}`;
-      const res = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isRead: !currentRead }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || err.error || 'Failed to update summary');
-      }
-
-      // Update local state
-      setSummaries(prev => prev.map(s => s._id === id ? { ...s, isRead: !currentRead } : s));
-
+    const response = await hookUpdateSummary(id, { isRead: !currentRead });
+    
+    if (response.success) {
       // Broadcast the change so other tabs update
       try {
         if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -243,9 +221,8 @@ function PrivateLibraryContent() {
       }
 
       showSuccess(!currentRead ? 'Marked as read' : 'Marked as unread');
-    } catch (e: unknown) {
-      console.error('Failed to toggle summary read state:', e);
-      showError(e instanceof Error ? e.message : 'Failed to update read state');
+    } else {
+      showError(response.error || 'Failed to update read state');
     }
   };
   const searchParams = useSearchParams();
@@ -374,176 +351,133 @@ function PrivateLibraryContent() {
     }
   }, [searchParams, isLoading, flashcards]);
 
+  // Get userId
   useEffect(() => {
-    let isMounted = true;
+    const getUserId = async () => {
+      let uid: string | null = null;
 
-    async function loadData() {
-      setIsLoading(true);
-      setError(null);
+      // Method 1: Try authenticated API call with token
       try {
-        // Try multiple authentication methods
-        let uid: string | null = null;
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          const response = await requestService.get('/api/v1/users/current');
+          if (response.success && response.data?.user) {
+            uid = response.data.user._id || response.data.user.id;
+            console.log("✅ Library: Authenticated via JWT token, user ID:", uid);
+          }
+        }
+      } catch (err) {
+        console.warn("Library: JWT authentication failed:", err);
+      }
 
-        // Method 1: Try authenticated API call with token
-        try {
-          const token = localStorage.getItem('accessToken');
-          if (token) {
-            const currentRes = await fetch('/api/v1/users/current', {
-              credentials: 'include',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+      // Method 2: Fallback to localStorage userId
+      if (!uid) {
+        uid = localStorage.getItem('userId');
+        if (uid) {
+          console.log("✅ Library: Using localStorage userId:", uid);
+        }
+      }
+
+      // Method 3: Generate a temporary user ID for demo purposes
+      if (!uid) {
+        uid = `temp-user-${Date.now()}`;
+        localStorage.setItem('userId', uid);
+        console.log("⚠️ Library: Generated temporary user ID:", uid);
+      }
+
+      setUserId(uid);
+    };
+
+    getUserId();
+  }, []);
+
+  // Use hooks for data fetching
+  const { 
+    flashcards: hookFlashcards, 
+    fetchFlashcards,
+    deleteFlashcard: hookDeleteFlashcard,
+    updateFlashcard: hookUpdateFlashcard,
+    isLoading: flashcardsLoading 
+  } = useFlashcardRequest(userId || undefined);
+
+  const { 
+    summaries: hookSummaries, 
+    fetchSummaries,
+    deleteSummary: hookDeleteSummary,
+    updateSummary: hookUpdateSummary,
+    isLoading: summariesLoading 
+  } = useSummaryRequest(userId || undefined);
+
+  // Sync hook data with local state and filter archived items
+  useEffect(() => {
+    if (hookFlashcards) {
+      const activeFlashcards = hookFlashcards.filter(f => !f.isArchived);
+      setFlashcards(activeFlashcards);
+      console.log('📚 Loaded flashcards:', activeFlashcards);
+    }
+  }, [hookFlashcards]);
+
+  useEffect(() => {
+    if (hookSummaries) {
+      const activeSummaries = hookSummaries.filter(s => !s.isArchived);
+      setSummaries(activeSummaries);
+      console.log('📄 Loaded summaries:', activeSummaries);
+    }
+  }, [hookSummaries]);
+
+  // Fetch folders and activities separately (not in hooks yet)
+  useEffect(() => {
+    if (!userId) return;
+
+    const loadAdditionalData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch folders
+        const foldersRes = await requestService.get(`/api/student_page/folder?userId=${userId}`);
+        if (foldersRes.success && foldersRes.data) {
+          console.log('📁 Loaded folders:', foldersRes.data);
+          setFolders(Array.isArray(foldersRes.data.folders) ? foldersRes.data.folders : []);
+        }
+
+        // Fetch activities
+        const actsRes = await requestService.get(`/api/student_page/history?userId=${userId}&limit=200`);
+        if (actsRes.success && actsRes.data) {
+          const readIds = new Set<string>();
+          const completedFlashcardIds = new Set<string>();
+          
+          if (Array.isArray(actsRes.data.activities)) {
+            actsRes.data.activities.forEach((a: any) => {
+              const activityType = (a.type || a.action || '').toLowerCase();
+              
+              if (activityType.includes('summary.read') || activityType.includes('summary_read')) {
+                const mid = a.meta?.summaryId || a.meta?.summaryID || a.meta?.id;
+                if (mid) readIds.add(mid.toString());
+              }
+              
+              if (activityType.includes('flashcard.study_complete') || activityType.includes('flashcard_study_complete')) {
+                const fid = a.meta?.flashcardId || a.meta?.flashcardID || a.meta?.id;
+                if (fid) completedFlashcardIds.add(fid.toString());
               }
             });
-            if (currentRes.ok) {
-              const currentJsonUnknown = await currentRes.json().catch(() => ({} as unknown));
-              const currentJson = currentJsonUnknown as Partial<{ user?: { _id?: string } }>;
-              uid = currentJson?.user?._id ?? null;
-              console.log("✅ Library: Authenticated via JWT token, user ID:", uid);
-            }
           }
-        } catch (err) {
-          console.warn("Library: JWT authentication failed:", err);
+
+          setSummaryReadActivityIds(readIds);
+          setFlashcardCompletedActivityIds(completedFlashcardIds);
         }
-
-        // Method 2: Fallback to localStorage userId
-        if (!uid) {
-          uid = localStorage.getItem('userId');
-          if (uid) {
-            console.log("✅ Library: Using localStorage userId:", uid);
-          }
-        }
-
-        // Method 3: Generate a temporary user ID for demo purposes
-        if (!uid) {
-          uid = `temp-user-${Date.now()}`;
-          localStorage.setItem('userId', uid);
-          console.log("⚠️ Library: Generated temporary user ID:", uid);
-        }
-
-        if (!isMounted) return;
-        setUserId(uid);
-
-        // Fetch flashcards owned by the current user from the student_page API
-        const res = await fetch(`/api/student_page/flashcard?userId=${uid}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-store',
-        });
-        if (!res.ok) {
-          const maybeUnknown = await res.json().catch(() => ({} as unknown));
-          const maybe = maybeUnknown as Partial<{ message?: string }>;
-          throw new Error(maybe?.message || `Failed to load flashcards (${res.status})`);
-        }
-        const data = (await res.json()) as { flashcards: FlashcardItem[] };
-        if (!isMounted) return;
-
-        // Debug: Log flashcard data to check subjects
-        console.log('📚 Loaded flashcards:', data.flashcards);
-        console.log('📚 Flashcards with lastReviewed:', data.flashcards.filter((fc: any) => fc.lastReviewed));
-        data.flashcards.forEach((fc, idx) => {
-          console.log(`Flashcard ${idx + 1}: "${fc.title}" - Subject: "${fc.subject || 'MISSING'}"`, fc);
-        });
-
-        // Filter out archived flashcards from library view
-        const activeFlashcards = Array.isArray(data?.flashcards) ? data.flashcards.filter((f: FlashcardItem) => !f.isArchived) : [];
-        setFlashcards(activeFlashcards);
-
-        // Fetch summaries
-        const summariesRes = await fetch(`/api/student_page/summary?userId=${uid}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-store',
-        });
-
-        if (summariesRes.ok) {
-          const summariesData = await summariesRes.json();
-          if (isMounted && summariesData.success) {
-            console.log('📄 Loaded summaries:', summariesData.summaries);
-            console.log('📄 Summaries with isRead:', summariesData.summaries.filter((s: any) => s.isRead));
-            // Filter out archived summaries from library view
-            const activeSummaries = Array.isArray(summariesData?.summaries) ? summariesData.summaries.filter((s: SummaryItem) => !s.isArchived) : [];
-            setSummaries(activeSummaries);
-          }
-        } else {
-          console.warn('Failed to load summaries');
-        }
-
-        // Fetch folders
-        const foldersRes = await fetch(`/api/student_page/folder?userId=${uid}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-store',
-        });
-
-        if (foldersRes.ok) {
-          const foldersData = await foldersRes.json();
-          if (isMounted) {
-            console.log('📁 Loaded folders:', foldersData);
-            setFolders(Array.isArray(foldersData.folders) ? foldersData.folders : []);
-          }
-        } else {
-          console.warn('Failed to load folders');
-        }
-
-        // Fetch activities to detect summary.read and flashcard.study_complete events
-        // (some flows create activities instead of updating the document fields)
-        try {
-          const actsRes = await fetch(`/api/student_page/history?userId=${uid}&limit=200`, {
-            headers: { 'Content-Type': 'application/json' },
-            cache: 'no-store',
-            credentials: 'include'
-          });
-
-          if (actsRes.ok) {
-            const actsData = await actsRes.json();
-            
-            const readIds = new Set<string>();
-            const completedFlashcardIds = new Set<string>();
-            
-            // Parse activities array (same format as achievements page)
-            if (Array.isArray(actsData.activities)) {
-              actsData.activities.forEach((a: any) => {
-                const activityType = (a.type || a.action || '').toLowerCase();
-                
-                // Check for summary.read activities
-                if (activityType.includes('summary.read') || activityType.includes('summary_read')) {
-                  const mid = a.meta?.summaryId || a.meta?.summaryID || a.meta?.id;
-                  if (mid) readIds.add(mid.toString());
-                }
-                
-                // Check for flashcard.study_complete activities
-                if (activityType.includes('flashcard.study_complete') || activityType.includes('flashcard_study_complete')) {
-                  const fid = a.meta?.flashcardId || a.meta?.flashcardID || a.meta?.id;
-                  if (fid) completedFlashcardIds.add(fid.toString());
-                }
-              });
-            }
-
-            setSummaryReadActivityIds(readIds);
-            setFlashcardCompletedActivityIds(completedFlashcardIds);
-          }
-        } catch (e) {
-          // non-fatal
-          console.warn('Failed to load activities for completion detection', e);
-        }
-      } catch (e: unknown) {
-        if (!isMounted) return;
-        setError(e instanceof Error ? e.message : 'Something went wrong loading your library.');
+      } catch (e) {
+        console.warn('Failed to load additional data', e);
       } finally {
-        if (isMounted) setIsLoading(false);
+        setIsLoading(false);
       }
-    }
-
-    loadData();
-
-    return () => {
-      isMounted = false;
     };
-  }, []);
+
+    loadAdditionalData();
+  }, [userId]);
+
+  // Combined loading state
+  useEffect(() => {
+    setIsLoading(flashcardsLoading || summariesLoading);
+  }, [flashcardsLoading, summariesLoading]);
 
   // Helper function to determine menu position based on button location
   const handleMenuToggle = (e: React.MouseEvent, itemId: string) => {
@@ -640,23 +574,7 @@ function PrivateLibraryContent() {
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible' && userId) {
         // Refresh summaries to get updated isRead status
-        try {
-          const summariesRes = await fetch(`/api/student_page/summary?userId=${userId}`, {
-            headers: { 'Content-Type': 'application/json' },
-            cache: 'no-store',
-          });
-
-          if (summariesRes.ok) {
-            const summariesData = await summariesRes.json();
-            if (summariesData.success) {
-              // Filter out archived summaries from library view
-              const activeSummaries = Array.isArray(summariesData?.summaries) ? summariesData.summaries.filter((s: SummaryItem) => !s.isArchived) : [];
-              setSummaries(activeSummaries);
-            }
-          }
-        } catch (e) {
-          console.warn('Failed to refresh summaries:', e);
-        }
+        await fetchSummaries(false); // Skip cache for fresh data
       }
     };
 
@@ -665,7 +583,7 @@ function PrivateLibraryContent() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [userId]);
+  }, [userId, fetchSummaries]);
 
   const handleDelete = async (flashcardId: string) => {
     if (!userId) return;
@@ -673,21 +591,12 @@ function PrivateLibraryContent() {
       'Delete Flashcard',
       'Are you sure you want to delete this flashcard? This action cannot be undone.',
       async () => {
-        try {
-          const res = await fetch(`/api/student_page/flashcard/${flashcardId}?userId=${userId}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-          });
-          if (!res.ok) {
-            const maybeUnknown = await res.json().catch(() => ({} as unknown));
-            const maybe = maybeUnknown as Partial<{ message?: string }>;
-            throw new Error(maybe?.message || `Failed to delete (${res.status})`);
-          }
-          setFlashcards(prev => prev.filter(f => f._id !== flashcardId));
+        const response = await hookDeleteFlashcard(flashcardId);
+        if (response.success) {
           setOpenMenuId(null);
           showSuccess('Flashcard deleted successfully');
-        } catch (e: unknown) {
-          showError(e instanceof Error ? e.message : 'Failed to delete flashcard.');
+        } else {
+          showError(response.error || 'Failed to delete flashcard.');
         }
       },
       { confirmText: 'Delete', isDangerous: true }
@@ -710,45 +619,23 @@ function PrivateLibraryContent() {
     if (!selectedItem || !userId) return;
 
     try {
-      let endpoint = '';
-      let updateData: any = { folder: folderId };
+      let response;
 
-      // Determine the correct API endpoint based on item type
+      // Use hooks to update items
       if (selectedItem.type === 'flashcard') {
-        endpoint = `/api/student_page/flashcard/${selectedItem.id}?userId=${userId}`;
+        response = await hookUpdateFlashcard(selectedItem.id, { folder: folderId || undefined });
       } else if (selectedItem.type === 'summary') {
-        endpoint = `/api/student_page/summary?userId=${userId}&summaryId=${selectedItem.id}`;
-        updateData = { folder: folderId };
+        response = await hookUpdateSummary(selectedItem.id, { folder: folderId || undefined });
       }
 
-      const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'Failed to move item to folder');
+      if (response && response.success) {
+        // Close modal
+        setShowFolderModal(false);
+        setSelectedItem(null);
+        showSuccess('Item moved to folder successfully');
+      } else {
+        throw new Error(response?.error || 'Failed to move item to folder');
       }
-
-      // Update local state instead of reloading
-      if (selectedItem.type === 'flashcard') {
-        setFlashcards(prev => prev.map(f =>
-          f._id === selectedItem.id ? { ...f, folder: folderId || undefined } : f
-        ));
-      } else if (selectedItem.type === 'summary') {
-        setSummaries(prev => prev.map(s =>
-          s._id === selectedItem.id ? { ...s, folder: folderId || undefined } : s
-        ));
-      }
-
-      // Close modal
-      setShowFolderModal(false);
-      setSelectedItem(null);
-      showSuccess('Item moved to folder successfully');
     } catch (error) {
       console.error('Failed to move item to folder:', error);
       showError(error instanceof Error ? error.message : 'Failed to move item to folder');
@@ -759,25 +646,17 @@ function PrivateLibraryContent() {
     if (!userId || !createFolderName.trim()) return;
 
     try {
-      const folderResponse = await fetch(`/api/student_page/folder?userId=${userId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: createFolderName.trim(),
-        }),
-      });
+      const response = await requestService.post(
+        `/api/student_page/folder?userId=${userId}`,
+        { title: createFolderName.trim() }
+      );
 
-      if (!folderResponse.ok) {
-        const errorData = await folderResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create folder');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create folder');
       }
 
-      const folderData = await folderResponse.json();
-
       // Update local state
-      setFolders(prev => [...prev, folderData.folder]);
+      setFolders(prev => [...prev, response.data.folder]);
 
       // Close modal
       setShowCreateFolderModal(false);

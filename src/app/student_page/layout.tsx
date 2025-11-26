@@ -70,29 +70,27 @@ function AchievementListener() {
 
       try {
         // Fetch minimal data needed for achievement calculation
+        const { requestService } = await import('@/services/RequestService');
         const [flashcardsRes, summariesRes, activitiesRes] = await Promise.allSettled([
-          fetch(`/api/student_page/flashcard?userId=${encodeURIComponent(userId)}`, { credentials: 'include' }),
-          fetch(`/api/student_page/summary?userId=${encodeURIComponent(userId)}`, { credentials: 'include' }),
-          fetch(`/api/student_page/history?userId=${encodeURIComponent(userId)}&limit=200`, { credentials: 'include' })
+          requestService.get(`/api/student_page/flashcard?userId=${encodeURIComponent(userId)}`),
+          requestService.get(`/api/student_page/summary?userId=${encodeURIComponent(userId)}`),
+          requestService.get(`/api/student_page/history?userId=${encodeURIComponent(userId)}&limit=200`)
         ]);
 
         let flashcards: any[] = [];
         let summaries: any[] = [];
         let activities: any[] = [];
 
-        if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.ok) {
-          const data = await flashcardsRes.value.json();
-          flashcards = data.flashcards || [];
+        if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.success) {
+          flashcards = flashcardsRes.value.data?.flashcards || [];
         }
 
-        if (summariesRes.status === 'fulfilled' && summariesRes.value.ok) {
-          const data = await summariesRes.value.json();
-          summaries = data.summaries || [];
+        if (summariesRes.status === 'fulfilled' && summariesRes.value.success) {
+          summaries = summariesRes.value.data?.summaries || [];
         }
 
-        if (activitiesRes.status === 'fulfilled' && activitiesRes.value.ok) {
-          const data = await activitiesRes.value.json();
-          activities = data.activities || [];
+        if (activitiesRes.status === 'fulfilled' && activitiesRes.value.success) {
+          activities = activitiesRes.value.data?.activities || [];
         }
 
         // Calculate achievements (same logic as achievements page)
@@ -641,27 +639,16 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
     try {
       // Clear any existing alerts
       hideAlert && hideAlert();
-      // Get the access token from localStorage
-      const accessToken = localStorage.getItem("accessToken");
+      
+      // Use the logout hook
+      const { useAuthRequest } = await import('@/hooks');
+      const { logout } = useAuthRequest();
+      
+      const response = await logout();
 
-      const response = await fetch("/api/v1/auth/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Include the Authorization header if token exists
-          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-        },
-        credentials: "include",
-      });
-
-      // Even if logout fails on backend, clean up frontend
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-
-      // Show appropriate alert then redirect to login. Login page reads ?message to show success.
-      if (response.ok) {
+      // Show appropriate alert then redirect to login
+      if (response.success) {
         showSuccess?.("You have been logged out successfully.", "Logged out");
-        // short delay to allow alert to appear briefly before redirect
         setTimeout(() => {
           window.location.href = "/auth/login?message=" + encodeURIComponent("Logged out successfully");
         }, 700);
@@ -676,10 +663,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       }
     } catch (error) {
       console.error("Logout failed:", error);
-      // Still clean up frontend even if backend call fails
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-
+      // Cleanup is handled by the hook
       showError?.("Network error during logout. You were signed out locally.", "Logout Error");
       setTimeout(() => {
         window.location.href = "/auth/login?message=" + encodeURIComponent("Logout failed");

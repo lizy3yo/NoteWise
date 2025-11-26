@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAlert } from '@/hooks/useAlert';
+import { useSummaryRequest } from '@/hooks';
+import { requestService } from '@/services/RequestService';
 
 interface Summary {
     _id: string;
@@ -23,11 +25,10 @@ interface Summary {
 }
 
 export default function SummariesPage() {
-    const [summaries, setSummaries] = useState<Summary[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
+    const { summaries, deleteSummary, isLoading: loading, error: hookError } = useSummaryRequest(userId || undefined);
+    const [error, setError] = useState<string | null>(null);
     const { showSuccess, showError } = useAlert();
 
     // Get userId and fetch summaries
@@ -55,33 +56,16 @@ export default function SummariesPage() {
                 localStorage.setItem('userId', uid);
             }
             setUserId(uid);
-
-            // Fetch summaries
-            if (uid) {
-                await fetchSummaries(uid);
-            }
         }
         getUserIdAndFetchSummaries();
     }, []);
 
-    const fetchSummaries = async (uid: string) => {
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/student_page/summary?userId=${uid}`);
-            const data = await response.json();
-
-            if (data.success) {
-                setSummaries(data.summaries || []);
-            } else {
-                setError(data.error || 'Failed to fetch summaries');
-            }
-        } catch (err) {
-            console.error('Error fetching summaries:', err);
-            setError('Failed to load summaries');
-        } finally {
-            setLoading(false);
+    // Summaries are automatically fetched by the hook when userId is set
+    useEffect(() => {
+        if (hookError) {
+            setError(hookError);
         }
-    };
+    }, [hookError]);
 
     // Delete modal state and actions
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
@@ -97,7 +81,7 @@ export default function SummariesPage() {
         setShowDeleteConfirm(true);
     };
 
-    const deleteSummary = async (summaryId?: string) => {
+    const handleDeleteSummary = async (summaryId?: string) => {
         const id = summaryId || deleteTargetId;
         if (!userId || !id) {
             showError('User not found.');
@@ -108,16 +92,12 @@ export default function SummariesPage() {
 
         try {
             setDeleteLoading(true);
-            const response = await fetch(`/api/student_page/summary?userId=${userId}&summaryId=${id}`, {
-                method: 'DELETE'
-            });
-            const data = await response.json();
+            const response = await deleteSummary(id);
 
-            if (data.success) {
-                setSummaries(prev => prev.filter(s => s._id !== id));
+            if (response.success) {
                 showSuccess('Summary deleted successfully');
             } else {
-                showError(data.error || 'Failed to delete summary');
+                showError(response.error || 'Failed to delete summary');
             }
         } catch (err) {
             console.error('Error deleting summary:', err);
@@ -142,21 +122,15 @@ export default function SummariesPage() {
 
         try {
             setResummarizeLoading(true);
-            const res = await fetch(`/api/student_page/summary/resummarize?userId=${userId}&summaryId=${summaryId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            });
-            const data = await res.json();
-            if (!res.ok || !data.success) {
-                throw new Error(data.error || 'Failed to resummarize');
+            const res = await requestService.post(`/api/student_page/summary/resummarize?userId=${userId}&summaryId=${summaryId}`, {});
+            
+            if (!res.success) {
+                throw new Error(res.error || 'Failed to resummarize');
             }
 
-            // Update summaries list if present
-            setSummaries(prev => prev.map(s => s._id === summaryId ? data.summary : s));
             // If modal open with this summary, update it
-            if (selectedSummary && selectedSummary._id === summaryId) {
-                setSelectedSummary(data.summary);
+            if (selectedSummary && selectedSummary._id === summaryId && res.data?.summary) {
+                setSelectedSummary(res.data.summary);
             }
 
             setShowResummarizeModal(false);

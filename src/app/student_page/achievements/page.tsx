@@ -5,6 +5,8 @@ import useAuth from "@/hooks/useAuth";
 import { useAlert } from '@/hooks/useAlert';
 import { useAchievements } from '@/contexts/AchievementContext';
 import { useAchievementData, type Achievement } from '@/hooks/useAchievementData';
+import { useFlashcardRequest } from '@/hooks';
+import { requestService } from '@/services/RequestService';
 
 export default function AchievementsPage() {
     const { user, isLoading: authLoading } = useAuth();
@@ -325,20 +327,18 @@ export default function AchievementsPage() {
         try {
             // Prevent double-marking: check existing StudyProgress completion first
             try {
-                const progRes = await fetch(`/api/student_page/flashcard/${fcId}/progress?userId=${userId}`, { credentials: 'include' });
-                if (progRes.ok) {
-                    const progJson = await progRes.json().catch(() => null);
-                    const prog = progJson?.progress || progJson;
+                const progRes = await requestService.get(`/api/student_page/flashcard/${fcId}/progress?userId=${userId}`);
+                if (progRes.success && progRes.data) {
+                    const prog = progRes.data.progress || progRes.data;
                     const existingCompletedAt = prog?.completion?.completedAt || prog?.lastSessionStartedAt || null;
                     if (prog?.completion?.showCompletion || existingCompletedAt) {
-                        // Already recorded a completion for this flashcard; avoid sending another PATCH
+                        // Already recorded a completion for this flashcard
                         showSuccess(`"${flashcard.title || 'set'}" is already marked finished`);
                         // update local UI from server to reflect current state
                         try {
-                            const refreshed = await fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' });
-                            if (refreshed.ok) {
-                                const json = await refreshed.json().catch(() => null);
-                                setFlashcards(Array.isArray(json?.flashcards) ? json.flashcards : []);
+                            const refreshed = await requestService.get(`/api/student_page/flashcard?userId=${userId}`);
+                            if (refreshed.success && refreshed.data) {
+                                setFlashcards(Array.isArray(refreshed.data.flashcards) ? refreshed.data.flashcards : []);
                             }
                         } catch (e) {
                             // ignore
@@ -352,20 +352,14 @@ export default function AchievementsPage() {
                 console.warn('Progress check failed, will attempt to mark finished', e);
             }
 
-            const res = await fetch(`/api/student_page/flashcard/${fcId}/progress?userId=${userId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(body)
-                });
-            if (!res.ok) throw new Error(`Server returned ${res.status}`);
+            const res = await requestService.patch(`/api/student_page/flashcard/${fcId}/progress?userId=${userId}`, body);
+            if (!res.success) throw new Error(res.error || 'Failed to update progress');
 
             // update local UI: re-fetch flashcards from server to ensure persistence across sessions
             try {
-                const refreshed = await fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' });
-                if (refreshed.ok) {
-                    const json = await refreshed.json().catch(() => null);
-                    setFlashcards(Array.isArray(json?.flashcards) ? json.flashcards : []);
+                const refreshed = await requestService.get(`/api/student_page/flashcard?userId=${userId}`);
+                if (refreshed.success && refreshed.data) {
+                    setFlashcards(Array.isArray(refreshed.data.flashcards) ? refreshed.data.flashcards : []);
                 } else {
                     // fallback: optimistic update
                     const now = new Date().toISOString();

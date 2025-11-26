@@ -8,6 +8,7 @@ import Modal from "@/components/ui/Modal";
 import TermsOfService from "@/components/legal/TermsOfService";
 import PrivacyPolicy from "@/components/legal/PrivacyPolicy";
 import { useAlert } from "@/hooks/useAlert";
+import { useAuthRequest } from "@/hooks";
 import { validateEmail, validatePassword, validateName, ValidationError } from "@/lib/validation";
 import "./signup.css";
 
@@ -49,13 +50,13 @@ export default function Signup() {
     confirmPassword: "",
     agreeToTerms: false,
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const { alert, showError, showSuccess, hideAlert } = useAlert();
+  const { register, isLoading } = useAuthRequest();
   const router = useRouter();
 
 
@@ -128,35 +129,25 @@ export default function Signup() {
     
     if (!validateStep2()) return;
 
-    setIsLoading(true);
     hideAlert();
 
     try {
-      const response = await fetch("/api/v1/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          email: formData.email.trim(),
-          password: formData.password,
-          role: "student",
-        }),
+      const response = await register({
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        const errorData = data as ApiError;
-        showError(errorData.message || "Signup failed", "Signup Failed");
+      if (!response.success) {
+        showError(response.error || "Signup failed", "Signup Failed");
         return;
       }
 
-      const signupData = data as SignupResponse;
+      // Check if verification is required (based on response data)
+      const requiresVerification = response.data?.user && !response.data.user.emailVerified;
 
-      if (signupData.requiresVerification) {
+      if (requiresVerification) {
         showSuccess("Account created successfully! Please check your email for verification.", "Check Your Email");
         
         // Navigate to email verification page
@@ -164,12 +155,6 @@ export default function Signup() {
           router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email.trim())}`);
         }, 1500);
       } else {
-        // Store user data (for cases where verification might be disabled)
-        localStorage.setItem("user", JSON.stringify(signupData.Student));
-        if (signupData.accessToken) {
-          localStorage.setItem("accessToken", signupData.accessToken);
-        }
-
         showSuccess("Account created successfully! Welcome to NoteWise!", "Welcome");
 
         // Navigate to student dashboard
@@ -183,8 +168,6 @@ export default function Signup() {
         "Network error. Please check your connection and try again.",
         "Connection Error"
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
