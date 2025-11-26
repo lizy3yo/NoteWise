@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 
-export default function Features() {
+function FeaturesContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // Handle hash scrolling on page load and when hash changes
   useEffect(() => {
@@ -251,5 +250,13 @@ export default function Features() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function Features() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <FeaturesContent />
+    </Suspense>
   );
 }
