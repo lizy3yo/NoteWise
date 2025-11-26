@@ -88,7 +88,7 @@ export default function AchievementUnlockToast({ achievement, onClose }: Achieve
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 transition-all duration-300 ease-out ${
+      className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ease-out ${
         isVisible && !isExiting
           ? 'translate-x-0 opacity-100 scale-100'
           : 'translate-x-full opacity-0 scale-95'

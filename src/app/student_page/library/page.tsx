@@ -213,15 +213,23 @@ function PrivateLibraryContent() {
     const response = await hookUpdateSummary(id, { isRead: !currentRead });
     
     if (response.success) {
-      // Broadcast the change so other tabs update
-      try {
-        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-          const bc = new BroadcastChannel('notewise.activities');
-          bc.postMessage({ type: 'summary.read', summaryId: id });
-          bc.close();
-        }
-      } catch (e) {
-        // ignore
+      // Trigger immediate achievement check with slight delay to ensure activity is persisted
+      if (typeof window !== 'undefined') {
+        // Small delay to ensure database write completes
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('checkAchievements'));
+          
+          // Also broadcast to other tabs
+          try {
+            if ('BroadcastChannel' in window) {
+              const bc = new BroadcastChannel('notewise.activities');
+              bc.postMessage({ type: 'summary.read', summaryId: id });
+              bc.close();
+            }
+          } catch (e) {
+            console.warn('BroadcastChannel not available:', e);
+          }
+        }, 500);
       }
 
       showSuccess(!currentRead ? 'Marked as read' : 'Marked as unread');

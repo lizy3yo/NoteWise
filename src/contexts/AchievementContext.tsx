@@ -32,6 +32,16 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     try {
       if (typeof window !== 'undefined') {
         const unlockedRaw = localStorage.getItem('unlocked_achievements');
+        const hasSeenInitial = localStorage.getItem('achievements_initialized');
+        
+        // If this is the first time, don't load from localStorage
+        // This ensures all earned achievements show notifications on first visit
+        if (!hasSeenInitial) {
+          console.log('🆕 First time initialization - will show all earned achievements');
+          localStorage.setItem('achievements_initialized', 'true');
+          return new Set();
+        }
+        
         if (unlockedRaw) {
           const ids = JSON.parse(unlockedRaw);
           console.log('🔄 Initialized previously unlocked IDs from localStorage:', ids);
@@ -44,14 +54,14 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     return new Set();
   });
   
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Mark as initialized immediately - we've already loaded from localStorage
+  const [isInitialized, setIsInitialized] = useState(true);
 
   console.log('🌍 AchievementProvider rendering, current unlocked achievement:', unlockedAchievement);
 
-  // Mark as initialized after first render
+  // Log when mounted
   useEffect(() => {
-    console.log('🌍 AchievementProvider MOUNTED');
-    setIsInitialized(true);
+    console.log('🌍 AchievementProvider MOUNTED with previously unlocked:', Array.from(previouslyUnlockedIds));
   }, []);
 
   const checkForNewAchievements = (currentAchievements: Achievement[]) => {
@@ -81,92 +91,69 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Find newly unlocked achievement (not in previous set but in current set)
-    const newlyUnlocked = unlocked.find(a => !previouslyUnlockedIds.has(a.id));
+    // Find ALL newly unlocked achievements (not in previous set but in current set)
+    const newlyUnlockedList = unlocked.filter(a => !previouslyUnlockedIds.has(a.id));
     
-    console.log('✨ Newly unlocked achievement:', newlyUnlocked ? newlyUnlocked.title : 'None');
+    console.log('✨ Newly unlocked achievements:', newlyUnlockedList.map(a => a.title));
     
-    if (newlyUnlocked) {
-      // Check if we recently logged this achievement (within last 24 hours to prevent duplicates)
-      const lastLoggedKey = `achievement_logged_${newlyUnlocked.id}`;
-      const lastLoggedTime = typeof window !== 'undefined' ? localStorage.getItem(lastLoggedKey) : null;
-      const now = Date.now();
+    if (newlyUnlockedList.length > 0) {
+      // Show notifications for each newly unlocked achievement with a delay between them
+      newlyUnlockedList.forEach((achievement, index) => {
+        setTimeout(() => {
+          console.log(`🎉 SHOWING ACHIEVEMENT TOAST ${index + 1}/${newlyUnlockedList.length}:`, achievement.title);
       
-      // Check if already logged within 24 hours
-      const alreadyLogged = lastLoggedTime && (now - parseInt(lastLoggedTime)) < 86400000; // 24 hours
-      
-      if (alreadyLogged) {
-        console.log('⏭️ Skipping - achievement was logged recently (within 24 hours)');
-        // Still update the tracking to prevent showing again
-        setPreviouslyUnlockedIds(currentlyUnlockedIds);
-        
-        // Update localStorage
-        try {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
-          }
-        } catch (e) {
-          console.error('Failed to update unlocked achievements:', e);
-        }
-        return;
-      }
-      
-      console.log('🎉 SHOWING ACHIEVEMENT TOAST:', newlyUnlocked.title);
-      
-      // Log achievement to activity feed (only if not recently logged)
-      try {
-        const localUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-        let userId = null;
-        if (localUser) {
-          const parsed = JSON.parse(localUser);
-          userId = parsed._id || parsed.id;
-        }
-        
-        console.log('📝 Logging achievement to activity feed...', {
-          userId,
-          title: newlyUnlocked.title,
-          description: newlyUnlocked.description,
-          icon: newlyUnlocked.icon
-        });
-        
-        if (userId) {
-          fetch('/api/student_page/log-achievement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              userId,
-              achievementTitle: newlyUnlocked.title,
-              achievementDescription: newlyUnlocked.description,
-              achievementIcon: newlyUnlocked.icon
-            })
-          })
-          .then(res => res.json())
-          .then(data => {
-            console.log('✅ Achievement logged successfully:', data);
-            // Mark as logged with timestamp
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(lastLoggedKey, now.toString());
+          // Log achievement to activity feed (only if not recently logged)
+          try {
+            const localUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+            let userId = null;
+            if (localUser) {
+              const parsed = JSON.parse(localUser);
+              userId = parsed._id || parsed.id;
             }
-            // Trigger a refresh of the notification widget
-            window.dispatchEvent(new CustomEvent('achievement:unlocked'));
-          })
-          .catch(err => console.error('❌ Failed to log achievement:', err));
-        } else {
-          console.error('❌ No userId found, cannot log achievement');
-        }
-      } catch (e) {
-        console.error('❌ Failed to log achievement to activity feed:', e);
-      }
-      
-      // Show toast for the newly unlocked achievement
-      setUnlockedAchievement({
-        title: newlyUnlocked.title,
-        description: newlyUnlocked.description,
-        icon: newlyUnlocked.icon
+            
+            console.log('📝 Logging achievement to activity feed...', {
+              userId,
+              title: achievement.title,
+              description: achievement.description,
+              icon: achievement.icon
+            });
+            
+            if (userId) {
+              fetch('/api/student_page/log-achievement', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  userId,
+                  achievementTitle: achievement.title,
+                  achievementDescription: achievement.description,
+                  achievementIcon: achievement.icon
+                })
+              })
+              .then(res => res.json())
+              .then(data => {
+                console.log('✅ Achievement logged successfully:', data);
+                // Trigger a refresh of the notification widget
+                window.dispatchEvent(new CustomEvent('achievement:unlocked'));
+              })
+              .catch(err => console.error('❌ Failed to log achievement:', err));
+            } else {
+              console.error('❌ No userId found, cannot log achievement');
+            }
+          } catch (e) {
+            console.error('❌ Failed to log achievement to activity feed:', e);
+          }
+          
+          // Show toast for the newly unlocked achievement
+          setUnlockedAchievement({
+            title: achievement.title,
+            description: achievement.description,
+            icon: achievement.icon
+          });
+        }, index * 6000); // 6 seconds between each notification (5s display + 1s gap)
       });
       
-      // Update localStorage with all unlocked IDs
+      // Update localStorage with all unlocked IDs (after all notifications are queued)
       try {
         if (typeof window !== 'undefined') {
           localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
@@ -218,17 +205,60 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     setPreviouslyUnlockedIds(currentlyUnlockedIds);
   };
 
-  const resetTracking = () => {
-    console.log('🔄 Resetting achievement tracking');
+  const resetTracking = async () => {
+    console.log('🔄 Resetting achievement tracking...');
     setPreviouslyUnlockedIds(new Set());
+    
     try {
       if (typeof window !== 'undefined') {
+        // Clear localStorage
         localStorage.removeItem('unlocked_achievements');
+        localStorage.removeItem('achievements_initialized');
+        localStorage.removeItem('dismissed_notification');
+        localStorage.removeItem('dismissed_notifications');
+        
+        // Get user ID
+        const localUser = localStorage.getItem('user');
+        let userId = null;
+        if (localUser) {
+          const parsed = JSON.parse(localUser);
+          userId = parsed._id || parsed.id;
+        }
+        
+        // Clear database achievement logs (development only)
+        if (userId && process.env.NODE_ENV !== 'production') {
+          try {
+            const response = await fetch('/api/dev/reset-achievements', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ userId })
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              console.log(`✅ Deleted ${data.deletedCount} achievement logs from database`);
+            }
+          } catch (err) {
+            console.warn('Could not clear database logs:', err);
+          }
+        }
+        
+        console.log('✅ Achievement tracking reset complete!');
+        console.log('🔄 Refresh the page to see notifications for all earned achievements');
       }
     } catch (e) {
       console.error('Failed to reset tracking:', e);
     }
   };
+  
+  // Expose reset function globally for debugging
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).resetAchievements = resetTracking;
+      console.log('💡 Debug: Run window.resetAchievements() in console to reset and see notifications again');
+    }
+  }, []);
 
   return (
     <AchievementContext.Provider value={{ checkForNewAchievements, showAchievement, showAllUnlocked, resetTracking }}>

@@ -84,6 +84,18 @@ export function useAchievementData({
     }
   }, [activities]);
 
+  // Count summaries created
+  const summariesCreated = useMemo(() => {
+    try {
+      return (activities || []).filter(a => {
+        const t = (a.type || a.action || '')?.toString().toLowerCase();
+        return t.includes('summary.generate') || t.includes('summary.created');
+      }).length;
+    } catch {
+      return 0;
+    }
+  }, [activities]);
+
   // Count favorites studied
   const favoritesStudied = useMemo(() => {
     try {
@@ -106,6 +118,7 @@ export function useAchievementData({
       { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: studyStreak >= 7, progress: studyStreak, total: 7 },
       { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', progress: totalFlashcards, total: 10, earned: totalFlashcards >= 10 },
       { id: 4, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', progress: studySessionsCompleted, total: 5, earned: studySessionsCompleted >= 5 },
+      { id: 5, title: 'Summary Creator', description: 'Generated your first summary', icon: '📝', progress: summariesCreated, total: 1, earned: summariesCreated >= 1 },
       { id: 6, title: 'Streak Holder', description: 'Keep a study streak for 14 days', icon: '📅', progress: studyStreak, total: 14, earned: studyStreak >= 14 },
       { id: 7, title: 'Flashcard Novice', description: 'Create 3 flashcard sets', icon: '📚', progress: totalFlashcards, total: 3, earned: totalFlashcards >= 3 },
       { id: 8, title: 'Flashcard Collector', description: 'Create 25 flashcard sets', icon: '🧩', progress: totalFlashcards, total: 25, earned: totalFlashcards >= 25 },
@@ -124,7 +137,7 @@ export function useAchievementData({
     ];
     
     return a;
-  }, [totalFlashcards, studyStreak, studySessionsCompleted, summarySessionsCompleted, cardsReviewed, totalCards, weeklyReviews, favoritesStudied]);
+  }, [totalFlashcards, studyStreak, studySessionsCompleted, summarySessionsCompleted, summariesCreated, cardsReviewed, totalCards, weeklyReviews, favoritesStudied]);
 
   return achievements;
 }

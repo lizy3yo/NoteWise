@@ -26,21 +26,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if this achievement was already logged recently (within 24 hours) to prevent duplicates
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Check if this exact achievement was already logged (ever) to prevent duplicates
+    // Note: We check for any existing log, not just recent ones, because achievements
+    // should only be earned once per user
     const existingActivity = await Activity.findOne({
       user: userId,
       type: 'notification.achievement',
-      'meta.achievement': achievementTitle,
-      createdAt: { $gte: oneDayAgo }
+      'meta.achievement': achievementTitle
     }).lean();
 
     if (existingActivity) {
-      console.log('⏭️ Achievement already logged recently:', achievementTitle);
+      console.log('⏭️ Achievement already logged:', achievementTitle);
       return NextResponse.json({
         success: true,
         message: 'Achievement already logged',
-        activity: existingActivity
+        activity: existingActivity,
+        alreadyExists: true
       });
     }
 

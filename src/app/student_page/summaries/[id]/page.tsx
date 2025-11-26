@@ -437,16 +437,28 @@ export default function SummaryViewPage() {
                                                         } else {
                                                             showSuccess('Marked summary as read');
                                                         }
-                                                        try {
-                                                            if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-                                                                const BC = (window as any).BroadcastChannel;
-                                                                if (typeof BC === 'function') {
-                                                                    const bc = new BC('notewise.activities');
-                                                                    bc.postMessage({ type: 'summary.read', summaryId: summary._id });
-                                                                    bc.close();
+                                                        
+                                                        // Trigger immediate achievement check with slight delay to ensure activity is persisted
+                                                        if (typeof window !== 'undefined') {
+                                                            // Small delay to ensure database write completes
+                                                            setTimeout(() => {
+                                                                window.dispatchEvent(new CustomEvent('checkAchievements'));
+                                                                
+                                                                // Also broadcast to other tabs
+                                                                try {
+                                                                    if ('BroadcastChannel' in window) {
+                                                                        const BC = (window as any).BroadcastChannel;
+                                                                        if (typeof BC === 'function') {
+                                                                            const bc = new BC('notewise.activities');
+                                                                            bc.postMessage({ type: 'summary.read', summaryId: summary._id });
+                                                                            bc.close();
+                                                                        }
+                                                                    }
+                                                                } catch (e) {
+                                                                    console.warn('BroadcastChannel not available:', e);
                                                                 }
-                                                            }
-                                                        } catch (e) {}
+                                                            }, 500);
+                                                        }
                                                     } catch (err: any) {
                                                         console.error('Mark read failed', err);
                                                         showError(err?.message || 'Failed to mark read');

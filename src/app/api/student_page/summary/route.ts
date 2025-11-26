@@ -202,18 +202,42 @@ export async function PATCH(request: NextRequest) {
       updatedFields: Object.keys(updateData)
     });
 
-    // Log activity
-    await logActivity({
-      userId: String(userId),
-      type: 'summary.update',
-      action: 'updated',
-      meta: {
-        summaryId: String(summaryId),
-        title: updatedSummary.title,
-        updatedFields: Object.keys(updateData)
-      },
-      progress: 100
-    });
+    // Log activity - if marking as read, log as summary.read instead of summary.update
+    if (isRead === true && !updatedSummary.isRead) {
+      // Check if we already logged a read activity for this summary
+      const Activity = (await import('@/models/activity')).default;
+      const existingReadActivity = await Activity.findOne({
+        user: userId,
+        type: 'summary.read',
+        'meta.summaryId': summaryId
+      });
+
+      if (!existingReadActivity) {
+        await logActivity({
+          userId: String(userId),
+          type: 'summary.read',
+          action: 'Read summary',
+          meta: {
+            summaryId: String(summaryId),
+            summaryTitle: updatedSummary.title
+          },
+          progress: 100
+        });
+      }
+    } else {
+      // Log regular update activity
+      await logActivity({
+        userId: String(userId),
+        type: 'summary.update',
+        action: 'updated',
+        meta: {
+          summaryId: String(summaryId),
+          title: updatedSummary.title,
+          updatedFields: Object.keys(updateData)
+        },
+        progress: 100
+      });
+    }
 
     return NextResponse.json({
       success: true,

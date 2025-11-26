@@ -71,6 +71,7 @@ function AchievementListener() {
       try {
         // Fetch minimal data needed for achievement calculation
         const { requestService } = await import('@/services/RequestService');
+        
         const [flashcardsRes, summariesRes, activitiesRes] = await Promise.allSettled([
           requestService.get(`/api/student_page/flashcard?userId=${encodeURIComponent(userId)}`),
           requestService.get(`/api/student_page/summary?userId=${encodeURIComponent(userId)}`),
@@ -92,24 +93,6 @@ function AchievementListener() {
         if (activitiesRes.status === 'fulfilled' && activitiesRes.value.success) {
           activities = activitiesRes.value.data?.activities || [];
         }
-
-        // Calculate achievements (same logic as achievements page)
-        const totalFlashcards = flashcards.length;
-        const studySessionsCompleted = activities.filter((a: any) =>
-          a.type?.toLowerCase().includes('flashcard.study_complete')
-        ).length;
-        const summarySessionsCompleted = activities.filter((a: any) =>
-          a.type?.toLowerCase().includes('summary.read')
-        ).length;
-        const practiceTestsCompleted = activities.filter((a: any) =>
-          a.type?.toLowerCase().includes('practice_test.submit')
-        ).length;
-        const cardsReviewed = activities.filter((a: any) =>
-          a.type?.toLowerCase().includes('flashcard.card_reviewed')
-        ).length;
-        const favoritesStudied = activities.filter((a: any) =>
-          a.type?.toLowerCase().includes('flashcard.study_complete') && a.metadata?.isFavorite
-        ).length;
 
         // Calculate study streak
         const studyDates = new Set<string>();
@@ -141,31 +124,72 @@ function AchievementListener() {
           }
         }
 
-        const totalCards = flashcards.reduce((sum: number, f: any) =>
-          sum + (Array.isArray(f.cards) ? f.cards.length : 0), 0);
+        // Calculate metrics for achievements
+        const totalFlashcards = flashcards.length;
+        const totalCards = flashcards.reduce((s: number, f: any) => s + (Array.isArray(f.cards) ? f.cards.length : 0), 0);
+        
+        const cardsReviewed = flashcards.reduce((s: number, fc: any) => s + (Number(fc.repetitionCount) || 0), 0);
+        
+        const studySessionsCompleted = activities.filter((a: any) => {
+          const t = (a.type || a.action || '')?.toString().toLowerCase();
+          return t.includes('flashcard.study_complete');
+        }).length;
+        
+        const summarySessionsCompleted = activities.filter((a: any) => {
+          const t = (a.type || a.action || '')?.toString().toLowerCase();
+          return t.includes('summary.read') || t.includes('summary.session') || t.includes('summary.completed');
+        }).length;
+        
+        const summariesCreated = activities.filter((a: any) => {
+          const t = (a.type || a.action || '')?.toString().toLowerCase();
+          return t.includes('summary.generate') || t.includes('summary.created');
+        }).length;
+        
+        const favoritesStudied = activities.filter((a: any) => {
+          const t = (a.type || a.action || '')?.toString().toLowerCase();
+          return t.includes('flashcard.study_complete') && !!a.meta?.studiedFavorites;
+        }).length;
+        
+        // Calculate weekly activity
+        const weeklyActivity = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date();
+          d.setHours(0, 0, 0, 0);
+          d.setDate(d.getDate() - (6 - i));
+          return d;
+        });
+        const weeklyActivityCounts = weeklyActivity.map(() => 0);
+        flashcards.forEach((fc: any) => {
+          if (!fc.lastReviewed) return;
+          const lr = new Date(fc.lastReviewed);
+          lr.setHours(0, 0, 0, 0);
+          for (let i = 0; i < weeklyActivity.length; i++) {
+            if (lr.getTime() === weeklyActivity[i].getTime()) weeklyActivityCounts[i]++;
+          }
+        });
+        const weeklyReviews = weeklyActivityCounts.reduce((s: number, n: number) => s + n, 0);
 
-        // Build achievements array
+        // Build achievements array directly (same logic as useAchievementData)
         const achievements = [
           { id: 1, title: 'First Steps', description: 'Created your first flashcard set', icon: '🎯', earned: totalFlashcards >= 1 },
-          { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: studyStreak >= 7 },
-          { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', earned: totalFlashcards >= 10 },
-          { id: 4, title: 'Perfect Score', description: 'Got 100% on a practice test', icon: '⭐', earned: practiceTestsCompleted >= 1 },
-          { id: 5, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', earned: studySessionsCompleted >= 5 },
-          { id: 6, title: 'Streak Holder', description: 'Keep a study streak for 14 days', icon: '📅', earned: studyStreak >= 14 },
-          { id: 7, title: 'Flashcard Novice', description: 'Create 3 flashcard sets', icon: '📚', earned: totalFlashcards >= 3 },
-          { id: 8, title: 'Flashcard Collector', description: 'Create 25 flashcard sets', icon: '🧩', earned: totalFlashcards >= 25 },
-          { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', earned: summarySessionsCompleted >= 1 },
-          { id: 10, title: 'Summary Scholar', description: 'Read 5 summaries', icon: '📖', earned: summarySessionsCompleted >= 5 },
-          { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', earned: cardsReviewed >= 50 },
-          { id: 12, title: 'Review Pro', description: 'Review 200 cards', icon: '⚡', earned: cardsReviewed >= 200 },
-          { id: 13, title: 'Marathoner', description: 'Study streak of 30 days', icon: '🏃‍♀️', earned: studyStreak >= 30 },
-          { id: 14, title: 'Active Week', description: 'Study 7 times in the last 7 days', icon: '📆', earned: false },
-          { id: 15, title: 'Session Master', description: 'Complete 10 study sessions', icon: '🎓', earned: studySessionsCompleted >= 10 },
-          { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', earned: totalCards >= 100 },
-          { id: 17, title: 'Card Hoarder', description: 'Add 500 cards total', icon: '📦', earned: totalCards >= 500 },
-          { id: 18, title: 'Favorites Fan', description: 'Study favorites 3 times', icon: '⭐', earned: favoritesStudied >= 3 },
-          { id: 19, title: 'Centurion', description: 'Create 100 flashcard sets', icon: '💯', earned: totalFlashcards >= 100 },
-          { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', earned: studySessionsCompleted >= 50 }
+          { id: 2, title: 'Study Streak', description: 'Studied for 7 days in a row', icon: '🔥', earned: studyStreak >= 7, progress: studyStreak, total: 7 },
+          { id: 3, title: 'Knowledge Master', description: 'Created 10 flashcard sets', icon: '🏆', progress: totalFlashcards, total: 10, earned: totalFlashcards >= 10 },
+          { id: 4, title: 'Deck Finisher', description: 'Complete 5 study sessions', icon: '🏁', progress: studySessionsCompleted, total: 5, earned: studySessionsCompleted >= 5 },
+          { id: 5, title: 'Summary Creator', description: 'Generated your first summary', icon: '📝', progress: summariesCreated, total: 1, earned: summariesCreated >= 1 },
+          { id: 6, title: 'Streak Holder', description: 'Keep a study streak for 14 days', icon: '📅', progress: studyStreak, total: 14, earned: studyStreak >= 14 },
+          { id: 7, title: 'Flashcard Novice', description: 'Create 3 flashcard sets', icon: '📚', progress: totalFlashcards, total: 3, earned: totalFlashcards >= 3 },
+          { id: 8, title: 'Flashcard Collector', description: 'Create 25 flashcard sets', icon: '🧩', progress: totalFlashcards, total: 25, earned: totalFlashcards >= 25 },
+          { id: 9, title: 'Summary Starter', description: 'Read your first summary', icon: '✍️', progress: summarySessionsCompleted, total: 1, earned: summarySessionsCompleted >= 1 },
+          { id: 10, title: 'Summary Scholar', description: 'Read 5 summaries', icon: '📖', progress: summarySessionsCompleted, total: 5, earned: summarySessionsCompleted >= 5 },
+          { id: 11, title: 'Review Apprentice', description: 'Review 50 cards', icon: '🔁', progress: cardsReviewed, total: 50, earned: cardsReviewed >= 50 },
+          { id: 12, title: 'Review Pro', description: 'Review 200 cards', icon: '⚡', progress: cardsReviewed, total: 200, earned: cardsReviewed >= 200 },
+          { id: 13, title: 'Marathoner', description: 'Study streak of 30 days', icon: '🏃‍♀️', progress: studyStreak, total: 30, earned: studyStreak >= 30 },
+          { id: 14, title: 'Active Week', description: 'Study 7 times in the last 7 days', icon: '📆', progress: weeklyReviews, total: 7, earned: weeklyReviews >= 7 },
+          { id: 15, title: 'Session Master', description: 'Complete 10 study sessions', icon: '🎓', progress: studySessionsCompleted, total: 10, earned: studySessionsCompleted >= 10 },
+          { id: 16, title: 'Card Collector', description: 'Add 100 cards total', icon: '🃏', progress: totalCards, total: 100, earned: totalCards >= 100 },
+          { id: 17, title: 'Card Hoarder', description: 'Add 500 cards total', icon: '📦', progress: totalCards, total: 500, earned: totalCards >= 500 },
+          { id: 18, title: 'Favorites Fan', description: 'Study favorites 3 times', icon: '⭐', progress: favoritesStudied, total: 3, earned: favoritesStudied >= 3 },
+          { id: 19, title: 'Centurion', description: 'Create 100 flashcard sets', icon: '💯', progress: totalFlashcards, total: 100, earned: totalFlashcards >= 100 },
+          { id: 20, title: 'Study Champion', description: 'Complete 50 study sessions', icon: '🏅', progress: studySessionsCompleted, total: 50, earned: studySessionsCompleted >= 50 }
         ];
 
         // Check for newly unlocked achievements
@@ -175,7 +199,7 @@ function AchievementListener() {
       }
     };
 
-    // Check immediately
+    // Check immediately on mount
     fetchAndCheckAchievements();
 
     // Listen for manual trigger events (when user completes an action)
@@ -184,6 +208,21 @@ function AchievementListener() {
       fetchAndCheckAchievements();
     };
     window.addEventListener('checkAchievements', handleManualCheck);
+
+    // Listen for BroadcastChannel messages for immediate updates
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        bc = new BroadcastChannel('notewise.activities');
+        bc.onmessage = (event) => {
+          console.log('📡 BroadcastChannel message received:', event.data);
+          // Immediately check achievements when activity is logged
+          fetchAndCheckAchievements();
+        };
+      }
+    } catch (e) {
+      console.warn('BroadcastChannel not available:', e);
+    }
 
     // Check when page becomes visible (user switches back to tab)
     const handleVisibilityChange = () => {
@@ -201,14 +240,21 @@ function AchievementListener() {
     };
     window.addEventListener('focus', handleFocus);
 
-    // Then check every 3 seconds for real-time updates
-    const interval = setInterval(fetchAndCheckAchievements, 3000);
+    // Poll every 5 seconds as fallback (reduced frequency since we have BroadcastChannel)
+    const interval = setInterval(fetchAndCheckAchievements, 5000);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('checkAchievements', handleManualCheck);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
+      if (bc) {
+        try {
+          bc.close();
+        } catch (e) {
+          console.warn('Error closing BroadcastChannel:', e);
+        }
+      }
     };
   }, [checkForNewAchievements, session]);
 

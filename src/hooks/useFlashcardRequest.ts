@@ -151,10 +151,31 @@ export const useFlashcardRequest = (userId?: string) => {
       );
 
       if (response.success && response.data) {
+        const flashcardId = response.data._id;
+        
         // Invalidate flashcards cache
         cacheService.invalidate(CACHE_KEYS.FLASHCARDS, { userId });
         // Refresh flashcards list
         await fetchFlashcards(false);
+        
+        // Trigger immediate achievement check with slight delay to ensure activity is persisted
+        if (typeof window !== 'undefined') {
+          // Small delay to ensure database write completes
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('checkAchievements'));
+            
+            // Also broadcast to other tabs
+            try {
+              if ('BroadcastChannel' in window) {
+                const bc = new BroadcastChannel('notewise.activities');
+                bc.postMessage({ type: 'flashcard.created', flashcardId });
+                bc.close();
+              }
+            } catch (e) {
+              console.warn('BroadcastChannel not available:', e);
+            }
+          }, 500);
+        }
       } else {
         setError(response.error || 'Failed to create flashcard');
       }

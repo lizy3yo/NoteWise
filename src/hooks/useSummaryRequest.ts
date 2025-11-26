@@ -160,6 +160,27 @@ export const useSummaryRequest = (userId?: string) => {
         cacheService.invalidate(CACHE_KEYS.SUMMARIES, { userId });
         // Refresh summaries list
         await fetchSummaries(false);
+        
+        const summaryId = response.data._id;
+        
+        // Trigger immediate achievement check with slight delay to ensure activity is persisted
+        if (typeof window !== 'undefined') {
+          // Small delay to ensure database write completes
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('checkAchievements'));
+            
+            // Also broadcast to other tabs
+            try {
+              if ('BroadcastChannel' in window) {
+                const bc = new BroadcastChannel('notewise.activities');
+                bc.postMessage({ type: 'summary.created', summaryId });
+                bc.close();
+              }
+            } catch (e) {
+              console.warn('BroadcastChannel not available:', e);
+            }
+          }, 500);
+        }
       } else {
         setError(response.error || 'Failed to create summary');
       }
