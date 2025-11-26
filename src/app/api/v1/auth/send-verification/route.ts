@@ -56,13 +56,8 @@ export async function POST(request: NextRequest) {
 
     console.log('User found:', { id: user._id, email: user.email, isVerified: user.isEmailVerified });
 
-    if (user.isEmailVerified) {
-      console.log('Email already verified for user:', user._id);
-      return NextResponse.json({
-        code: 'ALREADY_VERIFIED',
-        message: 'Email is already verified'
-      }, { status: 400 });
-    }
+    // Allow re-verification even if already verified (to get new tokens after clearing site data)
+    console.log('Sending verification code to user:', user._id);
 
     // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -107,6 +102,8 @@ export async function POST(request: NextRequest) {
     // Send verification email
     console.log('Attempting to send email...');
     console.log('🔑 VERIFICATION CODE FOR TESTING:', verificationCode);
+    console.log('📧 Sending to:', email);
+    console.log('⏰ Expires at:', expirationTime);
 
     const emailSent = await sendEmail({
       to: email,

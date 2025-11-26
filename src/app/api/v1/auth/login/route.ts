@@ -125,8 +125,7 @@ export async function POST(request: NextRequest) {
       token: refreshToken,
     });
 
-    // Set cookies
-    const cookieStore = await cookies();
+    // Set cookies (reuse cookieStore from above)
     cookieStore.set('accessToken', accessToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',

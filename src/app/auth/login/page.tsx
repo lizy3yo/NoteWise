@@ -150,6 +150,38 @@ export default function Login() {
     hideAlert();
 
     try {
+      // Check if user has tokens in localStorage
+      const hasAccessToken = localStorage.getItem('accessToken');
+      const hasUser = localStorage.getItem('user');
+
+      // If no tokens exist, send verification email and redirect
+      if (!hasAccessToken || !hasUser) {
+        showInfo("Sending verification code to your email...", "Verification Required");
+        
+        // Send verification email
+        try {
+          const verificationResponse = await requestService.post("/api/v1/auth/send-verification", 
+            { email: formData.email },
+            { skipAuth: true }
+          );
+
+          if (verificationResponse.success) {
+            showSuccess("Verification code sent! Please check your email.", "Check Your Email");
+          } else {
+            showInfo("Redirecting to verification page...", "Verification Required");
+          }
+        } catch (error) {
+          console.error("Failed to send verification email:", error);
+          showInfo("Redirecting to verification page...", "Verification Required");
+        }
+
+        // Redirect to verification page
+        setTimeout(() => {
+          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+        }, 1500);
+        return;
+      }
+
       const response = await login({
         email: formData.email,
         password: formData.password,
@@ -157,12 +189,15 @@ export default function Login() {
       });
 
       if (!response.success) {
-        // Handle email verification requirement
+        // Handle email verification requirement or token requirement
         if (response.error?.includes('EMAIL_NOT_VERIFIED') || 
+            response.error?.includes('TOKENS_REQUIRED') ||
             response.error?.includes('not verified') || 
             response.error?.includes('verify your email') ||
+            response.error?.includes('access tokens') ||
             response.error?.includes('email address before logging in')) {
-          showInfo("Sending verification code to your email...", "Email Verification Required");
+          
+          showInfo("Your email address needs to be verified. Sending verification code...", "Email Verification Required");
 
           // Automatically send verification email
           try {
@@ -172,23 +207,19 @@ export default function Login() {
             );
 
             if (verificationResponse.success) {
-              showInfo("Verification code sent! Please check your email.", "Check Your Email");
-              setTimeout(() => {
-                router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
-              }, 1500);
+              showSuccess("Verification code sent to your email!", "Check Your Email");
             } else {
-              showInfo("Please verify your email address. Redirecting to verification page...", "Email Verification Required");
-              setTimeout(() => {
-                router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
-              }, 1500);
+              showInfo("Redirecting to verification page...", "Email Verification Required");
             }
           } catch (error) {
             console.error("Failed to send verification email:", error);
-            showInfo("Please verify your email address. Redirecting to verification page...", "Email Verification Required");
-            setTimeout(() => {
-              router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
-            }, 1500);
+            showInfo("Redirecting to verification page...", "Email Verification Required");
           }
+
+          // Always redirect to verification page
+          setTimeout(() => {
+            router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+          }, 1500);
           return;
         }
 
@@ -196,7 +227,12 @@ export default function Login() {
         return;
       }
 
-      console.log("Login successful");
+      console.log("✅ Login successful");
+      console.log("📦 Tokens stored:", {
+        hasAccessToken: !!localStorage.getItem('accessToken'),
+        hasUser: !!localStorage.getItem('user'),
+        hasUserId: !!localStorage.getItem('userId')
+      });
 
       // Handle Remember Me functionality
       if (rememberMe) {
@@ -209,15 +245,10 @@ export default function Login() {
         localStorage.removeItem("rememberMe");
       }
 
-      // Note: Refresh token is stored as HTTP-only cookie by the server
-
       showSuccess("Login successful! Welcome back to NoteWise!", "Welcome back");
 
-      // Navigate to student dashboard immediately
-      console.log("Login successful, redirecting to dashboard...");
-      console.log("Current pathname:", window.location.pathname);
-
-      // Force a page reload after setting localStorage to ensure the layout picks up the auth state
+      // Navigate to student dashboard with a full page reload to ensure cookies and localStorage are recognized
+      console.log("🚀 Redirecting to dashboard...");
       setTimeout(() => {
         window.location.href = "/student_page/dashboard";
       }, 100);

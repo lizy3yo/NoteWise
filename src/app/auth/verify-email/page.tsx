@@ -73,6 +73,7 @@ function VerifyEmailForm() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Ensure cookies are sent and received
         body: JSON.stringify({
           email,
           verificationCode,
@@ -86,14 +87,23 @@ function VerifyEmailForm() {
         return;
       }
 
-      // Store user data and tokens
+      // Verify we received the necessary data
+      if (!data.Student || !data.accessToken) {
+        showError("Invalid response from server. Please try again.", "Verification Error");
+        return;
+      }
+
+      // Store user data and tokens in localStorage
       localStorage.setItem("user", JSON.stringify(data.Student));
       localStorage.setItem("userId", data.Student._id);
       localStorage.setItem("accessToken", data.accessToken);
+      
+      // Cookies are automatically set by the server via Set-Cookie headers
+      console.log("✅ Email verified and tokens stored successfully");
 
       showSuccess("Email verified successfully! Welcome to NoteWise!", "Verification Successful");
 
-      // Navigate to dashboard
+      // Navigate to dashboard with a full page reload to ensure cookies and localStorage are recognized
       setTimeout(() => {
         window.location.href = "/student_page/dashboard";
       }, 1500);
