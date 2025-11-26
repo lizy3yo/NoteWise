@@ -100,9 +100,9 @@
 
 /* Type variants */
 .alert-success {
-    background-color: #f0fdf4;
-    border: 1px solid #22c55e;
-    color: #16a34a;
+    background-color: #f0fdfa;
+    border: 1px solid #14b8a6;
+    color: #0f766e;
 }
 
 .alert-error {
@@ -201,9 +201,9 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .alert-success {
-        background-color: #14532d;
-        border-color: #22c55e;
-        color: #4ade80;
+        background-color: #134e4a;
+        border-color: #14b8a6;
+        color: #5eead4;
     }
 
     .alert-error {
