@@ -640,14 +640,24 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       // Clear any existing alerts
       hideAlert && hideAlert();
       
-      // Use the logout hook
-      const { useAuthRequest } = await import('@/hooks');
-      const { logout } = useAuthRequest();
-      
-      const response = await logout();
+      // Call logout API directly
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/v1/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
+
+      // Clear local storage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userId');
 
       // Show appropriate alert then redirect to login
-      if (response.success) {
+      if (response.ok) {
         showSuccess?.("You have been logged out successfully.", "Logged out");
         setTimeout(() => {
           window.location.href = "/auth/login?message=" + encodeURIComponent("Logged out successfully");
@@ -663,7 +673,11 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       }
     } catch (error) {
       console.error("Logout failed:", error);
-      // Cleanup is handled by the hook
+      // Clear local storage anyway
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userId');
+      
       showError?.("Network error during logout. You were signed out locally.", "Logout Error");
       setTimeout(() => {
         window.location.href = "/auth/login?message=" + encodeURIComponent("Logout failed");

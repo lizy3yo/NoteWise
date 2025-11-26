@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:init-indexes": "node scripts/init-indexes.js",
+    "db:stats": "node scripts/check-db-stats.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

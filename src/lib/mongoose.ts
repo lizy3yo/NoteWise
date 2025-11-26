@@ -23,7 +23,7 @@ import config from "@/lib/config";
 //TYPES
 import type {ConnectOptions} from 'mongoose';
 
-//CLIENT OPTION
+//CLIENT OPTION - Optimized with connection pooling
 const clientOptions: ConnectOptions = {
   dbName: 'notewise-db',
   appName: 'NoteWise',
@@ -32,43 +32,99 @@ const clientOptions: ConnectOptions = {
     strict: true,
     deprecationErrors: true,
   },
+  // Connection pool settings for better performance
+  maxPoolSize: 10, // Maximum number of connections in the pool
+  minPoolSize: 2,  // Minimum number of connections to maintain
+  maxIdleTimeMS: 30000, // Close connections after 30s of inactivity
+  waitQueueTimeoutMS: 5000, // Wait 5s for a connection from pool
+  serverSelectionTimeoutMS: 10000, // Timeout for server selection
+  socketTimeoutMS: 45000, // Socket timeout
+  family: 4, // Use IPv4, skip trying IPv6
 };
 
 let isConnected = false;
+let connectionPromise: Promise<void> | null = null;
 
 /**
- * Establishes a connection to the MongoDB database using Mongoose.
+ * Establishes a connection to the MongoDB database using Mongoose with connection pooling.
+ * Reuses existing connection across requests for optimal performance.
  * If an error occurs during the connection process, it throws an error
  * with a descriptive message.
  *
  * - Uses `MONGO_URI` as the connection string.
- * - `clientOptions` contains additional configuration for Mongoose.
+ * - `clientOptions` contains additional configuration including connection pooling.
  * - Errors are properly handled and rethrown for better debugging.
  */
 const connectToDatabase = async (): Promise<void> => {
-    if (isConnected) {
+    // Return immediately if already connected
+    if (isConnected && mongoose.connection.readyState === 1) {
         return;
+    }
+
+    // Return pending connection promise if connection is in progress
+    if (connectionPromise) {
+        return connectionPromise;
     }
 
     if (!config.MONGO_URI) {
         throw new Error('MONGO_URI is not defined in the environment variables');
-    } 
-    
-    try {
-        await mongoose.connect(config.MONGO_URI, clientOptions);
-        isConnected = true;
-        
-        console.log('Connected to Database successfully', {
-            uri: config.MONGO_URI,
-            options: clientOptions,
-        });
-    } catch (err) {
-        console.error('Failed to connect to the database:', err);
-        if (err instanceof Error) {
-            throw err;
-        }
-        throw new Error('Database connection failed');
     }
+    
+    const mongoUri = config.MONGO_URI;
+    
+    connectionPromise = (async () => {
+        try {
+            await mongoose.connect(mongoUri, clientOptions);
+            isConnected = true;
+            
+            console.log('✅ Connected to Database successfully', {
+                host: mongoose.connection.host,
+                database: mongoose.connection.db?.databaseName,
+                poolSize: clientOptions.maxPoolSize,
+            });
+
+            // Setup connection event handlers
+            setupConnectionHandlers();
+        } catch (err) {
+            console.error('❌ Failed to connect to the database:', err);
+            isConnected = false;
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error('Database connection failed');
+        } finally {
+            connectionPromise = null;
+        }
+    })();
+
+    return connectionPromise;
+}
+
+/**
+ * Setup connection event handlers for monitoring
+ */
+function setupConnectionHandlers(): void {
+    // Prevent duplicate event listeners
+    if (mongoose.connection.listenerCount('error') > 0) {
+        return;
+    }
+
+    mongoose.connection.on('error', (err) => {
+        console.error('❌ Mongoose connection error:', err);
+        isConnected = false;
+    });
+
+    mongoose.connection.on('disconnected', () => {
+        console.log('📴 Mongoose disconnected from MongoDB');
+        isConnected = false;
+    });
+
+    // Graceful shutdown
+    process.on('SIGINT', async () => {
+        await mongoose.connection.close();
+        console.log('🛑 Mongoose connection closed due to app termination');
+        process.exit(0);
+    });
 }
 
 /**

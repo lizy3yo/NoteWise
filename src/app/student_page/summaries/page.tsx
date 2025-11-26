@@ -11,9 +11,8 @@ interface Summary {
     title: string;
     content: string;
     subject: string;
-    createdAt: string;
+    createdAt?: string;
     wordCount: number;
-    status: string;
     difficulty: string;
     summaryType: string;
     keyPoints: string[];
@@ -166,7 +165,7 @@ export default function SummariesPage() {
                         Generate New Summary
                     </Link>
                     <button
-                        onClick={() => userId && fetchSummaries(userId)}
+                        onClick={() => window.location.reload()}
                         disabled={loading}
                         className="w-full sm:w-auto bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                     >
@@ -188,7 +187,7 @@ export default function SummariesPage() {
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Summaries</h3>
                         <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
                         <button
-                            onClick={() => userId && fetchSummaries(userId)}
+                            onClick={() => window.location.reload()}
                             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
                         >
                             Try Again
@@ -228,9 +227,11 @@ export default function SummariesPage() {
                                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                         Type: {summary.summaryType.replace('-', ' ')}
                                     </p>
-                                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                        Created: {new Date(summary.createdAt).toLocaleDateString()}
-                                    </p>
+                                    {summary.createdAt && (
+                                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                            Created: {new Date(summary.createdAt).toLocaleDateString()}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col gap-2">
