@@ -401,7 +401,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed left-2 right-2 bottom-16 sm:bottom-20 sm:right-4 sm:left-auto z-50 w-auto sm:w-[420px] h-[70vh] sm:h-[600px] max-h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700">
+        <div className="fixed left-2 right-2 bottom-16 sm:bottom-20 sm:right-4 sm:left-auto z-50 w-auto sm:w-[420px] h-[500px] sm:h-[600px] max-h-[500px] sm:max-h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700">
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-3 sm:p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">

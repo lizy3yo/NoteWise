@@ -452,34 +452,32 @@ function StudyModeContent() {
       {/* Generation Progress Modal */}
       <GenerationProgressModal />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10">
         {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="mb-4 sm:mb-8">
+          <div className="flex flex-col gap-2 sm:gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
                 Generate study notes
               </h1>
-              <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-1 sm:mt-2">
+              <p className="text-xs sm:text-base text-gray-500 dark:text-gray-400 mt-1 sm:mt-2">
                 Paste notes or upload files to create AI-powered summaries of your study material.
               </p>
             </div>
-            <div className="text-sm text-gray-400 sm:text-right">
-              <span className="sm:hidden">Characters: </span>
-              {pasteText.length}/{MAX_CHARS}
-              <span className="hidden sm:inline"> characters </span>
+            <div className="text-xs sm:text-sm text-gray-400">
+              Characters: {pasteText.length}/{MAX_CHARS}
             </div>
           </div>
         </div>
 
         {/* Input Method Tabs */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-full sm:w-fit">
             {["upload", "paste"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t as any)}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-sm transition-all ${tab === t
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${tab === t
                   ? "bg-white dark:bg-gray-700 text-teal-600 shadow-sm"
                   : "text-gray-600 dark:text-gray-400 hover:text-teal-600 hover:bg-teal-600/5"
                   }`}
@@ -491,52 +489,52 @@ function StudyModeContent() {
         </div>
 
         {/* Create Type Selection */}
-        <div className="mb-6">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">What would you like to create?</div>
-          <div className="flex gap-3">
+        <div className="mb-4 sm:mb-6">
+          <div className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">What would you like to create?</div>
+          <div className="flex gap-2 sm:gap-3">
             <button
               onClick={() => setCreateType('summary')}
-              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'summary' ? '!border-teal-500 !bg-teal-50 dark:!border-teal-500 dark:!bg-teal-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-teal-50 dark:hover:!border-teal-400 dark:hover:!bg-teal-50/10'} transition-colors`}
+              className={`flex-1 text-left p-3 sm:p-4 rounded-lg border ${createType === 'summary' ? '!border-teal-500 !bg-teal-50 dark:!border-teal-500 dark:!bg-teal-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-teal-50 dark:hover:!border-teal-400 dark:hover:!bg-teal-50/10'} transition-colors`}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-5 h-5 text-teal-600">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 flex-shrink-0">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                   </svg>
                 </div>
-                <div className="font-semibold text-gray-900 dark:text-white">Summary</div>
+                <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Summary</div>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">AI-generated study summary</div>
+              <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">AI-generated study summary</div>
             </button>
             <button
               onClick={() => setCreateType('flashcards')}
-              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'flashcards' ? '!border-teal-500 !bg-teal-50 dark:!border-teal-500 dark:!bg-teal-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-teal-50 dark:hover:!border-teal-400 dark:hover:!bg-teal-50/10'} transition-colors`}
+              className={`flex-1 text-left p-3 sm:p-4 rounded-lg border ${createType === 'flashcards' ? '!border-teal-500 !bg-teal-50 dark:!border-teal-500 dark:!bg-teal-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-teal-50 dark:hover:!border-teal-400 dark:hover:!bg-teal-50/10'} transition-colors`}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-5 h-5 text-orange-600">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z" />
                   </svg>
                 </div>
-                <div className="font-semibold text-gray-900 dark:text-white">Flashcards</div>
+                <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Flashcards</div>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Interactive study cards</div>
+              <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Interactive study cards</div>
             </button>
           </div>
         </div>
 
         {/* Options */}
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-4">{createType === 'summary' ? 'Summary Options' : 'Flashcard Options'}</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">{createType === 'summary' ? 'Summary Options' : 'Flashcard Options'}</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {createType === 'summary' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Summary Type</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">Summary Type</label>
                   <select
                     value={summaryType}
                     onChange={(e) => setSummaryType(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-2.5 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
                     <option value="outline">Outline Format</option>
                     <option value="detailed">Detailed Summary</option>
@@ -545,19 +543,19 @@ function StudyModeContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Length</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">Length</label>
                   <select
                     value={summaryLength}
                     onChange={(e) => setSummaryLength(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-2.5 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
                     <option value="short">Short</option>
                     <option value="medium">Medium</option>
                     <option value="long">Long</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                     {files.length > 1 ? 'Title Prefix (Optional)' : 'Title (Optional)'}
                   </label>
                   <input 
@@ -565,10 +563,10 @@ function StudyModeContent() {
                     value={customTitle} 
                     onChange={(e) => setCustomTitle(e.target.value)} 
                     placeholder={files.length > 1 ? "e.g., Chapter 1" : "Auto-generated if empty"} 
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                    className="w-full px-2.5 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
                   />
                   {files.length > 1 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Will create: "{customTitle || 'Filename'} - Summary 1", "Summary 2", etc.
                     </p>
                   )}
@@ -578,12 +576,12 @@ function StudyModeContent() {
 
             {createType === 'flashcards' && (
               <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of Flashcards to Generate</label>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">Number of Flashcards</label>
                   <select
                     value={maxCards}
                     onChange={(e) => setMaxCards(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-2.5 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
                     <option value={10}>10 flashcards</option>
                     <option value={15}>15 flashcards</option>
@@ -593,12 +591,12 @@ function StudyModeContent() {
                     <option value={40}>40 flashcards</option>
                     <option value={50}>50 flashcards</option>
                   </select>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
                     More flashcards provide better coverage but take longer to generate
                   </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                     {files.length > 1 ? 'Title Prefix (Optional)' : 'Title (Optional)'}
                   </label>
                   <input 
@@ -606,10 +604,10 @@ function StudyModeContent() {
                     value={customTitle} 
                     onChange={(e) => setCustomTitle(e.target.value)} 
                     placeholder={files.length > 1 ? "e.g., Chapter 1" : "Auto-generated if empty"} 
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                    className="w-full px-2.5 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
                   />
                   {files.length > 1 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Will create: "{customTitle || 'Filename'} - Set 1", "Set 2", etc.
                     </p>
                   )}
@@ -620,7 +618,7 @@ function StudyModeContent() {
           </div>
         </div>
 
-        <div className="mb-20 sm:mb-24">
+        <div className="mb-4 sm:mb-6">
           {tab === "paste" && (
             <div className="relative">
               <textarea
@@ -630,9 +628,9 @@ function StudyModeContent() {
                 onDrop={handlePasteDrop}
                 onDragOver={handlePasteDragOver}
                 placeholder={createType === 'flashcards' ? "Paste your content here (notes, articles, study materials)..." : "Paste your notes here. We'll do the rest."}
-                className="w-full min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6 text-gray-900 dark:text-white resize-vertical text-sm sm:text-base focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+                className="w-full min-h-[180px] sm:min-h-[300px] lg:min-h-[400px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 sm:p-6 text-gray-900 dark:text-white resize-vertical text-xs sm:text-base focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               />
-              <div className="absolute right-3 sm:right-4 bottom-3 sm:bottom-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">
+              <div className="absolute right-2 sm:right-4 bottom-2 sm:bottom-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                 {pasteText.length}/{MAX_CHARS}
               </div>
             </div>
@@ -655,23 +653,23 @@ function StudyModeContent() {
                 <div
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
-                  className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-8 sm:py-12 lg:py-16 flex flex-col items-center justify-center gap-4 text-center bg-white dark:bg-gray-800 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]"
+                  className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl py-6 sm:py-12 lg:py-16 flex flex-col items-center justify-center gap-3 sm:gap-4 text-center bg-white dark:bg-gray-800 min-h-[180px] sm:min-h-[300px] lg:min-h-[400px]"
                 >
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">DOC</div>
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">PDF</div>
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-md flex items-center justify-center text-white text-xs sm:text-sm font-bold">TXT</div>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-md flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">DOC</div>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-pink-400 to-rose-500 rounded-md flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">PDF</div>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-400 to-gray-500 rounded-md flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">TXT</div>
                   </div>
-                  <div className="text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">
+                  <div className="text-gray-700 dark:text-gray-300 font-medium text-xs sm:text-base px-4">
                     {createType === 'flashcards' ? 'Upload files for AI processing' : 'Drag notes, slides, or readings here'}
                   </div>
-                  <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                    PDF, Word, Text files (max 10MB) - Processed with advanced AI
+                  <div className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 px-4">
+                    PDF, Word, Text files (max 10MB)
                   </div>
-                  <div className="mt-3">
+                  <div className="mt-1 sm:mt-3">
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                      className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full shadow-sm text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
                       Browse files
                     </button>
@@ -720,9 +718,9 @@ function StudyModeContent() {
           )}
 
           {/* Info Card */}
-          <div className="mt-6 sm:mt-8 flex items-start gap-3 p-4 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
-            <div className="w-8 h-8 bg-teal-600/10 dark:bg-teal-600/20 rounded-md flex items-center justify-center flex-shrink-0">
-              <div className="w-5 h-5 text-teal-600">
+          <div className="mt-4 sm:mt-8 flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-teal-600/10 dark:bg-teal-600/20 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600">
                 {createType === 'summary' ? (
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
@@ -735,10 +733,10 @@ function StudyModeContent() {
               </div>
             </div>
             <div>
-              <div className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
+              <div className="text-xs sm:text-base font-medium text-gray-900 dark:text-white">
                 {createType === 'summary' ? 'AI Summary' : 'Flashcards'}
               </div>
-              <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">
                 {createType === 'summary' ? 'Generate concise AI-powered summaries of your study material' : 'Create interactive flashcards from your notes'}
               </div>
             </div>
@@ -747,10 +745,10 @@ function StudyModeContent() {
           {/* Alerts are shown via the global Alert component (useAlert) */}
         </div>
 
-        {/* Generate Button - Fixed on mobile, inline on desktop */}
-        <div className="fixed sm:static bottom-4 left-4 right-4 sm:bottom-auto sm:left-auto sm:right-auto z-50 sm:z-auto mt-0 sm:mt-8">
-          <div className="bg-white dark:bg-gray-800 sm:bg-transparent sm:dark:bg-transparent p-4 sm:p-0 rounded-xl sm:rounded-none shadow-lg sm:shadow-none border sm:border-none border-gray-200 dark:border-gray-700 flex items-center justify-between sm:justify-end gap-4">
-            <div className="text-sm text-gray-400 sm:hidden">
+        {/* Generate Button - Bottom positioned on mobile, inline on desktop */}
+        <div className="mt-6 sm:mt-8">
+          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+            <div className="text-xs sm:text-sm text-gray-400 sm:hidden">
               {files.length > 0
                 ? `${files.length} file${files.length > 1 ? 's' : ''}`
                 : pasteText.trim().length > 0
@@ -768,7 +766,7 @@ function StudyModeContent() {
             <button
               onClick={handleGenerate}
               disabled={!allowGenerate || isGenerating}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${!allowGenerate || isGenerating
+              className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${!allowGenerate || isGenerating
                 ? "bg-gray-300 dark:bg-gray-600/30 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:scale-[1.02] hover:shadow-xl"
                 } w-full sm:w-auto`}
@@ -781,7 +779,7 @@ function StudyModeContent() {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto mt-8 text-xs text-gray-500 dark:text-gray-400">
+        <div className="max-w-2xl mx-auto mt-6 sm:mt-8 text-[10px] sm:text-xs text-center text-gray-500 dark:text-gray-400 px-4">
           This product is enhanced with AI and may provide incorrect or problematic content. Do not
           enter any personal data.
         </div>

@@ -751,7 +751,9 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
         <aside
           ref={sidebarRef}
           className={`bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 ${!isExpanded && isProfileDropdownOpen ? "allow-overflow" : "overflow-hidden"
-            } fixed left-0 top-0 bottom-0 z-50 shadow-[2px_0_8px_rgba(0,0,0,0.04)] transition-all duration-300 ${isSidebarCollapsed && !isTouchExpanded ? "w-20" : "w-80"
+            } fixed left-0 top-0 bottom-0 z-50 shadow-[2px_0_8px_rgba(0,0,0,0.04)] transition-all duration-300 ${isMobile 
+              ? "w-[280px]" 
+              : (isSidebarCollapsed && !isTouchExpanded ? "w-20" : "w-80")
             } ${isMobile ? (isMobileMenuOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}`}
           onClick={handleTouchExpansion}
           onMouseEnter={() => {
@@ -765,7 +767,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
         >
           <div className="flex flex-col h-full max-h-screen">
             {/* Header Section with Title and Search - Fixed Height via CSS var */}
-            <div className={`sidebar-header flex-shrink-0 ${isExpanded ? "px-6 pt-6 pb-3" : "p-2"}`}>
+            <div className={`sidebar-header flex-shrink-0 ${isExpanded ? (isMobile ? "px-4 pt-3 pb-2" : "px-6 pt-6 pb-3") : "p-2"}`}>
               {/* Header with Title and Toggle */}
               <div className="flex items-center justify-between mb-0">
                 {isExpanded && (
@@ -773,7 +775,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                     href="/student_page/dashboard"
                     className="flex items-center"
                   >
-                    <h1 className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent text-3xl font-extrabold m-0 tracking-tight">
+                    <h1 className={`bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent ${isMobile ? "text-2xl" : "text-3xl"} font-extrabold m-0 tracking-tight`}>
                       NoteWise
                     </h1>
                   </Link>
@@ -816,14 +818,14 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                 className="h-full overflow-y-auto scrollbar-hide sidebar-nav"
                 style={{ maxHeight: "calc(100vh - var(--sidebar-header-height) - var(--sidebar-footer-height))" }}
               >
-                <nav className="pt-4 pb-4">
-                  <div className="mb-6">
+                <nav className="pt-3 sm:pt-4 pb-4">
+                  <div className={isMobile ? "mb-4" : "mb-6"}>
                     <Link
                       href="/student_page/dashboard"
                       className={`flex items-center ${!isExpanded
                         ? "justify-center w-full p-2.5 mx-0"
-                        : "gap-4 px-5 py-2.5 mx-4"
-                        } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
+                        : (isMobile ? "gap-3 px-4 py-2 mx-3" : "gap-4 px-5 py-2.5 mx-4")
+                        } text-slate-500 dark:text-slate-400 no-underline ${isMobile ? "text-xs" : "text-sm"} font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
                         } ${pathname === "/student_page/dashboard"
                           ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
                           : ""
@@ -835,8 +837,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                           ? "text-teal-600"
                           : ""
                           }`}
-                        width="20"
-                        height="20"
+                        width={isMobile ? "18" : "20"}
+                        height={isMobile ? "18" : "20"}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -876,8 +878,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                             ? "text-teal-600 dark:text-slate-200"
                             : ""
                             }`}
-                          width="20"
-                          height="20"
+                          width={isMobile ? "18" : "20"}
+                          height={isMobile ? "18" : "20"}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -893,7 +895,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                     ) : (
                       <Link
                         href="/student_page/library"
-                        className={`flex items-center gap-4 px-5 py-2.5 text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 mx-4 w-[calc(100%-2rem)] rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 hover:translate-x-1 ${pathname === "/student_page/library"
+                        className={`flex items-center ${isMobile ? "gap-3 px-4 py-2 mx-3" : "gap-4 px-5 py-2.5 mx-4"} text-slate-500 dark:text-slate-400 no-underline ${isMobile ? "text-xs" : "text-sm"} font-medium transition-all duration-300 ${isMobile ? "w-[calc(100%-1.5rem)]" : "w-[calc(100%-2rem)]"} rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 hover:translate-x-1 ${pathname === "/student_page/library"
                           ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
                           : ""
                           }`}
@@ -903,8 +905,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                             ? "text-teal-600 dark:text-slate-200"
                             : ""
                             }`}
-                          width="20"
-                          height="20"
+                          width={isMobile ? "18" : "20"}
+                          height={isMobile ? "18" : "20"}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -932,9 +934,9 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                     />
                   )}
 
-                  <div className="mb-4">
+                  <div className={isMobile ? "mb-3" : "mb-4"}>
                     {isExpanded && (
-                      <div className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider px-6 mb-3">
+                      <div className={`text-slate-400 dark:text-slate-500 ${isMobile ? "text-[10px]" : "text-xs"} font-bold uppercase tracking-wider ${isMobile ? "px-4" : "px-6"} ${isMobile ? "mb-2" : "mb-3"}`}>
                         Quick Access
                       </div>
                     )}
@@ -946,8 +948,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                       href="/student_page/study_mode"
                       className={`flex items-center ${!isExpanded
                         ? "justify-center w-full p-2.5 mx-0"
-                        : "gap-4 px-5 py-2.5 mx-4"
-                        } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
+                        : (isMobile ? "gap-3 px-4 py-2 mx-3" : "gap-4 px-5 py-2.5 mx-4")
+                        } text-slate-500 dark:text-slate-400 no-underline ${isMobile ? "text-xs" : "text-sm"} font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
                         } ${pathname === "/student_page/study_mode"
                           ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
                           : ""
@@ -959,8 +961,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                           ? "text-teal-600 dark:text-slate-200"
                           : ""
                           }`}
-                        width="20"
-                        height="20"
+                        width={isMobile ? "18" : "20"}
+                        height={isMobile ? "18" : "20"}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -982,8 +984,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                       href="/student_page/achievements"
                       className={`flex items-center ${!isExpanded
                         ? "justify-center w-full p-2.5 mx-0"
-                        : "gap-4 px-5 py-2.5 mx-4"
-                        } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
+                        : (isMobile ? "gap-3 px-4 py-2 mx-3" : "gap-4 px-5 py-2.5 mx-4")
+                        } text-slate-500 dark:text-slate-400 no-underline ${isMobile ? "text-xs" : "text-sm"} font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
                         } ${pathname === "/student_page/achievements"
                           ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
                           : ""
@@ -995,8 +997,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                           ? "text-teal-600 dark:text-slate-200"
                           : ""
                           }`}
-                        width="20"
-                        height="20"
+                        width={isMobile ? "18" : "20"}
+                        height={isMobile ? "18" : "20"}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1021,8 +1023,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                         href="/student_page/history"
                         className={`flex items-center ${!isExpanded
                           ? "justify-center w-full p-2.5 mx-0"
-                          : "gap-4 px-5 py-2.5 mx-4"
-                          } text-slate-500 dark:text-slate-400 no-underline text-sm font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
+                          : (isMobile ? "gap-3 px-4 py-2 mx-3" : "gap-4 px-5 py-2.5 mx-4")
+                          } text-slate-500 dark:text-slate-400 no-underline ${isMobile ? "text-xs" : "text-sm"} font-medium transition-all duration-300 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-slate-200 ${isExpanded ? "hover:translate-x-1" : ""
                           } ${pathname === "/student_page/history"
                           ? "bg-gradient-to-br from-teal-500/10 to-teal-600/5 text-teal-600 font-semibold shadow-[0_2px_8px_rgba(20,184,166,0.1)]"
                           : ""
@@ -1031,8 +1033,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                       >
                         <svg
                           className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${pathname === "/student_page/history" ? "text-teal-600" : ""}`}
-                          width="20"
-                          height="20"
+                          width={isMobile ? "18" : "20"}
+                          height={isMobile ? "18" : "20"}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1055,10 +1057,10 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
             )}
 
             {/* Profile Section at Bottom - Fixed Height via CSS var */}
-            <div className="sidebar-footer flex-shrink-0 border-t border-slate-200 dark:border-slate-800 p-6">
+            <div className={`sidebar-footer flex-shrink-0 border-t border-slate-200 dark:border-slate-800 ${isMobile ? "p-4" : "p-6"}`}>
               <div className="relative user-profile">
                 <button
-                  className={`flex items-center w-full p-3 rounded-xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 group ${!isExpanded ? "justify-center" : "gap-4"
+                  className={`flex items-center w-full ${isMobile ? "p-2" : "p-3"} rounded-xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 group ${!isExpanded ? "justify-center" : (isMobile ? "gap-3" : "gap-4")
                     }`}
                   onClick={() => {
                     if (!isExpanded) {
@@ -1069,7 +1071,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                   }}
                   title={!isExpanded ? (userName || "Student User") : ""}
                 >
-                  <div className="relative w-10 h-10 rounded-xl border-2 border-slate-200 dark:border-slate-700 transition-all duration-300 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 group-hover:border-teal-500 group-hover:shadow-[0_0_0_4px_rgba(20,184,166,0.1)] group-hover:bg-gradient-to-br group-hover:from-teal-500 group-hover:to-teal-600 flex-shrink-0 overflow-hidden">
+                  <div className={`relative ${isMobile ? "w-9 h-9" : "w-10 h-10"} rounded-xl border-2 border-slate-200 dark:border-slate-700 transition-all duration-300 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 group-hover:border-teal-500 group-hover:shadow-[0_0_0_4px_rgba(20,184,166,0.1)] group-hover:bg-gradient-to-br group-hover:from-teal-500 group-hover:to-teal-600 flex-shrink-0 overflow-hidden`}>
                     {userImage ? (
                       // Check if it's a Cloudinary image (uploaded profile image) or OAuth provider image
                       userImage.includes('res.cloudinary.com') ? (
@@ -1107,10 +1109,10 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                   </div>
                   {isExpanded && (
                     <div className="flex-1 min-w-0 text-left">
-                      <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      <div className={`${isMobile ? "text-xs" : "text-sm"} font-semibold text-slate-800 dark:text-slate-200 truncate`}>
                         {userName ?? "Student User"}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      <div className={`${isMobile ? "text-[10px]" : "text-xs"} text-slate-500 dark:text-slate-400 truncate`}>
                         {userEmail ?? "student@example.com"}
                       </div>
                     </div>

@@ -41,6 +41,13 @@ export default function ProfilePage() {
     profileImage: ''
   });
 
+  const [originalProfile, setOriginalProfile] = useState<UserProfile>({
+    email: '',
+    firstName: '',
+    lastName: '',
+    profileImage: ''
+  });
+
   const [originalEmail, setOriginalEmail] = useState('');
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -72,12 +79,15 @@ export default function ProfilePage() {
           const data = await response.json();
           const user = data.user;
 
-          setProfile({
+          const userProfile = {
             email: user.email || '',
             firstName: user.firstName || '',
             lastName: user.lastName || '',
             profileImage: user.profileImage || ''
-          });
+          };
+
+          setProfile(userProfile);
+          setOriginalProfile(userProfile);
           setOriginalEmail(user.email || '');
         }
 
@@ -149,6 +159,9 @@ export default function ProfilePage() {
 
           if (profileResponse.ok) {
             showSuccess('Profile image uploaded and saved successfully!', 'Upload Successful');
+
+            // Update original profile to reflect the saved state
+            setOriginalProfile(prev => ({ ...prev, profileImage: imageUrl }));
 
             // Update localStorage user data
             const userData = localStorage.getItem('user');
@@ -253,6 +266,9 @@ export default function ProfilePage() {
         } else {
           showSuccess('Profile updated successfully!', 'Profile Saved');
         }
+
+        // Update original profile to reflect the saved state
+        setOriginalProfile(profile);
 
         // Update localStorage user data
         const userData = localStorage.getItem('user');
@@ -370,6 +386,12 @@ export default function ProfilePage() {
 
 
 
+  // Check if profile has changed
+  const hasProfileChanged = 
+    profile.email.trim() !== originalProfile.email.trim() ||
+    profile.firstName.trim() !== originalProfile.firstName.trim() ||
+    profile.lastName.trim() !== originalProfile.lastName.trim();
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -379,14 +401,14 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-6">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">
             My Profile
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Manage your profile information.
           </p>
         </div>
@@ -394,14 +416,14 @@ export default function ProfilePage() {
         {/* Alerts are shown via the global Alert in student_page/layout.tsx */}
 
         {/* Profile Information */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {/* Profile Information Form */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <form onSubmit={handleProfileSubmit} className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+              <form onSubmit={handleProfileSubmit} className="space-y-4 sm:space-y-6">
                 {/* Profile Picture Section */}
-                <div className="flex items-center space-x-6">
-                  <div className="relative">
-                    <div className="w-24 h-24 rounded-full border-4 border-gray-200 dark:border-gray-700 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-gray-200 dark:border-gray-700 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
                       {profile.profileImage ? (
                         // Use regular img tag for Cloudinary images
                         <img
@@ -430,7 +452,7 @@ export default function ProfilePage() {
 
                       {/* Default avatar - shown when no image is available */}
                       <div className={`default-avatar w-full h-full flex items-center justify-center ${(profile.profileImage || session?.user?.image) ? 'hidden' : ''}`}>
-                        <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                         </svg>
                       </div>
@@ -440,12 +462,12 @@ export default function ProfilePage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploadingImage}
-                      className="absolute -bottom-2 -right-2 w-8 h-8 bg-teal-600 hover:bg-teal-700 text-white rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
+                      className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-7 h-7 sm:w-8 sm:h-8 bg-teal-600 hover:bg-teal-700 text-white rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
                     >
                       {isUploadingImage ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       )}
@@ -461,24 +483,24 @@ export default function ProfilePage() {
                       className="hidden"
                     />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  <div className="text-center sm:text-left flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white truncate">
                       {profile.firstName} {profile.lastName}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
                       {profile.email}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1">
                       Click the + button to upload a new profile picture
                     </p>
                   </div>
                 </div>
 
                 {/* Basic Information */}
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Email - Full Width */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                       Email
                     </label>
                     <input
@@ -488,20 +510,20 @@ export default function ProfilePage() {
                         setProfile(prev => ({ ...prev, email: e.target.value }));
                         if (alert.isVisible) hideAlert();
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                     {profile.email !== originalEmail && (
-                      <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                      <p className="text-[10px] sm:text-xs text-yellow-600 dark:text-yellow-400 mt-1">
                         Changing your email will require verification
                       </p>
                     )}
                   </div>
 
                   {/* First Name and Last Name - Side by Side */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                         First Name
                       </label>
                       <input
@@ -511,13 +533,13 @@ export default function ProfilePage() {
                           setProfile(prev => ({ ...prev, firstName: e.target.value }));
                           if (alert.isVisible) hideAlert();
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                         Last Name
                       </label>
                       <input
@@ -527,7 +549,7 @@ export default function ProfilePage() {
                           setProfile(prev => ({ ...prev, lastName: e.target.value }));
                           if (alert.isVisible) hideAlert();
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                     </div>
@@ -535,11 +557,11 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-2">
                   <button
                     type="submit"
-                    disabled={isSaving}
-                    className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSaving || !hasProfileChanged}
+                    className="w-full sm:w-auto bg-teal-600 text-white px-6 py-2.5 text-sm sm:text-base rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSaving ? 'Saving...' : 'Save Profile'}
                   </button>
@@ -548,15 +570,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Password Change Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
                   Password
                 </h3>
                 <button
                   type="button"
                   onClick={() => setShowPasswordSection(!showPasswordSection)}
-                  className="text-teal-600 hover:text-teal-700 text-sm font-medium"
+                  className="text-teal-600 hover:text-teal-700 text-xs sm:text-sm font-medium"
                 >
                   {showPasswordSection ? 'Cancel' : 'Change Password'}
                 </button>
@@ -565,7 +587,7 @@ export default function ProfilePage() {
               {showPasswordSection && (
                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                       Current Password
                     </label>
                     <div className="relative">
@@ -573,7 +595,7 @@ export default function ProfilePage() {
                         type={showCurrentPassword ? "text" : "password"}
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 pr-10 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                       <button
@@ -596,7 +618,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                       New Password
                     </label>
                     <div className="relative">
@@ -604,7 +626,7 @@ export default function ProfilePage() {
                         type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 pr-10 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                       <button
@@ -624,13 +646,13 @@ export default function ProfilePage() {
                         )}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                       Password must be at least 8 characters with uppercase, lowercase, number, and symbol
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
                       Confirm New Password
                     </label>
                     <div className="relative">
@@ -638,7 +660,7 @@ export default function ProfilePage() {
                         type={showConfirmPassword ? "text" : "password"}
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 pr-10 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
                       />
                       <button
@@ -660,11 +682,11 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-end pt-2">
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full sm:w-auto bg-teal-600 text-white px-4 py-2.5 text-sm sm:text-base rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSaving ? 'Changing...' : 'Change Password'}
                     </button>
@@ -676,18 +698,18 @@ export default function ProfilePage() {
 
         {/* Email Change Confirmation Modal */}
         {showEmailChangeConfirm && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-md w-full">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
                 Confirm Email Change
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
                 Changing your email will require verification. You'll be redirected to the verification page and will need to verify your new email address.
               </p>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sm:justify-end">
                 <button
                   onClick={() => setShowEmailChangeConfirm(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="w-full sm:w-auto px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -696,7 +718,7 @@ export default function ProfilePage() {
                     setShowEmailChangeConfirm(false);
                     submitProfileUpdate();
                   }}
-                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                  className="w-full sm:w-auto px-4 py-2 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
                   Continue
                 </button>
@@ -707,18 +729,18 @@ export default function ProfilePage() {
 
         {/* Password Change Confirmation Modal */}
         {showPasswordChangeConfirm && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-md w-full">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
                 Confirm Password Change
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
                 For security reasons, you will be logged out after changing your password. You'll need to log in again with your new password.
               </p>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sm:justify-end">
                 <button
                   onClick={() => setShowPasswordChangeConfirm(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="w-full sm:w-auto px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -727,7 +749,7 @@ export default function ProfilePage() {
                     setShowPasswordChangeConfirm(false);
                     submitPasswordChange();
                   }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className="w-full sm:w-auto px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
                   Change Password
                 </button>
