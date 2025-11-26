@@ -3,8 +3,17 @@
 /* Sidebar layout sizing to keep icon vertical positions stable */
 :root {
   /* Tune these values if you change the header/footer content sizes */
-  --sidebar-header-height: 128px;
+  --sidebar-header-height: 88px;
   --sidebar-footer-height: 112px;
+  --mobile-navbar-height: 0px;
+}
+
+/* On mobile, header is hidden so set height to 0, and account for mobile navbar */
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-header-height: 0px;
+    --mobile-navbar-height: 56px;
+  }
 }
 
 .sidebar-header {
@@ -19,7 +28,7 @@
 
 /* Ensure the middle nav area always consumes remaining height */
 .sidebar-nav {
-  height: calc(100vh - var(--sidebar-header-height) - var(--sidebar-footer-height));
+  height: calc(100vh - var(--sidebar-header-height) - var(--sidebar-footer-height) - var(--mobile-navbar-height));
 }
 
 /* Custom animations for dropdown */

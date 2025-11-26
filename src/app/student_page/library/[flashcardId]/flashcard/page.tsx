@@ -860,33 +860,6 @@ export default function FlashcardOnlyPage() {
             </div>
           </div>
 
-          <div className="w-full xl:justify-self-center xl:max-w-4xl px-1 sm:px-2">
-            <div className="w-full h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-teal-600 to-teal-600 transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-slate-500 dark:text-slate-400 gap-2 sm:gap-3">
-              <div className="flex items-center">
-                <span>Progress</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-100 ml-1 sm:ml-2">{progress}%</span>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <div className="inline-flex items-center gap-1 sm:gap-2 px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 text-xs sm:text-sm">
-                  <span className="font-semibold">Still learning</span>
-                  <span className="inline-block w-5 sm:w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{remaining}</span>
-                </div>
-                <div className="inline-flex items-center gap-1 sm:gap-2 px-2 py-1 rounded-full bg-teal-600/10 text-teal-600 dark:bg-teal-600/20 text-xs sm:text-sm">
-                  <span className="font-semibold">Know</span>
-                  <span className="inline-block w-5 sm:w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{learnedCount}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="flex items-center gap-2 sm:gap-3 xl:justify-self-end">
             <button
               onClick={() => setShowOptions(true)}
@@ -917,23 +890,39 @@ export default function FlashcardOnlyPage() {
                 <div>Card <span className="font-medium text-slate-700 dark:text-slate-100">{Math.min(viewerPos + 1, Math.max(remaining, 1))}</span> / <span className="font-medium">{Math.max(remaining, 1)}</span></div>
               </div>
 
-              <div className="relative">
+              {/* Progress bar moved above card */}
+              <div className="mb-4 max-w-5xl mx-auto">
+                <div className="w-full h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-teal-600 to-teal-600 transition-all"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center">
+                    <span>Progress</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 ml-1 sm:ml-2">{progress}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative max-w-5xl mx-auto">
                 {/* make the card much larger using viewport height.
                     When "Show both sides" is enabled render two stacked cards.
                 */}
-                <div className="h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-[55vh] xl:h-[60vh]">
+                <div className="h-[32vh] sm:h-[35vh] md:h-[38vh] lg:h-[40vh] xl:h-[42vh]">
                   {showBothSides ? (
                     <div className="h-full flex flex-col gap-3 sm:gap-4 lg:gap-6">
                       {/* Front / top */}
                       <div className={`w-full flex-1 rounded-xl sm:rounded-2xl flex items-center justify-center p-4 sm:p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(true, null)}`}>
                         {/* Front label removed */}
-                        <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words">{currentCard?.question ?? "No question"}</div>
+                        <div className="max-w-[85%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words overflow-hidden">{currentCard?.question ?? "No question"}</div>
                       </div>
 
                       {/* Back / bottom (rating overlay will attach here) */}
                       <div className={`relative w-full flex-1 rounded-xl sm:rounded-2xl flex items-center justify-center p-4 sm:p-6 text-center select-none shadow-lg border border-slate-100 dark:border-transparent ${getBgClass(false, null)}`}>
                         <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Back</div>
-                        <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words">{currentCard?.answer ?? "No answer"}</div>
+                        <div className="max-w-[85%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words overflow-hidden">{currentCard?.answer ?? "No answer"}</div>
                         {/* Rating overlay attaches to the back card in "both sides" mode */}
                         {selectedRating && (
                           <div
@@ -974,7 +963,7 @@ export default function FlashcardOnlyPage() {
                         <div className={`absolute inset-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none [backface-visibility:hidden] ${getBgClass(true, null)}`}>
                           {/* Front label removed */}
                           <div className="w-full flex flex-col items-center">
-                            <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-snug break-words">{currentCard?.question ?? "No question"}</div>
+                            <div className="max-w-[85%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words overflow-hidden">{currentCard?.question ?? "No question"}</div>
                             <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Press <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Space</span> or click to flip</div>
                           </div>
                         </div>
@@ -983,7 +972,7 @@ export default function FlashcardOnlyPage() {
                         <div className={`absolute inset-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none [backface-visibility:hidden] [transform:rotateY(180deg)] ${getBgClass(false, null)}`}>
                           <div className="absolute top-2 right-2 bg-slate-200 dark:bg-slate-700 text-xs px-2 py-1 rounded">Back</div>
                           <div className="w-full flex flex-col items-center">
-                            <div className="max-w-[95%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-snug break-words">{currentCard?.answer ?? "No answer"}</div>
+                            <div className="max-w-[85%] text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl leading-snug break-words overflow-hidden">{currentCard?.answer ?? "No answer"}</div>
                             <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Flip back with Space or click</div>
                           </div>
                         </div>
@@ -1002,7 +991,7 @@ export default function FlashcardOnlyPage() {
               </div>
 
               {/* Rating buttons: Disable during animation */}
-              <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+              <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 sm:gap-3 flex-wrap max-w-5xl mx-auto">
                 <button
                   onClick={() => rateCard("again")}
                   disabled={isRatingInProgress}
@@ -1047,6 +1036,17 @@ export default function FlashcardOnlyPage() {
                   </button>
 
                   {/* Track progress pill removed per request */}
+                </div>
+
+                <div className="flex items-center gap-2 sm:gap-3 justify-center flex-wrap sm:ml-12 md:ml-16 lg:ml-20">
+                  <div className="inline-flex items-center gap-1 sm:gap-2 px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 text-xs sm:text-sm">
+                    <span className="font-semibold">Still learning</span>
+                    <span className="inline-block w-5 sm:w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{remaining}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1 sm:gap-2 px-2 py-1 rounded-full bg-teal-600/10 text-teal-600 dark:bg-teal-600/20 text-xs sm:text-sm">
+                    <span className="font-semibold">Know</span>
+                    <span className="inline-block w-5 sm:w-6 text-center bg-white dark:bg-slate-800 rounded-full px-1 text-xs">{learnedCount}</span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-end">

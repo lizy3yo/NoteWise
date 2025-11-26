@@ -725,7 +725,12 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
 
             {/* Center: Logo */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-              <Link href="/student_page/dashboard" className="flex items-center no-underline">
+              <Link href="/student_page/dashboard" className="flex items-center gap-2 no-underline">
+                <img 
+                  src="/notewise.png" 
+                  alt="NoteWise" 
+                  className="w-8 h-8 flex-shrink-0"
+                />
                 <span className="text-lg font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent tracking-tight whitespace-nowrap">NoteWise</span>
               </Link>
             </div>
@@ -751,7 +756,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
         <aside
           ref={sidebarRef}
           className={`bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 ${!isExpanded && isProfileDropdownOpen ? "allow-overflow" : "overflow-hidden"
-            } fixed left-0 top-0 bottom-0 z-50 shadow-[2px_0_8px_rgba(0,0,0,0.04)] transition-all duration-300 ${isMobile 
+            } fixed left-0 ${isMobile ? "top-14" : "top-0"} bottom-0 z-50 shadow-[2px_0_8px_rgba(0,0,0,0.04)] transition-all duration-300 ${isMobile 
               ? "w-[280px]" 
               : (isSidebarCollapsed && !isTouchExpanded ? "w-20" : "w-80")
             } ${isMobile ? (isMobileMenuOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}`}
@@ -767,50 +772,47 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
         >
           <div className="flex flex-col h-full max-h-screen">
             {/* Header Section with Title and Search - Fixed Height via CSS var */}
-            <div className={`sidebar-header flex-shrink-0 ${isExpanded ? (isMobile ? "px-4 pt-3 pb-2" : "px-6 pt-6 pb-3") : "p-2"}`}>
-              {/* Header with Title and Toggle */}
-              <div className="flex items-center justify-between mb-0">
-                {isExpanded && (
-                  <Link
-                    href="/student_page/dashboard"
-                    className="flex items-center"
-                  >
-                    <h1 className={`bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent ${isMobile ? "text-2xl" : "text-3xl"} font-extrabold m-0 tracking-tight`}>
-                      NoteWise
-                    </h1>
-                  </Link>
-                )}
+            {!isMobile && (
+              <>
+                <div className={`sidebar-header flex-shrink-0 ${isExpanded ? "px-6 pt-4 pb-2" : "p-2"}`}>
+                  {/* Header with Title and Toggle */}
+                  <div className="flex items-center justify-between mb-0">
+                    {isExpanded && (
+                      <Link
+                        href="/student_page/dashboard"
+                        className="flex items-center gap-2"
+                      >
+                        <img 
+                          src="/notewise.png" 
+                          alt="NoteWise" 
+                          className="w-10 h-10 flex-shrink-0"
+                        />
+                        <h1 className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent text-3xl font-extrabold m-0 tracking-tight">
+                          NoteWise
+                        </h1>
+                      </Link>
+                    )}
 
-                {/* Toggle Button */}
-                <div className="flex items-center gap-2">
-                  {isMobile ? (
-                    <button
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      aria-label="Close menu"
-                      className="p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                    >
-                      <svg width="22" height="22" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
-                      </svg>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                      aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                      className={`p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ${isSidebarCollapsed ? "mx-auto" : ""
-                        }`}
-                    >
-                      {/* Hamburger icon to match mobile navbar */}
-                      <svg width="24" height="24" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path strokeWidth={2} strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-                      </svg>
-                    </button>
-                  )}
+                    {/* Toggle Button */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        className={`p-2 rounded-lg transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ${isSidebarCollapsed ? "mx-auto" : ""
+                          }`}
+                      >
+                        {/* Hamburger icon to match mobile navbar */}
+                        <svg width="24" height="24" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                          <path strokeWidth={2} strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            {/* Divider line */}
-            <div className="border-b border-slate-200 dark:border-slate-800"></div>
+                {/* Divider line */}
+                <div className="border-b border-slate-200 dark:border-slate-800"></div>
+              </>
+            )}
 
             {/* Navigation Section - Scrollable but constrained */}
             <div className="flex-1 min-h-0 overflow-hidden">
@@ -818,7 +820,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                 className="h-full overflow-y-auto scrollbar-hide sidebar-nav"
                 style={{ maxHeight: "calc(100vh - var(--sidebar-header-height) - var(--sidebar-footer-height))" }}
               >
-                <nav className="pt-3 sm:pt-4 pb-4">
+                <nav className="pt-2 sm:pt-3 pb-4">
                   <div className={isMobile ? "mb-4" : "mb-6"}>
                     <Link
                       href="/student_page/dashboard"
@@ -847,13 +849,7 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 15v-4a2 2 0 012-2h4a2 2 0 012 2v4"
+                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                         />
                       </svg>
                       {isExpanded && (
