@@ -515,12 +515,20 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                       msg.role === 'user'
-                        ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                        ? 'bg-gradient-to-r from-teal-500 to-cyan-500'
+                        : 'bg-gray-100 dark:bg-gray-700'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                    <p className="text-xs opacity-70 mt-1">
+                    <p 
+                      className={`text-sm whitespace-pre-wrap ${msg.role === 'user' ? '' : 'text-gray-900 dark:text-white'}`}
+                      style={msg.role === 'user' ? { color: '#ffffff !important' } : undefined}
+                    >
+                      {msg.content}
+                    </p>
+                    <p 
+                      className={`text-xs mt-1 ${msg.role === 'user' ? '' : 'text-gray-900 dark:text-white opacity-70'}`}
+                      style={msg.role === 'user' ? { color: '#ffffff !important', opacity: 0.9 } : undefined}
+                    >
                       {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>

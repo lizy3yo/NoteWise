@@ -496,7 +496,7 @@ function StudyModeContent() {
           <div className="flex gap-3">
             <button
               onClick={() => setCreateType('summary')}
-              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'summary' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700'} transition-colors`}
+              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'summary' ? '!border-teal-500 !bg-teal-50 dark:!border-teal-500 dark:!bg-teal-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-teal-50 dark:hover:!border-teal-400 dark:hover:!bg-teal-50/10'} transition-colors`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-5 h-5 text-teal-600">
@@ -510,7 +510,7 @@ function StudyModeContent() {
             </button>
             <button
               onClick={() => setCreateType('flashcards')}
-              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'flashcards' ? 'border-teal-500 bg-white dark:bg-gray-700 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700'} transition-colors`}
+              className={`flex-1 text-left p-4 rounded-lg border ${createType === 'flashcards' ? '!border-teal-500 !bg-teal-50 dark:!border-teal-500 dark:!bg-teal-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-400 hover:bg-teal-50 dark:hover:!border-teal-400 dark:hover:!bg-teal-50/10'} transition-colors`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-5 h-5 text-orange-600">
@@ -671,7 +671,7 @@ function StudyModeContent() {
                   <div className="mt-3">
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                      className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
                       Browse files
                     </button>
@@ -769,7 +769,7 @@ function StudyModeContent() {
               onClick={handleGenerate}
               disabled={!allowGenerate || isGenerating}
               className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${!allowGenerate || isGenerating
-                ? "bg-gray-600/30 text-gray-300 cursor-not-allowed"
+                ? "bg-gray-300 dark:bg-gray-600/30 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:scale-[1.02] hover:shadow-xl"
                 } w-full sm:w-auto`}
             >
