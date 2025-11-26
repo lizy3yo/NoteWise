@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, Suspense } from 'react';
+import React, { useEffect, useMemo, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PrimaryActionButton from '@/components/ui/buttons/PrimaryActionButton';
 import { useAlert } from '@/hooks/useAlert';
 import { useFlashcardRequest, useSummaryRequest } from '@/hooks';
 import { requestService } from '@/services/RequestService';
+import GenerationProgressModal, { startGeneration, updateGenerationProgress, addGenerationResult, completeGeneration } from '@/components/ui/GenerationProgressModal';
 // Alert rendering removed here; use the global Alert in student_page/layout.tsx
 
 type FlashcardItem = {
@@ -48,16 +49,18 @@ type SummaryItem = {
 };
 
 function PrivateLibraryContent() {
-  // Initialize activeTab from localStorage or default to 'favorites'
-  const [activeTab, setActiveTab] = useState<'flashcards' | 'study_notes' | 'folders' | 'favorites'>(() => {
-    if (typeof window !== 'undefined') {
-      const savedTab = localStorage.getItem('library_active_tab');
-      if (savedTab && ['flashcards', 'study_notes', 'folders', 'favorites'].includes(savedTab)) {
-        return savedTab as 'flashcards' | 'study_notes' | 'folders' | 'favorites';
-      }
+  // Initialize activeTab with a stable default to prevent hydration mismatch
+  const [activeTab, setActiveTab] = useState<'flashcards' | 'study_notes' | 'folders' | 'favorites'>('favorites');
+  const [isClient, setIsClient] = useState(false);
+
+  // Load saved tab from localStorage after mount (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+    const savedTab = localStorage.getItem('library_active_tab');
+    if (savedTab && ['flashcards', 'study_notes', 'folders', 'favorites'].includes(savedTab)) {
+      setActiveTab(savedTab as 'flashcards' | 'study_notes' | 'folders' | 'favorites');
     }
-    return 'favorites';
-  });
+  }, []);
   const [filter, setFilter] = useState('recent');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null); // Track which folder is open
@@ -70,6 +73,7 @@ function PrivateLibraryContent() {
   const [flashcardCompletedActivityIds, setFlashcardCompletedActivityIds] = useState<Set<string>>(() => new Set());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState<boolean>(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const [openSubMenu, setOpenSubMenu] = useState<'share' | 'organize' | null>(null);
@@ -569,21 +573,26 @@ function PrivateLibraryContent() {
     }
   }, []);
 
-  // Refresh data when navigating back to the library page
+
+
+  // Track if we just navigated from study mode to refresh data
+  const previousPathRef = useRef<string>('');
+  
   useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible' && userId) {
-        // Refresh summaries to get updated isRead status
-        await fetchSummaries(false); // Skip cache for fresh data
+    const currentPath = window.location.pathname + window.location.search;
+    const tabParam = searchParams.get('tab');
+    
+    // Only refresh if URL changed (navigating TO library, not just switching tabs)
+    if (currentPath !== previousPathRef.current && tabParam && userId && !isLoading) {
+      if (tabParam === 'study_notes') {
+        fetchSummaries(false);
+      } else if (tabParam === 'flashcards') {
+        fetchFlashcards(false);
       }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [userId, fetchSummaries]);
+    }
+    
+    previousPathRef.current = currentPath;
+  }, [searchParams, userId, isLoading, fetchSummaries, fetchFlashcards]);
 
   const handleDelete = async (flashcardId: string) => {
     if (!userId) return;
@@ -607,6 +616,55 @@ function PrivateLibraryContent() {
     navigator.clipboard.writeText(text)
       .then(() => showSuccess('Link copied to clipboard!'))
       .catch(() => showError('Failed to copy link'));
+  };
+
+  const handleCreateFlashcardsFromSummary = async (summary: SummaryItem) => {
+    if (!userId || isGeneratingFlashcards) return;
+    setOpenMenuId(null);
+    setIsGeneratingFlashcards(true);
+
+    try {
+      // Start the generation progress modal
+      startGeneration('flashcard', 1);
+      updateGenerationProgress(summary.title, 0);
+
+      const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: summary.content,
+          title: `${summary.title} - Flashcards`,
+          subject: summary.subject,
+          difficulty: summary.difficulty,
+          maxCards: 15
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        addGenerationResult(summary.title, true);
+        updateGenerationProgress(summary.title, 1);
+        completeGeneration();
+        
+        showSuccess('Flashcards generated successfully', 'Generation Complete');
+        
+        // Refresh flashcards and navigate immediately
+        await fetchFlashcards(false);
+        router.push('/student_page/library?tab=flashcards');
+        return;
+      } else {
+        addGenerationResult(summary.title, false, data.error || 'Failed to generate');
+        updateGenerationProgress(summary.title, 1);
+        completeGeneration();
+        throw new Error(data.error || 'Failed to generate flashcards');
+      }
+    } catch (error) {
+      console.error('Flashcard generation failed:', error);
+      showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
+    } finally {
+      setIsGeneratingFlashcards(false);
+    }
   };
 
   const openFolderModal = (id: string, type: 'flashcard' | 'summary', title: string) => {
@@ -1125,6 +1183,14 @@ function PrivateLibraryContent() {
 
   return (
     <>
+      <GenerationProgressModal onComplete={async () => {
+        // Refresh both flashcards and summaries when generation completes
+        await Promise.all([
+          fetchFlashcards(false),
+          fetchSummaries(false)
+        ]);
+      }} />
+      
       <style jsx global>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
@@ -1207,11 +1273,13 @@ function PrivateLibraryContent() {
             >
               <option value="recent">Recent</option>
               <option value="popular">
-                {activeTab === 'flashcards' ? 'Most Cards' : 
-                 activeTab === 'study_notes' ? 'Most Words' : 
-                 activeTab === 'folders' ? 'Most Items' : 
-                 activeTab === 'favorites' ? 'Most Cards' :
-                 'Most Popular'}
+                {isClient ? (
+                  activeTab === 'flashcards' ? 'Most Cards' : 
+                  activeTab === 'study_notes' ? 'Most Words' : 
+                  activeTab === 'folders' ? 'Most Items' : 
+                  activeTab === 'favorites' ? 'Most Cards' :
+                  'Most Popular'
+                ) : 'Most Cards'}
               </option>
               <option value="alphabetical">A-Z</option>
             </select>
@@ -1630,34 +1698,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={async () => {
-                                          if (!userId) return;
-                                          setOpenMenuId(null);
-                                          try {
-                                            const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
-                                              method: 'POST',
-                                              headers: { 'Content-Type': 'application/json' },
-                                              body: JSON.stringify({
-                                                content: summary.content,
-                                                title: `${summary.title} - Flashcards`,
-                                                subject: summary.subject,
-                                                difficulty: summary.difficulty,
-                                                maxCards: 15
-                                              })
-                                            });
-
-                                            const data = await response.json();
-
-                                            if (!response.ok || !data.success) {
-                                              throw new Error(data.error || 'Failed to generate flashcards');
-                                            }
-
-                                            router.push('/student_page/library?tab=flashcards');
-                                          } catch (error) {
-                                            console.error('Flashcard generation failed:', error);
-                                            showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
-                                          }
-                                        }}
+                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
                                       >
                                         Create Flashcards
                                       </button>
@@ -1950,31 +1991,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={async () => {
-                                          if (!userId) return;
-                                          setOpenMenuId(null);
-                                          try {
-                                            const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
-                                              method: 'POST',
-                                              headers: { 'Content-Type': 'application/json' },
-                                              body: JSON.stringify({
-                                                content: summary.content,
-                                                title: `${summary.title} - Flashcards`,
-                                                subject: summary.subject,
-                                                difficulty: summary.difficulty,
-                                                maxCards: 15
-                                              })
-                                            });
-                                            const data = await response.json();
-                                            if (!response.ok || !data.success) {
-                                              throw new Error(data.error || 'Failed to generate flashcards');
-                                            }
-                                            router.push('/student_page/library?tab=flashcards');
-                                          } catch (error) {
-                                            console.error('Flashcard generation failed:', error);
-                                            showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
-                                          }
-                                        }}
+                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
                                       >
                                         Create Flashcards
                                       </button>
@@ -2388,7 +2405,7 @@ function PrivateLibraryContent() {
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}>{summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}>Rename</button>
-                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={async () => { if (!userId) return; setOpenMenuId(null); try { const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: summary.content, title: `${summary.title} - Flashcards`, subject: summary.subject, difficulty: summary.difficulty, maxCards: 15 }) }); const data = await response.json(); if (!response.ok || !data.success) throw new Error(data.error || 'Failed to generate flashcards'); router.push('/student_page/library?tab=flashcards'); } catch (error) { console.error('Flashcard generation failed:', error); showError(error instanceof Error ? error.message : 'Failed to generate flashcards'); } }}>Create Flashcards</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => handleCreateFlashcardsFromSummary(summary)}>Create Flashcards</button>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(summary._id, 'summary', summary.title); setOpenMenuId(null); }}>Move to Folder</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600" onClick={() => { handleArchiveSummary(summary._id); setOpenMenuId(null); }}>Archive</button>
@@ -2836,40 +2853,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={async () => {
-                                          if (!userId) return;
-                                          setOpenMenuId(null);
-
-                                          try {
-                                            // Generate flashcards from summary content
-                                            const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
-                                              method: 'POST',
-                                              headers: {
-                                                'Content-Type': 'application/json'
-                                              },
-                                              body: JSON.stringify({
-                                                content: summary.content,
-                                                title: `${summary.title} - Flashcards`,
-                                                subject: summary.subject,
-                                                difficulty: summary.difficulty,
-                                                maxCards: 15
-                                              })
-                                            });
-
-                                            const data = await response.json();
-
-                                            if (!response.ok || !data.success) {
-                                              throw new Error(data.error || 'Failed to generate flashcards');
-                                            }
-
-                                            // Success - redirect to library flashcards tab
-                                            showSuccess('Flashcards generated successfully!');
-                                            router.push('/student_page/library?tab=flashcards');
-                                          } catch (error) {
-                                            console.error('Flashcard generation failed:', error);
-                                            showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
-                                          }
-                                        }}
+                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
                                       >
                                         Create Flashcards
                                       </button>
@@ -3016,40 +3000,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={async () => {
-                                          if (!userId) return;
-                                          setOpenMenuId(null);
-
-                                          try {
-                                            // Generate flashcards from summary content
-                                            const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
-                                              method: 'POST',
-                                              headers: {
-                                                'Content-Type': 'application/json'
-                                              },
-                                              body: JSON.stringify({
-                                                content: summary.content,
-                                                title: `${summary.title} - Flashcards`,
-                                                subject: summary.subject,
-                                                difficulty: summary.difficulty,
-                                                maxCards: 15
-                                              })
-                                            });
-
-                                            const data = await response.json();
-
-                                            if (!response.ok || !data.success) {
-                                              throw new Error(data.error || 'Failed to generate flashcards');
-                                            }
-
-                                            // Success - redirect to library flashcards tab
-                                            showSuccess('Flashcards generated successfully!');
-                                            router.push('/student_page/library?tab=flashcards');
-                                          } catch (error) {
-                                            console.error('Flashcard generation failed:', error);
-                                            showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
-                                          }
-                                        }}
+                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
                                       >
                                         Create Flashcards
                                       </button>
@@ -3483,34 +3434,7 @@ function PrivateLibraryContent() {
                                           </button>
                                           <button
                                             className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                            onClick={async () => {
-                                              if (!userId) return;
-                                              setOpenMenuId(null);
-                                              try {
-                                                const response = await fetch(`/api/student_page/flashcard/generate-from-text?userId=${userId}`, {
-                                                  method: 'POST',
-                                                  headers: { 'Content-Type': 'application/json' },
-                                                  body: JSON.stringify({
-                                                    content: sm.content,
-                                                    title: `${sm.title} - Flashcards`,
-                                                    subject: sm.subject,
-                                                    difficulty: sm.difficulty,
-                                                    maxCards: 15
-                                                  })
-                                                });
-
-                                                const data = await response.json();
-
-                                                if (!response.ok || !data.success) {
-                                                  throw new Error(data.error || 'Failed to generate flashcards');
-                                                }
-
-                                                router.push('/student_page/library?tab=flashcards');
-                                              } catch (error) {
-                                                console.error('Flashcard generation failed:', error);
-                                                showError(error instanceof Error ? error.message : 'Failed to generate flashcards');
-                                              }
-                                            }}
+                                            onClick={() => handleCreateFlashcardsFromSummary(sm)}
                                           >
                                             Create Flashcards
                                           </button>
@@ -3870,7 +3794,6 @@ export default function PrivateLibraryPage() {
     </Suspense>
   );
 }
-
 
 
 

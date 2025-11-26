@@ -173,8 +173,8 @@ export default function ArchivePage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="mb-6 sm:mb-8 bg-transparent -mx-4 sm:mx-0">
-        <div className="flex gap-3 sm:gap-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto px-4 sm:px-0">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex gap-3 sm:gap-6 border-b border-gray-200 dark:border-gray-700">
           {(['flashcards', 'summaries'] as const).map((tab) => (
             <button
               key={tab}

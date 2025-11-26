@@ -8,6 +8,8 @@ import GenerationProgressModal, {
   addGenerationResult, 
   completeGeneration 
 } from "@/components/ui/GenerationProgressModal";
+import { cacheService } from "@/services/CacheService";
+import { CACHE_KEYS } from "@/constants/endpoints";
 
 function StudyModeContent() {
   const router = useRouter();
@@ -183,6 +185,19 @@ function StudyModeContent() {
     console.log('Adding files:', Array.from(newFiles).map(f => ({ name: f.name, size: f.size, type: f.type })));
     const fileArray = Array.from(newFiles);
 
+    // Validate file sizes (10MB limit)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    const oversizedFiles = fileArray.filter(f => f.size > MAX_FILE_SIZE);
+    
+    if (oversizedFiles.length > 0) {
+      const fileNames = oversizedFiles.map(f => f.name).join(', ');
+      showError(
+        `The following file(s) exceed the 10MB limit: ${fileNames}. Please upload smaller files.`,
+        'File Too Large'
+      );
+      return;
+    }
+
     // clear previous generation errors when we have valid files
     hideAlert();
 
@@ -217,7 +232,7 @@ function StudyModeContent() {
   const allowGenerate = files.length > 0 || pasteText.trim().length > 0;
 
   const handleGenerate = async () => {
-    if (!allowGenerate || !userId) return;
+    if (!allowGenerate || !userId || isGenerating) return;
     await generateSummary();
   };
 
@@ -261,7 +276,7 @@ function StudyModeContent() {
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
             
-            // Update progress
+            // Update progress - show current file being processed
             updateGenerationProgress(file.name, i);
 
             const formData = new FormData();
@@ -286,23 +301,30 @@ function StudyModeContent() {
               if (fileResponse.ok && fileData.success) {
                 results.push({ file: file.name, data: fileData });
                 addGenerationResult(file.name, true);
+                // Update progress after successful completion
+                updateGenerationProgress(file.name, i + 1);
               } else {
                 errors.push({ file: file.name, error: fileData.error || 'Failed to process' });
                 addGenerationResult(file.name, false, fileData.error || 'Failed to process');
+                // Update progress even on error
+                updateGenerationProgress(file.name, i + 1);
               }
             } catch (err) {
               errors.push({ file: file.name, error: 'Failed to process file' });
               addGenerationResult(file.name, false, 'Failed to process file');
+              // Update progress even on error
+              updateGenerationProgress(file.name, i + 1);
             }
           }
 
-          // Complete progress tracking
-          updateGenerationProgress('', files.length);
-          completeGeneration();
-
+          // Check if all failed before completing
           if (results.length === 0) {
+            completeGeneration();
             throw new Error(`Failed to generate summaries: ${errors.map(e => e.error).join(', ')}`);
           }
+
+          // Complete progress tracking
+          completeGeneration();
 
           // Show success message
           const successMsg = files.length > 1 
@@ -314,12 +336,20 @@ function StudyModeContent() {
             showInfo(`${errors.length} file(s) failed to process`, 'Partial Success');
           }
 
-          setTimeout(() => {
-            router.push('/student_page/library?tab=study_notes');
-          }, 400);
+          // Invalidate cache so library page loads fresh data
+          if (userId) {
+            cacheService.invalidate(CACHE_KEYS.SUMMARIES, { userId });
+          }
+
+          // Navigate immediately - modal will close automatically
+          router.push('/student_page/library?tab=study_notes');
           return;
 
         } else {
+          // Start progress tracking for single paste text
+          startGeneration('summary', 1);
+          updateGenerationProgress('Pasted text', 0);
+
           const requestBody = {
             content: pasteText,
             title: customTitle || 'Study Notes Summary',
@@ -332,6 +362,28 @@ function StudyModeContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
           });
+
+          const data = await response.json();
+          if (response.ok && data.success) {
+            addGenerationResult('Pasted text', true);
+            updateGenerationProgress('Pasted text', 1);
+            completeGeneration();
+            
+            showSuccess('Summary generated successfully', 'Generation Complete');
+            
+            // Invalidate cache for real-time updates
+            if (userId) {
+              cacheService.invalidate(CACHE_KEYS.SUMMARIES, { userId });
+            }
+            
+            router.push('/student_page/library?tab=study_notes');
+            return;
+          } else {
+            addGenerationResult('Pasted text', false, data.error || 'Failed to generate');
+            updateGenerationProgress('Pasted text', 1);
+            completeGeneration();
+            throw new Error(data.error || 'Failed to generate summary');
+          }
         }
 
       } else if (createType === 'flashcards') {
@@ -347,7 +399,7 @@ function StudyModeContent() {
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
             
-            // Update progress
+            // Update progress - show current file being processed
             updateGenerationProgress(file.name, i);
 
             const formData = new FormData();
@@ -371,23 +423,30 @@ function StudyModeContent() {
               if (fileResponse.ok && fileData.success) {
                 results.push({ file: file.name, data: fileData });
                 addGenerationResult(file.name, true);
+                // Update progress after successful completion
+                updateGenerationProgress(file.name, i + 1);
               } else {
                 errors.push({ file: file.name, error: fileData.error || 'Failed to process' });
                 addGenerationResult(file.name, false, fileData.error || 'Failed to process');
+                // Update progress even on error
+                updateGenerationProgress(file.name, i + 1);
               }
             } catch (err) {
               errors.push({ file: file.name, error: 'Failed to process file' });
               addGenerationResult(file.name, false, 'Failed to process file');
+              // Update progress even on error
+              updateGenerationProgress(file.name, i + 1);
             }
           }
 
-          // Complete progress tracking
-          updateGenerationProgress('', files.length);
-          completeGeneration();
-
+          // Check if all failed before completing
           if (results.length === 0) {
+            completeGeneration();
             throw new Error(`Failed to generate flashcards: ${errors.map(e => e.error).join(', ')}`);
           }
+
+          // Complete progress tracking
+          completeGeneration();
 
           // Show success message
           const successMsg = files.length > 1 
@@ -399,12 +458,19 @@ function StudyModeContent() {
             showInfo(`${errors.length} file(s) failed to process`, 'Partial Success');
           }
 
-          setTimeout(() => {
-            router.push('/student_page/library?tab=flashcards');
-          }, 400);
+          // Invalidate cache for real-time updates
+          if (userId) {
+            cacheService.invalidate(CACHE_KEYS.FLASHCARDS, { userId });
+          }
+
+          router.push('/student_page/library?tab=flashcards');
           return;
 
         } else {
+          // Start progress tracking for single paste text
+          startGeneration('flashcard', 1);
+          updateGenerationProgress('Pasted text', 0);
+
           const requestBody = {
             content: pasteText,
             title: customTitle || 'Flashcards from notes',
@@ -416,31 +482,39 @@ function StudyModeContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
           });
+
+          const data = await response.json();
+          if (response.ok && data.success) {
+            addGenerationResult('Pasted text', true);
+            updateGenerationProgress('Pasted text', 1);
+            completeGeneration();
+            
+            showSuccess('Flashcards generated successfully', 'Generation Complete');
+            
+            // Invalidate cache for real-time updates
+            if (userId) {
+              cacheService.invalidate(CACHE_KEYS.FLASHCARDS, { userId });
+            }
+            
+            router.push('/student_page/library?tab=flashcards');
+            return;
+          } else {
+            addGenerationResult('Pasted text', false, data.error || 'Failed to generate');
+            updateGenerationProgress('Pasted text', 1);
+            completeGeneration();
+            throw new Error(data.error || 'Failed to generate flashcards');
+          }
         }
 
       }
 
-      if (!response) {
-        throw new Error('Invalid create type selected');
-      }
-
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate');
-      }
-
-      // Success - redirect to the appropriate library tab
-      const successMsg = createType === 'summary' ? 'Summary generated successfully' : 'Flashcards generated successfully';
-      showSuccess(successMsg, 'Generation Complete');
-
-      setTimeout(() => {
-        if (createType === 'summary') router.push('/student_page/library?tab=study_notes');
-        else if (createType === 'flashcards') router.push('/student_page/library?tab=flashcards');
-      }, 400);
-
     } catch (error) {
-      console.error('Summary generation failed:', error);
-      const msg = error instanceof Error ? error.message : 'Failed to generate summary';
+      console.error('Generation failed:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to generate';
+      
+      // Ensure modal closes on error
+      completeGeneration();
+      
       showError(msg, 'Generation Failed');
     } finally {
       setIsGenerating(false);
@@ -678,21 +752,21 @@ function StudyModeContent() {
               ) : (
                 <div className="space-y-3">
                   {files.map((f, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div key={i} className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 overflow-hidden">
+                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{f.name}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{(f.size / 1024).toFixed(1)} KB</div>
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate" title={f.name}>{f.name}</div>
+                          <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{(f.size / 1024).toFixed(1)} KB</div>
                         </div>
                       </div>
                       <button
                         onClick={() => removeFileAt(i)}
-                        className="ml-3 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium"
+                        className="flex-shrink-0 px-2 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium"
                       >
                         Remove
                       </button>

@@ -24,7 +24,7 @@ const Alert: React.FC<AlertProps> = ({
     title,
     isVisible,
     onClose,
-    autoClose = false,
+    autoClose = true, // Changed default to true
     autoCloseDelay = 5000,
     position = 'top-right',
     showIcon = true,

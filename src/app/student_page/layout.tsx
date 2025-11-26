@@ -702,8 +702,8 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
         title={alert.title}
         isVisible={alert.isVisible}
         onClose={hideAlert}
-        autoClose={alert.type === "success"}
-        autoCloseDelay={3000}
+        autoClose={true}
+        autoCloseDelay={5000}
         position="top-right"
       />
       {/* Mobile Top Navbar */}

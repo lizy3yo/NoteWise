@@ -158,7 +158,10 @@ export default function Login() {
 
       if (!response.success) {
         // Handle email verification requirement
-        if (response.error?.includes('EMAIL_NOT_VERIFIED') || response.error?.includes('not verified')) {
+        if (response.error?.includes('EMAIL_NOT_VERIFIED') || 
+            response.error?.includes('not verified') || 
+            response.error?.includes('verify your email') ||
+            response.error?.includes('email address before logging in')) {
           showInfo("Sending verification code to your email...", "Email Verification Required");
 
           // Automatically send verification email
@@ -266,10 +269,10 @@ export default function Login() {
       </div>
 
       <div className="relative z-10 w-full max-w-md sm:max-w-lg p-6 sm:p-8 lg:p-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-[20px] rounded-2xl sm:rounded-3xl shadow-[0_20px_40px_-12px_rgba(20,184,166,0.15)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)] border border-teal-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-[0_32px_64px_-12px_rgba(20,184,166,0.2)] dark:hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
-        {/* Back Button - Inside Container - Hidden on mobile/tablet */}
+        {/* Back Button - Visible on all screen sizes */}
         <button
           type="button"
-          className="hidden lg:flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
+          className="flex absolute top-4 left-4 lg:top-6 lg:left-6 items-center gap-2 px-3 py-2 lg:px-4 lg:py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-medium cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
           onClick={() => router.push("/")}
           disabled={isLoading}
           aria-label="Go back to home"
@@ -287,7 +290,7 @@ export default function Login() {
             <path d="m12 19-7-7 7-7" />
             <path d="M19 12H5" />
           </svg>
-          <span>Home</span>
+          <span className="hidden sm:inline">Home</span>
         </button>
         <div className="mb-6 sm:mb-8 lg:mt-14 text-center">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">

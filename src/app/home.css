@@ -255,8 +255,9 @@ html {
 }
 
 .mobile-nav.active {
-    max-height: 400px;
+    max-height: 650px;
     padding-top: 8px;
+    padding-bottom: 8px;
 }
 
 .mobile-nav-content {

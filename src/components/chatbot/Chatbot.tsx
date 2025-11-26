@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '@/lib/ai/chatbot-service';
 import ChatSessions from './ChatSessions';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useAlert } from '@/hooks/useAlert';
 
 interface ChatbotProps {
   isAuthenticated?: boolean;
@@ -11,6 +12,7 @@ interface ChatbotProps {
 }
 
 export default function Chatbot({ isAuthenticated = false, className = '' }: ChatbotProps) {
+  const { showError, showSuccess } = useAlert();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -160,13 +162,13 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
       'application/msword'
     ];
     if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a TXT, PDF, DOC, or DOCX file');
+      showError('Please upload a TXT, PDF, DOC, or DOCX file', 'Invalid File Type');
       return;
     }
 
-    // Check file size (max 10MB to match regular upload)
+    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
+      showError('File size must be less than 10MB', 'File Too Large');
       return;
     }
 
@@ -197,7 +199,7 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
           const data = await response.json();
           textContent = data.content;
         } catch (error) {
-          alert('Failed to extract text from PDF. Please try a different file.');
+          showError('Failed to extract text from PDF. Please try a different file.', 'PDF Extraction Failed');
           setIsLoading(false);
           return;
         }
@@ -220,14 +222,14 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
           const data = await response.json();
           textContent = data.content;
         } catch (error) {
-          alert('Failed to extract text from Word document. Please try a different file.');
+          showError('Failed to extract text from Word document. Please try a different file.', 'Document Extraction Failed');
           setIsLoading(false);
           return;
         }
       }
 
       if (!textContent || textContent.trim().length < 100) {
-        alert('File content is too short or could not be extracted. Please ensure the file contains readable text.');
+        showError('File content is too short or could not be extracted. Please ensure the file contains readable text.', 'Invalid Content');
         setIsLoading(false);
         return;
       }
@@ -237,11 +239,12 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
         fileName: file.name
       });
       
+      showSuccess(`File "${file.name}" uploaded successfully!`, 'File Uploaded');
       setIsLoading(false);
       // Don't send a message, just show the quick action buttons
     } catch (error) {
       console.error('File upload error:', error);
-      alert('Failed to read file');
+      showError('Failed to read file. Please try again.', 'Upload Failed');
       setIsLoading(false);
     }
   };

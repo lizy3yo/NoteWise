@@ -13,6 +13,7 @@ import LoadingTemplate2 from "@/components/ui/loading_template_2/loading2";
 import { useSession } from "next-auth/react";
 import { useAchievements } from '@/contexts/AchievementContext';
 import { useAchievementData } from '@/hooks/useAchievementData';
+import { useFlashcardRequest, useSummaryRequest } from '@/hooks';
 
 interface DashboardStats {
   totalFlashcards: number;
@@ -59,6 +60,11 @@ interface StudyProgress {
 export default function UserDashboard() {
   const { isLoading: authLoading, user } = useAuth();
   const { data: session } = useSession();
+  
+  // Use cached hooks for flashcards and summaries
+  const userId = user?._id as string | undefined;
+  const { flashcards, isLoading: flashcardsLoading } = useFlashcardRequest(userId);
+  const { summaries, isLoading: summariesLoading } = useSummaryRequest(userId);
   const [stats, setStats] = useState<DashboardStats>({
     totalFlashcards: 0,
     totalSummaries: 0,
@@ -126,26 +132,16 @@ export default function UserDashboard() {
 
       try {
         if (user && user._id) {
-          const userId = encodeURIComponent(user._id as string);
+          const userIdEncoded = encodeURIComponent(user._id as string);
 
-          // Fetch all data in parallel
-          const [flashcardsRes, foldersRes, summariesRes, historyRes] = await Promise.allSettled([
-            fetch(`/api/student_page/flashcard?userId=${userId}`, { credentials: 'include' }),
-            fetch(`/api/student_page/folder?userId=${userId}`, { credentials: 'include' }),
-            fetch(`/api/student_page/summary?userId=${userId}`, { credentials: 'include' }),
-            fetch(`/api/student_page/history?userId=${userId}&limit=200`, { credentials: 'include' })
+          // Fetch folders and history (flashcards and summaries come from hooks)
+          const [foldersRes, historyRes] = await Promise.allSettled([
+            fetch(`/api/student_page/flashcard?userId=${userIdEncoded}`, { credentials: 'include' }),
+            fetch(`/api/student_page/history?userId=${userIdEncoded}&limit=200`, { credentials: 'include' })
           ]);
 
-          let fetchedFlashcards: any[] = [];
           let fetchedFolders: any[] = [];
-          let fetchedSummaries: any[] = [];
           let fetchedActivities: Activity[] = [];
-
-          // Process flashcards
-          if (flashcardsRes.status === 'fulfilled' && flashcardsRes.value.ok) {
-            const data = await flashcardsRes.value.json().catch(() => null);
-            fetchedFlashcards = Array.isArray(data?.flashcards) ? data.flashcards : [];
-          }
 
           // Process folders
           if (foldersRes.status === 'fulfilled' && foldersRes.value.ok) {
@@ -153,17 +149,15 @@ export default function UserDashboard() {
             fetchedFolders = Array.isArray(data?.folders) ? data.folders : [];
           }
 
-          // Process summaries
-          if (summariesRes.status === 'fulfilled' && summariesRes.value.ok) {
-            const data = await summariesRes.value.json().catch(() => null);
-            fetchedSummaries = Array.isArray(data?.summaries) ? data.summaries : [];
-          }
-
           // Process activity history
           if (historyRes.status === 'fulfilled' && historyRes.value.ok) {
             const data = await historyRes.value.json().catch(() => null);
             fetchedActivities = Array.isArray(data?.activities) ? data.activities : [];
           }
+
+          // Use hook data for flashcards and summaries
+          const fetchedFlashcards = flashcards || [];
+          const fetchedSummaries = summaries || [];
 
           // Calculate stats
           const totalFlashcards = fetchedFlashcards.length;
@@ -227,7 +221,7 @@ export default function UserDashboard() {
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [user, flashcards, summaries]);
 
   // Helper functions
   function calculateStudyStreak(activities: Activity[]): number {
@@ -563,7 +557,7 @@ export default function UserDashboard() {
   }, [achievements, checkForNewAchievements]);
 
   // Show library-style loading UI while auth or dashboard stats are loading.
-  if (authLoading || loadingStats) {
+  if (authLoading || loadingStats || flashcardsLoading || summariesLoading) {
     return (
       <LoadingTemplate2
         title="Loading dashboard..."

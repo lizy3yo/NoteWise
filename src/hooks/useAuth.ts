@@ -98,7 +98,8 @@ export function useAuth(): UseAuthReturn {
         authManager.clearTokens();
         setUser(null);
       } else {
-        throw new Error(`Failed to fetch user: ${response.status}`);
+        // Don't throw error, just log it and try localStorage fallback
+        console.warn(`Failed to fetch user: ${response.status}`);
       }
     } catch (err) {
       console.error('Failed to fetch current user:', err);

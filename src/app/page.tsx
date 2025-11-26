@@ -72,6 +72,8 @@ export default function Home() {
 
             <div className="header-buttons">
               <ThemeToggle className="hidden lg:block" />
+              
+              {/* Desktop Sign In/Sign Up Buttons */}
               <div className="desktop-get-started">
                 <button
                   className="px-6 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-all duration-200"
@@ -113,11 +115,17 @@ export default function Home() {
               <a href="#features" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>Features</a>
               <a href="#target-users" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>Target Users</a>
               <a href="#how-it-works" className="mobile-nav-link text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400" onClick={toggleMobileMenu}>How It Works</a>
-              <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button className="mobile-get-started-btn" onClick={() => { router.push('/auth/signup'); toggleMobileMenu(); }}>
+              <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button 
+                  className="w-full mobile-get-started-btn" 
+                  onClick={() => { router.push('/auth/signup'); toggleMobileMenu(); }}
+                >
                   Sign Up
                 </button>
-                <button className="px-6 py-3 border border-teal-200 dark:border-teal-700 text-teal-600 dark:text-teal-400 font-medium rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all duration-200" onClick={() => { router.push('/auth/login'); toggleMobileMenu(); }}>
+                <button 
+                  className="w-full px-6 py-3 border border-teal-200 dark:border-teal-700 text-teal-600 dark:text-teal-400 font-medium rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all duration-200" 
+                  onClick={() => { router.push('/auth/login'); toggleMobileMenu(); }}
+                >
                   Sign In
                 </button>
               </div>

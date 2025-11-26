@@ -112,9 +112,9 @@ export default function ProfilePage() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      showError('Image size must be less than 5MB', 'File Too Large');
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showError('Image size must be less than 10MB', 'File Too Large');
       return;
     }
 
