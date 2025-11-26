@@ -520,14 +520,12 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                     }`}
                   >
                     <p 
-                      className={`text-sm whitespace-pre-wrap ${msg.role === 'user' ? '' : 'text-gray-900 dark:text-white'}`}
-                      style={msg.role === 'user' ? { color: '#ffffff !important' } : undefined}
+                      className={`text-sm whitespace-pre-wrap ${msg.role === 'user' ? '!text-white' : 'text-gray-900 dark:text-white'}`}
                     >
                       {msg.content}
                     </p>
                     <p 
-                      className={`text-xs mt-1 ${msg.role === 'user' ? '' : 'text-gray-900 dark:text-white opacity-70'}`}
-                      style={msg.role === 'user' ? { color: '#ffffff !important', opacity: 0.9 } : undefined}
+                      className={`text-xs mt-1 ${msg.role === 'user' ? '!text-white !opacity-90' : 'text-gray-900 dark:text-white opacity-70'}`}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
