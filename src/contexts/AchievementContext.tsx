@@ -87,13 +87,16 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     console.log('✨ Newly unlocked achievement:', newlyUnlocked ? newlyUnlocked.title : 'None');
     
     if (newlyUnlocked) {
-      // Check if we recently showed this achievement (within last 30 seconds)
-      const lastShownKey = `achievement_shown_${newlyUnlocked.id}`;
-      const lastShownTime = typeof window !== 'undefined' ? localStorage.getItem(lastShownKey) : null;
+      // Check if we recently logged this achievement (within last 24 hours to prevent duplicates)
+      const lastLoggedKey = `achievement_logged_${newlyUnlocked.id}`;
+      const lastLoggedTime = typeof window !== 'undefined' ? localStorage.getItem(lastLoggedKey) : null;
       const now = Date.now();
       
-      if (lastShownTime && (now - parseInt(lastShownTime)) < 30000) {
-        console.log('⏭️ Skipping - achievement was shown recently');
+      // Check if already logged within 24 hours
+      const alreadyLogged = lastLoggedTime && (now - parseInt(lastLoggedTime)) < 86400000; // 24 hours
+      
+      if (alreadyLogged) {
+        console.log('⏭️ Skipping - achievement was logged recently (within 24 hours)');
         // Still update the tracking to prevent showing again
         setPreviouslyUnlockedIds(currentlyUnlockedIds);
         
@@ -110,7 +113,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       
       console.log('🎉 SHOWING ACHIEVEMENT TOAST:', newlyUnlocked.title);
       
-      // Log achievement to activity feed
+      // Log achievement to activity feed (only if not recently logged)
       try {
         const localUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
         let userId = null;
@@ -141,6 +144,10 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
           .then(res => res.json())
           .then(data => {
             console.log('✅ Achievement logged successfully:', data);
+            // Mark as logged with timestamp
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(lastLoggedKey, now.toString());
+            }
             // Trigger a refresh of the notification widget
             window.dispatchEvent(new CustomEvent('achievement:unlocked'));
           })
@@ -159,11 +166,10 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
         icon: newlyUnlocked.icon
       });
       
-      // Update localStorage with all unlocked IDs and timestamp
+      // Update localStorage with all unlocked IDs
       try {
         if (typeof window !== 'undefined') {
           localStorage.setItem('unlocked_achievements', JSON.stringify(Array.from(currentlyUnlockedIds)));
-          localStorage.setItem(lastShownKey, now.toString());
           console.log('💾 Saved to localStorage:', Array.from(currentlyUnlockedIds));
         }
       } catch (e) {

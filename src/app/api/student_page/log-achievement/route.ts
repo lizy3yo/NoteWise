@@ -26,6 +26,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if this achievement was already logged recently (within 24 hours) to prevent duplicates
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const existingActivity = await Activity.findOne({
+      user: userId,
+      type: 'notification.achievement',
+      'meta.achievement': achievementTitle,
+      createdAt: { $gte: oneDayAgo }
+    }).lean();
+
+    if (existingActivity) {
+      console.log('⏭️ Achievement already logged recently:', achievementTitle);
+      return NextResponse.json({
+        success: true,
+        message: 'Achievement already logged',
+        activity: existingActivity
+      });
+    }
+
     // Create activity log for achievement unlock as a notification card
     const activity = await Activity.create({
       user: userId,
