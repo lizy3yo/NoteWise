@@ -17,7 +17,6 @@ function StudyModeContent() {
   // create type: summary | flashcards
   const [createType, setCreateType] = useState<'summary' | 'flashcards'>('summary');
 
-
   // paste state
   const [pasteText, setPasteText] = useState("");
   const pasteRef = useRef<HTMLTextAreaElement | null>(null);
@@ -42,6 +41,7 @@ function StudyModeContent() {
   // localStorage keys for persisting options
   const SUMMARY_OPTIONS_KEY = 'study_mode_summary_options_v1';
   const FLASHCARD_OPTIONS_KEY = 'study_mode_flashcard_options_v1';
+  const CREATE_TYPE_KEY = 'study_mode_create_type_v1';
   // keep loaded values for options (we no longer persist/restore the custom title)
   const loadedSummaryRef = React.useRef<{ summaryType?: string; summaryLength?: string } | null>(null);
   const loadedFlashRef = React.useRef<{ maxCards?: number } | null>(null);
@@ -70,6 +70,14 @@ function StudyModeContent() {
     } catch (e) {
       // ignore
     }
+    try {
+      const ct = localStorage.getItem(CREATE_TYPE_KEY);
+      if (ct && (ct === 'summary' || ct === 'flashcards')) {
+        setCreateType(ct as 'summary' | 'flashcards');
+      }
+    } catch (e) {
+      // ignore
+    }
   }, []);
 
   // We intentionally do NOT auto-restore titles when switching create type so users can enter a new title.
@@ -93,6 +101,15 @@ function StudyModeContent() {
       // ignore
     }
   }, [maxCards]);
+
+  // Persist createType when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(CREATE_TYPE_KEY, createType);
+    } catch (e) {
+      // ignore
+    }
+  }, [createType]);
 
   // Get userId on component mount
   useEffect(() => {

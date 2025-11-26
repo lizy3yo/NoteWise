@@ -34394,3 +34394,599 @@
 {"timestamp":"2025-11-26T17:34:31.761Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-26T17:34:31.762Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-26T17:34:31.762Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.764Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:34.769Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.770Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.770Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.771Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.771Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.771Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.772Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.772Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:34.773Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.722Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:37.744Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.745Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.745Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.746Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.746Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.747Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.747Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.747Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:37.748Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.747Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:40.759Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.760Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.761Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.761Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.761Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.762Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.762Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.763Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:40.763Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.337Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:44.354Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.355Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.355Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.356Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.356Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.357Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.357Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.357Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:44.358Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.733Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:46.748Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.748Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.749Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.749Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.750Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.750Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.750Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.751Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:46.751Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.825Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.826Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.826Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.827Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.827Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.827Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.828Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.828Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.829Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:49.833Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:52.687Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:52.711Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.711Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.712Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.712Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.713Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.713Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.713Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.714Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:52.714Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.794Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:54.817Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.818Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.818Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.819Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.819Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.819Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.820Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.820Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:54.821Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.236Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:55.276Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.276Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.276Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.277Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.277Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.278Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.278Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.279Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.279Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.692Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:55.743Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.744Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.744Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.745Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.745Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.746Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.746Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.747Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:55.747Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.198Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:56.451Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.451Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.452Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.452Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.453Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.453Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.453Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.454Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.454Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.629Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:56.791Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.792Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.792Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.792Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.793Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.793Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.794Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.794Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.794Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:56.970Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:57.148Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.149Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.149Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.150Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.150Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.151Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.151Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.152Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:57.152Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.148Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:34:59.176Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.177Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.177Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.178Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.178Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.179Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.179Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.179Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:34:59.180Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.171Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:02.194Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.195Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.196Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.196Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.196Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.197Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.197Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.198Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:02.198Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.040Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:04.046Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.047Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.047Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.048Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.048Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.048Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.049Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.049Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:04.050Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.668Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:05.686Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.687Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.687Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.687Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.688Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.688Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.689Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.689Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:05.689Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.654Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:06.669Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.670Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.671Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.671Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.672Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.672Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.673Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.673Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:06.674Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.628Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:07.645Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.646Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.646Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.646Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.647Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.647Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.648Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.648Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:07.648Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.075Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:08.103Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.104Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.104Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.105Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.105Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.106Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.106Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.106Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.107Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.741Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:08.749Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.749Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.750Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.750Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.751Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.751Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.752Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.752Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:08.752Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.835Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:09.842Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.843Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.843Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.844Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.844Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.844Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.845Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.845Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:09.846Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.554Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:10.558Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.559Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.559Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.560Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.560Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.560Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.561Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.561Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.562Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:10.624Z","level":"info","message":"User refresh token deleted successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTI3MGE5NDdhZmJjNzI1NmZhYWJkODQiLCJpYXQiOjE3NjQxNzYyNzUsImV4cCI6MTc2NDc4MTA3NSwic3ViIjoicmVmcmVzaEFwaSJ9.1j-AtB9SAAM0XLWYsY7KZHNGNZR9XNMkuwS14tezw0c"}}
+{"timestamp":"2025-11-26T17:35:10.625Z","level":"info","message":"User logged out successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84"}}
+{"timestamp":"2025-11-26T17:35:11.037Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:11.064Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.064Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.065Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.065Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.066Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.066Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.066Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.067Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.067Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.480Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:35:11.547Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.548Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.548Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.549Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.549Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.549Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.550Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.550Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:11.551Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:35:59.232Z","level":"info","message":"Refresh token stored in database for user","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTI3MGE5NDdhZmJjNzI1NmZhYWJkODQiLCJpYXQiOjE3NjQxNzg1NTksImV4cCI6MTc2NDc4MzM1OSwic3ViIjoicmVmcmVzaEFwaSJ9.6TedX4TT3z6JCehVUOHcIQGA9RD4-rtIQxkco-ROOdg"}}
+{"timestamp":"2025-11-26T17:35:59.235Z","level":"info","message":"User logged in successfully:","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","email":"dejesuskharl32@gmail.com","username":"user-4g6exivj2yp"}}
+{"timestamp":"2025-11-26T17:36:00.433Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.434Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.434Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.435Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.435Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.436Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.436Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.436Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.437Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.599Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:00.848Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.849Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.849Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.850Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.850Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.851Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.851Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.851Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.852Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:00.936Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:01.304Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.305Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.305Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.306Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.306Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.307Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.307Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.307Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.308Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.344Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:01.739Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:01.768Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.769Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.769Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.770Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.770Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.770Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.771Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.771Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:01.772Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.157Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.158Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.158Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.158Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.159Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.159Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.160Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.160Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.160Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.581Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.581Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.582Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.582Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.583Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.583Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.584Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.584Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.584Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.936Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.937Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.937Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.938Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.938Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.939Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.939Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.940Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:02.940Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.617Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:03.643Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.643Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.644Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.645Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.645Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.645Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.646Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.646Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:03.647Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.165Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:04.185Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.186Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.186Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.187Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.187Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.188Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.188Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.188Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.189Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.930Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:04.954Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.955Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.955Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.956Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.956Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.957Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.957Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.958Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:04.958Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.543Z","level":"info","message":"User refresh token deleted successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTI3MGE5NDdhZmJjNzI1NmZhYWJkODQiLCJpYXQiOjE3NjQxNzg1NTksImV4cCI6MTc2NDc4MzM1OSwic3ViIjoicmVmcmVzaEFwaSJ9.6TedX4TT3z6JCehVUOHcIQGA9RD4-rtIQxkco-ROOdg"}}
+{"timestamp":"2025-11-26T17:36:05.544Z","level":"info","message":"User logged out successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84"}}
+{"timestamp":"2025-11-26T17:36:05.556Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:05.563Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.564Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.564Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.565Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.565Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.565Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.566Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.566Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.567Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:05.992Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:06.034Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.035Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.035Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.035Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.036Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.036Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.037Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.037Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.037Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.440Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":7,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:36:06.489Z","level":"info","message":"GET /flashcard: Found 8 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.490Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.491Z","level":"info","message":"  Flashcard 2: \"dsadad\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.491Z","level":"info","message":"  Flashcard 3: \"asdd - Flashcards\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.491Z","level":"info","message":"  Flashcard 4: \"99999\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.492Z","level":"info","message":"  Flashcard 5: \"5555555\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.492Z","level":"info","message":"  Flashcard 6: \"999900\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.493Z","level":"info","message":"  Flashcard 7: \"1111\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:06.493Z","level":"info","message":"  Flashcard 8: \"01010101\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:36:30.381Z","level":"info","message":"User registered successfully:","service":"gc-quest-api","meta":{"username":"user-qnexkt7q0r","email":"dejesukharl03@gmail.com","role":"student","emailSent":true}}
+{"timestamp":"2025-11-26T17:38:20.571Z","level":"info","message":"User registered successfully:","service":"gc-quest-api","meta":{"username":"user-0mb853jb1ud8","email":"dejesuskharl03@gmail.com","role":"student","emailSent":true}}
+{"timestamp":"2025-11-26T17:39:19.584Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:19.807Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:20.037Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:20.166Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:20.491Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:20.546Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:20.877Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:20.880Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:21.221Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:21.553Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:21.906Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:22.932Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:22.953Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:24.639Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:24.656Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:25.714Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:25.737Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:29.019Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:29.523Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:29.770Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:30.049Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:30.250Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:30.664Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:31.178Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:31.250Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:31.760Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:31.825Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:32.151Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:32.638Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:32.643Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:34.709Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:34.730Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:37.683Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:37.704Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:40.675Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:40.681Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:43.702Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:43.722Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:46.682Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:46.703Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:49.673Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:49.689Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:52.686Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:52.706Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:55.670Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:55.690Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:39:58.688Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:39:58.710Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:01.690Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:01.707Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:04.681Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:04.700Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:07.670Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:07.692Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:10.694Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:10.702Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:14.523Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:14.544Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:16.675Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:16.695Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:19.688Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:19.704Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:23.234Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:23.254Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:25.700Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:25.721Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:28.750Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:28.766Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:30.769Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:31.051Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:34.721Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:34.725Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:37.690Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:37.707Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:40.815Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:40.818Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:43.695Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:43.718Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:46.741Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:46.780Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:40:49.703Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:40:49.720Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:28.702Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:28.860Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:30.742Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:30.907Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:34.668Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:34.691Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:37.747Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:37.784Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:40.698Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:40.720Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:43.682Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:43.703Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:46.672Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:46.692Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:41:49.658Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:41:49.681Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:14.284Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:14.307Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:14.726Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:14.756Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:15.312Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:15.342Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:15.899Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:15.917Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:16.320Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:16.347Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:16.779Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:16.809Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:17.651Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:18.078Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:19.042Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:19.088Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:19.623Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:20.119Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:20.382Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:20.603Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:20.729Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:20.977Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:23.669Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:23.692Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:26.717Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:26.729Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:29.677Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:29.695Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:32.713Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:32.735Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:35.697Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:35.720Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:38.673Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:38.693Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:41.676Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:41.700Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:44.691Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:44.713Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:47.678Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:47.702Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:50.703Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:50.722Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:53.661Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:53.685Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:56.682Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:56.704Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:42:59.688Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:42:59.707Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:02.684Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:02.703Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:05.740Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:05.752Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:08.730Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:08.746Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:11.685Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:11.703Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:14.788Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:14.810Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:17.671Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:17.683Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:19.712Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:19.736Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:23.696Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:23.716Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:26.672Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:26.693Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:30.119Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:30.142Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:32.686Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:32.707Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:35.676Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:35.683Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:43:38.755Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:43:38.770Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:19.750Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:19.979Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:23.689Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:23.706Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:26.559Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:26.576Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:26.972Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:26.999Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:27.598Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:27.626Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:28.228Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:28.729Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:28.818Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:29.351Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:29.462Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:29.956Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:30.562Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:31.226Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:31.458Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:31.781Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:31.821Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:32.299Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:32.320Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:33.020Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:33.105Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:33.846Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:33.878Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:34.271Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:34.297Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:36.690Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:36.710Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:39.705Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:39.725Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:42.710Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:42.729Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:45.723Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:45.739Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T17:44:48.726Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69273b09df3a40dfb2e0a6bb","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T17:44:48.729Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69273b09df3a40dfb2e0a6bb","service":"gc-quest-api"}
