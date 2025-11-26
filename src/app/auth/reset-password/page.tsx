@@ -125,7 +125,7 @@ function ResetPasswordForm() {
         title={alert.title}
         isVisible={alert.isVisible}
         onClose={hideAlert}
-        autoClose={alert.type === "success"}
+        autoClose={true}
         autoCloseDelay={3000}
         position="top-right"
       />
