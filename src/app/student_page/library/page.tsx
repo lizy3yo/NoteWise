@@ -301,11 +301,11 @@ function PrivateLibraryContent() {
 
 
 
-  // Check for URL parameters
+  // Check for URL parameters - this should take priority over localStorage
   useEffect(() => {
     // Check for tab parameter (only accept allowed values)
     const tabParam = searchParams.get('tab');
-    if (tabParam && !isLoading) {
+    if (tabParam) {
       const allowed = ['flashcards', 'study_notes', 'folders', 'favorites'] as const;
       // Only switch tabs if the URL parameter is valid
       if ((allowed as readonly string[]).includes(tabParam)) {
@@ -316,7 +316,7 @@ function PrivateLibraryContent() {
         }
       }
     }
-  }, [searchParams, isLoading]);
+  }, [searchParams]);
 
   // Separate effect for auto-expanding folders based on subject parameter
   useEffect(() => {
@@ -545,6 +545,18 @@ function PrivateLibraryContent() {
           setSummaryReadActivityIds(prev => new Set(prev).add(event.data.summaryId));
         }
 
+        // Refetch flashcards when a new one is created (e.g., from chatbot)
+        if (event.data?.type === 'flashcard.created' && event.data?.flashcardId) {
+          console.log('📢 New flashcard created, refreshing library...');
+          fetchFlashcards(false);
+        }
+
+        // Refetch summaries when a new one is created (e.g., from chatbot)
+        if (event.data?.type === 'summary.created' && event.data?.summaryId) {
+          console.log('📢 New summary created, refreshing library...');
+          fetchSummaries(false);
+        }
+
         // Update flashcard data when a session finishes in another tab (or match page)
         if (event.data?.type === 'flashcard.updated' && event.data?.flashcard) {
           const fc = event.data.flashcard;
@@ -571,7 +583,7 @@ function PrivateLibraryContent() {
     } catch (e) {
       console.warn('BroadcastChannel not supported or failed to initialize');
     }
-  }, []);
+  }, [fetchFlashcards, fetchSummaries]);
 
 
 

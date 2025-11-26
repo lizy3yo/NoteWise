@@ -14,7 +14,27 @@ interface ChatbotProps {
 export default function Chatbot({ isAuthenticated = false, className = '' }: ChatbotProps) {
   const { showError, showSuccess } = useAlert();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  
+  // Load messages from localStorage on mount
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('chatbot_messages');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Convert timestamp strings back to Date objects
+          return parsed.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }));
+        }
+      } catch (e) {
+        console.warn('Failed to load chatbot messages:', e);
+      }
+    }
+    return [];
+  });
+  
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -33,6 +53,17 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('chatbot_messages', JSON.stringify(messages));
+      } catch (e) {
+        console.warn('Failed to save chatbot messages:', e);
+      }
+    }
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -281,6 +312,10 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
     setMessages([]);
     setSuggestions([]);
     setUploadedFile(null);
+    // Clear from localStorage as well
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('chatbot_messages');
+    }
   };
 
   const handleSaveSession = () => {
@@ -594,7 +629,13 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {
-                    setGenerationState({ type: 'flashcard', params: {} });
+                    // Load saved flashcard preferences
+                    let savedParams = {};
+                    try {
+                      const saved = localStorage.getItem('chatbot_flashcard_params');
+                      if (saved) savedParams = JSON.parse(saved);
+                    } catch (e) {}
+                    setGenerationState({ type: 'flashcard', params: savedParams });
                     setShowGenerationForm(true);
                   }}
                   className="text-xs px-3 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-colors font-medium"
@@ -603,7 +644,13 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                 </button>
                 <button
                   onClick={() => {
-                    setGenerationState({ type: 'summary', params: {} });
+                    // Load saved summary preferences
+                    let savedParams = {};
+                    try {
+                      const saved = localStorage.getItem('chatbot_summary_params');
+                      if (saved) savedParams = JSON.parse(saved);
+                    } catch (e) {}
+                    setGenerationState({ type: 'summary', params: savedParams });
                     setShowGenerationForm(true);
                   }}
                   className="text-xs px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors font-medium"
@@ -801,21 +848,6 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Subject/Category (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={generationState.params.subject || ''}
-                      onChange={(e) => setGenerationState(prev => ({
-                        ...prev,
-                        params: { ...prev.params, subject: e.target.value }
-                      }))}
-                      placeholder="e.g., Mathematics, History, Science"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Summary Type
                     </label>
                     <select
@@ -867,6 +899,19 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
               </button>
               <button
                 onClick={async () => {
+                  // Save generation parameters to localStorage for next time (excluding title)
+                  if (generationState.type === 'flashcard') {
+                    try {
+                      const { title, ...paramsWithoutTitle } = generationState.params;
+                      localStorage.setItem('chatbot_flashcard_params', JSON.stringify(paramsWithoutTitle));
+                    } catch (e) {}
+                  } else if (generationState.type === 'summary') {
+                    try {
+                      const { title, ...paramsWithoutTitle } = generationState.params;
+                      localStorage.setItem('chatbot_summary_params', JSON.stringify(paramsWithoutTitle));
+                    } catch (e) {}
+                  }
+                  
                   setShowGenerationForm(false);
                   setIsLoading(true);
                   
@@ -901,6 +946,27 @@ export default function Chatbot({ isAuthenticated = false, className = '' }: Cha
                     if (data.generationSuccess) {
                       setUploadedFile(null);
                       setGenerationState({ type: null, params: {} });
+                      
+                      // Broadcast the new flashcard/summary to update library in real-time
+                      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                        try {
+                          const bc = new BroadcastChannel('notewise.activities');
+                          if (data.generationType === 'flashcard' && data.generationResult?.flashcard) {
+                            bc.postMessage({ 
+                              type: 'flashcard.created',
+                              flashcardId: data.generationResult.flashcard.id
+                            });
+                          } else if (data.generationType === 'summary' && data.generationResult?.summary) {
+                            bc.postMessage({ 
+                              type: 'summary.created',
+                              summaryId: data.generationResult.summary.id
+                            });
+                          }
+                          bc.close();
+                        } catch (e) {
+                          console.warn('Failed to broadcast generation event:', e);
+                        }
+                      }
                       
                       // Add a clickable link message
                       if (data.libraryUrl) {
