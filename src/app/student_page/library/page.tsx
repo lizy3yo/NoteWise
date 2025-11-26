@@ -678,24 +678,54 @@ function PrivateLibraryContent() {
 
     try {
       let response;
+      
+      // When moving to uncategorized, explicitly pass null (not undefined)
+      // undefined gets stripped from JSON, but null is preserved
+      const folderValue = folderId;
+
+      console.log(`🔄 Moving ${selectedItem.type} ${selectedItem.id} to folder:`, folderValue);
 
       // Use hooks to update items
       if (selectedItem.type === 'flashcard') {
-        response = await hookUpdateFlashcard(selectedItem.id, { folder: folderId || undefined });
+        response = await hookUpdateFlashcard(selectedItem.id, { folder: folderValue as any });
+        
+        // Immediately update local state to reflect the change
+        if (response && response.success) {
+          setFlashcards(prev => {
+            const updated = prev.map(f => 
+              f._id === selectedItem.id ? { ...f, folder: folderValue as any } : f
+            );
+            console.log(`✅ Flashcard ${selectedItem.id} folder updated locally to:`, folderValue);
+            console.log(`📊 Updated flashcard:`, updated.find(f => f._id === selectedItem.id));
+            return updated;
+          });
+        }
       } else if (selectedItem.type === 'summary') {
-        response = await hookUpdateSummary(selectedItem.id, { folder: folderId || undefined });
+        response = await hookUpdateSummary(selectedItem.id, { folder: folderValue as any });
+        
+        // Immediately update local state to reflect the change
+        if (response && response.success) {
+          setSummaries(prev => {
+            const updated = prev.map(s => 
+              s._id === selectedItem.id ? { ...s, folder: folderValue as any } : s
+            );
+            console.log(`✅ Summary ${selectedItem.id} folder updated locally to:`, folderValue);
+            console.log(`📊 Updated summary:`, updated.find(s => s._id === selectedItem.id));
+            return updated;
+          });
+        }
       }
 
       if (response && response.success) {
         // Close modal
         setShowFolderModal(false);
         setSelectedItem(null);
-        showSuccess('Item moved to folder successfully');
+        showSuccess(folderId ? 'Item moved to folder successfully' : 'Item moved to uncategorized');
       } else {
         throw new Error(response?.error || 'Failed to move item to folder');
       }
     } catch (error) {
-      console.error('Failed to move item to folder:', error);
+      console.error('❌ Failed to move item to folder:', error);
       showError(error instanceof Error ? error.message : 'Failed to move item to folder');
     }
   };
@@ -1403,8 +1433,19 @@ function PrivateLibraryContent() {
                   let folderFlashcards = flashcards.filter(f => f.folder === folder._id);
                   let folderSummaries = summaries.filter(s => s.folder === folder._id);
 
-                  // Sort folder flashcards
+                  // Sort folder flashcards - favorites by timestamp first, then by filter
+                  const tsFlash = getFavoriteTimestamps('flashcard');
                   folderFlashcards = [...folderFlashcards].sort((a, b) => {
+                    // Favorites first, sorted by timestamp
+                    if (a.isFavorite && b.isFavorite) {
+                      const at = tsFlash[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                      const bt = tsFlash[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                      return bt - at;
+                    }
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    
+                    // Non-favorites sorted by filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -1414,14 +1455,22 @@ function PrivateLibraryContent() {
                     } else if (filter === 'alphabetical') {
                       return (a.title || '').localeCompare(b.title || '');
                     }
-                    // Default: favorites first
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
                     return 0;
                   });
 
-                  // Sort folder summaries
+                  // Sort folder summaries - favorites by timestamp first, then by filter
+                  const tsSum = getFavoriteTimestamps('summary');
                   folderSummaries = [...folderSummaries].sort((a, b) => {
+                    // Favorites first, sorted by timestamp
+                    if (a.isFavorite && b.isFavorite) {
+                      const at = tsSum[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                      const bt = tsSum[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                      return bt - at;
+                    }
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    
+                    // Non-favorites sorted by filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -1431,9 +1480,6 @@ function PrivateLibraryContent() {
                     } else if (filter === 'alphabetical') {
                       return (a.title || '').localeCompare(b.title || '');
                     }
-                    // Default: favorites first
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
                     return 0;
                   });
 
@@ -1698,7 +1744,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
+                                        onClick={() => { handleCreateFlashcardsFromSummary(summary); setOpenMenuId(null); }}
                                       >
                                         Create Flashcards
                                       </button>
@@ -1771,11 +1817,31 @@ function PrivateLibraryContent() {
                 {/* Uncategorized Items - just cards at the bottom */}
                 {(() => {
                   // Use the globally-sorted `flashcards` array for uncategorized items
-                  let uncategorizedFlashcards = flashcards.filter(f => !f.folder);
-                  let uncategorizedSummaries = summaries.filter(s => !s.folder);
+                  let uncategorizedFlashcards = flashcards.filter(f => !f.folder || f.folder === '' || f.folder === null);
+                  let uncategorizedSummaries = summaries.filter(s => !s.folder || s.folder === '' || s.folder === null);
+                  
+                  console.log('📂 Flashcards tab - Uncategorized filtering:');
+                  console.log('  Total flashcards:', flashcards.length);
+                  console.log('  Uncategorized flashcards:', uncategorizedFlashcards.length);
+                  console.log('  Total summaries:', summaries.length);
+                  console.log('  Uncategorized summaries:', uncategorizedSummaries.length);
+                  if (flashcards.length > 0) {
+                    console.log('  Sample flashcard folders:', flashcards.slice(0, 3).map(f => ({ id: f._id, title: f.title, folder: f.folder })));
+                  }
 
-                  // Sort uncategorized flashcards
+                  // Sort uncategorized flashcards - favorites by timestamp first, then by filter
+                  const tsFlash = getFavoriteTimestamps('flashcard');
                   uncategorizedFlashcards = [...uncategorizedFlashcards].sort((a, b) => {
+                    // Favorites first, sorted by timestamp
+                    if (a.isFavorite && b.isFavorite) {
+                      const at = tsFlash[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                      const bt = tsFlash[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                      return bt - at;
+                    }
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    
+                    // Non-favorites sorted by filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -1785,14 +1851,22 @@ function PrivateLibraryContent() {
                     } else if (filter === 'alphabetical') {
                       return (a.title || '').localeCompare(b.title || '');
                     }
-                    // Default: favorites first
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
                     return 0;
                   });
 
-                  // Sort uncategorized summaries
+                  // Sort uncategorized summaries - favorites by timestamp first, then by filter
+                  const tsSum = getFavoriteTimestamps('summary');
                   uncategorizedSummaries = [...uncategorizedSummaries].sort((a, b) => {
+                    // Favorites first, sorted by timestamp
+                    if (a.isFavorite && b.isFavorite) {
+                      const at = tsSum[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                      const bt = tsSum[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                      return bt - at;
+                    }
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    
+                    // Non-favorites sorted by filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -1802,9 +1876,6 @@ function PrivateLibraryContent() {
                     } else if (filter === 'alphabetical') {
                       return (a.title || '').localeCompare(b.title || '');
                     }
-                    // Default: favorites first
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
                     return 0;
                   });
 
@@ -1991,7 +2062,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
+                                        onClick={() => { handleCreateFlashcardsFromSummary(summary); setOpenMenuId(null); }}
                                       >
                                         Create Flashcards
                                       </button>
@@ -2156,32 +2227,20 @@ function PrivateLibraryContent() {
                       let folderFlashcards = flashcards.filter(f => f.folder === folder._id && f.isFavorite);
                       let folderSummaries = summaries.filter(s => s.folder === folder._id && s.isFavorite);
 
-                      // Sort folder flashcards
+                      // Sort by favorite timestamp (most recently favorited first)
+                      const tsFlash = getFavoriteTimestamps('flashcard');
+                      const tsSum = getFavoriteTimestamps('summary');
+
                       folderFlashcards = [...folderFlashcards].sort((a, b) => {
-                        if (filter === 'recent') {
-                          const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
-                          const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
-                          return bd - ad;
-                        } else if (filter === 'popular') {
-                          return (b.cards?.length || 0) - (a.cards?.length || 0);
-                        } else if (filter === 'alphabetical') {
-                          return (a.title || '').localeCompare(b.title || '');
-                        }
-                        return 0;
+                        const at = tsFlash[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                        const bt = tsFlash[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                        return bt - at;
                       });
 
-                      // Sort folder summaries
                       folderSummaries = [...folderSummaries].sort((a, b) => {
-                        if (filter === 'recent') {
-                          const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
-                          const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
-                          return bd - ad;
-                        } else if (filter === 'popular') {
-                          return (b.wordCount || 0) - (a.wordCount || 0);
-                        } else if (filter === 'alphabetical') {
-                          return (a.title || '').localeCompare(b.title || '');
-                        }
-                        return 0;
+                        const at = tsSum[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                        const bt = tsSum[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                        return bt - at;
                       });
 
                       const displayedCount = folderFlashcards.length + folderSummaries.length;
@@ -2405,7 +2464,7 @@ function PrivateLibraryContent() {
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600 rounded-t-xl" onClick={() => { toggleFavorite(summary._id, 'summary', summary.isFavorite || false); setOpenMenuId(null); }}>{summary.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleRenameSummary(summary); setOpenMenuId(null); }}>Rename</button>
-                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => handleCreateFlashcardsFromSummary(summary)}>Create Flashcards</button>
+                                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { handleCreateFlashcardsFromSummary(summary); setOpenMenuId(null); }}>Create Flashcards</button>
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600" onClick={() => { openFolderModal(summary._id, 'summary', summary.title); setOpenMenuId(null); }}>Move to Folder</button>
                                           <div className="h-px bg-gray-100 dark:bg-slate-700 mx-2" />
                                           <button className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-orange-600/10 hover:text-orange-600" onClick={() => { handleArchiveSummary(summary._id); setOpenMenuId(null); }}>Archive</button>
@@ -2447,8 +2506,8 @@ function PrivateLibraryContent() {
 
                     {/* Uncategorized favorites - just cards at the bottom */}
                     {(() => {
-                      let uncategorizedFlashcards = favoriteFlashcards.filter(f => !f.folder);
-                      let uncategorizedSummaries = favoriteSummaries.filter(s => !s.folder);
+                      let uncategorizedFlashcards = favoriteFlashcards.filter(f => !f.folder || f.folder === '' || f.folder === null);
+                      let uncategorizedSummaries = favoriteSummaries.filter(s => !s.folder || s.folder === '' || s.folder === null);
                       
                       // Combine and sort all uncategorized items together
                       const combined: any[] = [
@@ -2456,27 +2515,18 @@ function PrivateLibraryContent() {
                         ...uncategorizedSummaries.map(s => ({ ...s, __type: 'summary' }))
                       ];
                       
-                      // Sort the combined array based on the active filter
+                      // Sort by favorite timestamp (most recently favorited first)
+                      const tsFlash = getFavoriteTimestamps('flashcard');
+                      const tsSum = getFavoriteTimestamps('summary');
+                      
                       const sortedCombined = [...combined].sort((a, b) => {
-                        if (filter === 'recent') {
-                          // Use createdAt as primary, fallback to updatedAt
-                          const aDate = a.createdAt || a.updatedAt;
-                          const bDate = b.createdAt || b.updatedAt;
-                          if (!aDate && !bDate) return 0;
-                          if (!aDate) return 1;
-                          if (!bDate) return -1;
-                          const aTime = new Date(aDate).getTime();
-                          const bTime = new Date(bDate).getTime();
-                          // Newest first (larger timestamp first)
-                          return bTime - aTime;
-                        } else if (filter === 'popular') {
-                          const aVal = a.__type === 'flashcard' ? (a.cards?.length || 0) : (a.wordCount || 0);
-                          const bVal = b.__type === 'flashcard' ? (b.cards?.length || 0) : (b.wordCount || 0);
-                          return bVal - aVal;
-                        } else if (filter === 'alphabetical') {
-                          return (a.title || '').localeCompare(b.title || '');
-                        }
-                        return 0;
+                        const at = a.__type === 'flashcard' 
+                          ? (tsFlash[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0))
+                          : (tsSum[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0));
+                        const bt = b.__type === 'flashcard'
+                          ? (tsFlash[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0))
+                          : (tsSum[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0));
+                        return bt - at;
                       });
                       
                       const uncategorizedTotal = sortedCombined.length;
@@ -2702,8 +2752,19 @@ function PrivateLibraryContent() {
                   // Get all summaries in this folder and sort them
                   let folderSummaries = summaries.filter(s => s.folder === folder._id);
                   
-                  // Sort folder summaries
+                  // Sort folder summaries - favorites by timestamp first, then by filter
+                  const tsSum = getFavoriteTimestamps('summary');
                   folderSummaries = [...folderSummaries].sort((a, b) => {
+                    // Favorites first, sorted by timestamp
+                    if (a.isFavorite && b.isFavorite) {
+                      const at = tsSum[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                      const bt = tsSum[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                      return bt - at;
+                    }
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    
+                    // Non-favorites sorted by filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -2713,9 +2774,6 @@ function PrivateLibraryContent() {
                     } else if (filter === 'alphabetical') {
                       return (a.title || '').localeCompare(b.title || '');
                     }
-                    // Default: favorites first
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
                     return 0;
                   });
 
@@ -2853,7 +2911,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
+                                        onClick={() => { handleCreateFlashcardsFromSummary(summary); setOpenMenuId(null); }}
                                       >
                                         Create Flashcards
                                       </button>
@@ -2923,10 +2981,21 @@ function PrivateLibraryContent() {
 
                 {/* Uncategorized Items */}
                 {(() => {
-                  let uncategorizedSummaries = summaries.filter(s => !s.folder);
+                  let uncategorizedSummaries = summaries.filter(s => !s.folder || s.folder === '' || s.folder === null);
 
-                  // Sort uncategorized summaries
+                  // Sort uncategorized summaries - favorites by timestamp first, then by filter
+                  const tsSum = getFavoriteTimestamps('summary');
                   uncategorizedSummaries = [...uncategorizedSummaries].sort((a, b) => {
+                    // Favorites first, sorted by timestamp
+                    if (a.isFavorite && b.isFavorite) {
+                      const at = tsSum[a._id] ?? (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+                      const bt = tsSum[b._id] ?? (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+                      return bt - at;
+                    }
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+                    
+                    // Non-favorites sorted by filter
                     if (filter === 'recent') {
                       const ad = new Date(a.createdAt || a.updatedAt || 0).getTime();
                       const bd = new Date(b.createdAt || b.updatedAt || 0).getTime();
@@ -2936,9 +3005,6 @@ function PrivateLibraryContent() {
                     } else if (filter === 'alphabetical') {
                       return (a.title || '').localeCompare(b.title || '');
                     }
-                    // Default: favorites first
-                    if (a.isFavorite && !b.isFavorite) return -1;
-                    if (!a.isFavorite && b.isFavorite) return 1;
                     return 0;
                   });
 
@@ -3000,7 +3066,7 @@ function PrivateLibraryContent() {
                                       </button>
                                       <button
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                        onClick={() => handleCreateFlashcardsFromSummary(summary)}
+                                        onClick={() => { handleCreateFlashcardsFromSummary(summary); setOpenMenuId(null); }}
                                       >
                                         Create Flashcards
                                       </button>
@@ -3434,7 +3500,7 @@ function PrivateLibraryContent() {
                                           </button>
                                           <button
                                             className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-teal-600/10 hover:text-teal-600"
-                                            onClick={() => handleCreateFlashcardsFromSummary(sm)}
+                                            onClick={() => { handleCreateFlashcardsFromSummary(sm); setOpenMenuId(null); }}
                                           >
                                             Create Flashcards
                                           </button>
@@ -3794,6 +3860,8 @@ export default function PrivateLibraryPage() {
     </Suspense>
   );
 }
+
+
 
 
 
