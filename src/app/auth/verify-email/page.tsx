@@ -98,8 +98,17 @@ function VerifyEmailForm() {
       localStorage.setItem("userId", data.Student._id);
       localStorage.setItem("accessToken", data.accessToken);
       
+      // Store refresh token if provided
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
+      
       // Cookies are automatically set by the server via Set-Cookie headers
-      console.log("✅ Email verified and tokens stored successfully");
+      console.log("✅ Email verified and tokens stored successfully", {
+        hasAccessToken: !!data.accessToken,
+        hasRefreshToken: !!data.refreshToken,
+        hasUser: !!data.Student
+      });
 
       showSuccess("Email verified successfully! Welcome to NoteWise!", "Verification Successful");
 

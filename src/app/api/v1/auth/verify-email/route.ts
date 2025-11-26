@@ -122,6 +122,15 @@ export async function POST(request: NextRequest) {
       email: user.email
     });
 
+    logger.info('Email verified successfully, generating tokens:', {
+      userId: user._id,
+      email: user.email,
+      tokensGenerated: {
+        accessToken: !!accessToken,
+        refreshToken: !!refreshToken
+      }
+    });
+
     // Create response with cookies
     const response = NextResponse.json({
       message: 'Email verified successfully',
@@ -136,6 +145,7 @@ export async function POST(request: NextRequest) {
         isEmailVerified: true
       },
       accessToken,
+      refreshToken, // Include refresh token in response
     });
 
     // Set cookies

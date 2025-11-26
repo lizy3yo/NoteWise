@@ -150,53 +150,24 @@ export default function Login() {
     hideAlert();
 
     try {
-      // Check if user has tokens in localStorage
-      const hasAccessToken = localStorage.getItem('accessToken');
-      const hasUser = localStorage.getItem('user');
-
-      // If no tokens exist, send verification email and redirect
-      if (!hasAccessToken || !hasUser) {
-        showInfo("Sending verification code to your email...", "Verification Required");
-        
-        // Send verification email
-        try {
-          const verificationResponse = await requestService.post("/api/v1/auth/send-verification", 
-            { email: formData.email },
-            { skipAuth: true }
-          );
-
-          if (verificationResponse.success) {
-            showSuccess("Verification code sent! Please check your email.", "Check Your Email");
-          } else {
-            showInfo("Redirecting to verification page...", "Verification Required");
-          }
-        } catch (error) {
-          console.error("Failed to send verification email:", error);
-          showInfo("Redirecting to verification page...", "Verification Required");
-        }
-
-        // Redirect to verification page
-        setTimeout(() => {
-          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
-        }, 1500);
-        return;
-      }
-
+      console.log('🔐 Attempting login for:', formData.email);
+      
       const response = await login({
         email: formData.email,
         password: formData.password,
         rememberMe
       });
 
+      console.log('📥 Login response:', { success: response.success, error: response.error });
+
       if (!response.success) {
-        // Handle email verification requirement or token requirement
+        // Handle email verification requirement - only if backend explicitly says so
         if (response.error?.includes('EMAIL_NOT_VERIFIED') || 
-            response.error?.includes('TOKENS_REQUIRED') ||
             response.error?.includes('not verified') || 
             response.error?.includes('verify your email') ||
-            response.error?.includes('access tokens') ||
             response.error?.includes('email address before logging in')) {
           
+          console.log('📧 Email not verified, redirecting to verification');
           showInfo("Your email address needs to be verified. Sending verification code...", "Email Verification Required");
 
           // Automatically send verification email
@@ -216,13 +187,14 @@ export default function Login() {
             showInfo("Redirecting to verification page...", "Email Verification Required");
           }
 
-          // Always redirect to verification page
+          // Redirect to verification page
           setTimeout(() => {
             router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
           }, 1500);
           return;
         }
 
+        console.error('❌ Login failed:', response.error);
         showError(response.error || "Login failed", "Login Failed");
         return;
       }

@@ -697,10 +697,15 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
         credentials: 'include'
       });
 
-      // Clear local storage
+      // Clear ALL local storage and cache
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       localStorage.removeItem('userId');
+      
+      // Clear cache service
+      const { cacheService } = await import('@/services/CacheService');
+      cacheService.clear();
 
       // Show appropriate alert then redirect to login
       if (response.ok) {
@@ -719,10 +724,19 @@ export default function StudentLayout({ children }: StudentLayoutProps) {
       }
     } catch (error) {
       console.error("Logout failed:", error);
-      // Clear local storage anyway
+      // Clear ALL local storage and cache anyway
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       localStorage.removeItem('userId');
+      
+      // Clear cache service
+      try {
+        const { cacheService } = await import('@/services/CacheService');
+        cacheService.clear();
+      } catch (e) {
+        console.error('Failed to clear cache:', e);
+      }
       
       showError?.("Network error during logout. You were signed out locally.", "Logout Error");
       setTimeout(() => {

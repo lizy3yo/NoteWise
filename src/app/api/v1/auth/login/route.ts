@@ -125,7 +125,8 @@ export async function POST(request: NextRequest) {
       token: refreshToken,
     });
 
-    // Set cookies (reuse cookieStore from above)
+    // Set cookies
+    const cookieStore = await cookies();
     cookieStore.set('accessToken', accessToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
@@ -138,22 +139,30 @@ export async function POST(request: NextRequest) {
       sameSite: 'strict',
     });
 
-    const response = NextResponse.json({
-      Student: {
-        _id: user._id.toString(), // Add this line
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName
-      },
-      accessToken,
-    });
-
     logger.info('User logged in successfully:', {
       userId: user._id,
       email: user.email,
-      username: user.username
+      username: user.username,
+      tokensGenerated: {
+        accessToken: !!accessToken,
+        refreshToken: !!refreshToken
+      }
+    });
+
+    const userData = {
+      _id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName
+    };
+
+    const response = NextResponse.json({
+      Student: userData, // Keep for backward compatibility
+      user: userData,    // Add for frontend hook compatibility
+      accessToken,
+      refreshToken,
     });
 
     return response;

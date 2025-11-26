@@ -51,6 +51,13 @@ export const useAuthRequest = () => {
     setError(null);
 
     try {
+      // Clear old user data and cache before logging in
+      localStorage.removeItem('user');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      cacheService.clear();
+
       const response = await requestService.post<AuthResponse>(
         API_ENDPOINTS.AUTH.LOGIN,
         credentials,
@@ -58,18 +65,28 @@ export const useAuthRequest = () => {
       );
 
       if (response.success && response.data) {
+        console.log('✅ Login successful, storing tokens:', {
+          hasAccessToken: !!response.data.accessToken,
+          hasRefreshToken: !!response.data.refreshToken,
+          hasUser: !!response.data.user
+        });
+
         // Store tokens
         if (response.data.accessToken) {
           localStorage.setItem('accessToken', response.data.accessToken);
+          console.log('✅ Access token stored');
         }
         if (response.data.refreshToken) {
           localStorage.setItem('refreshToken', response.data.refreshToken);
+          console.log('✅ Refresh token stored');
         }
         if (response.data.user) {
           localStorage.setItem('user', JSON.stringify(response.data.user));
           localStorage.setItem('userId', response.data.user._id || response.data.user.id);
+          console.log('✅ User data stored');
         }
       } else {
+        console.error('❌ Login failed:', response.error);
         setError(response.error || 'Login failed');
       }
 
@@ -139,11 +156,14 @@ export const useAuthRequest = () => {
     try {
       const response = await requestService.post<void>(API_ENDPOINTS.AUTH.LOGOUT);
 
-      // Clear local storage regardless of response
+      // Clear ALL local storage regardless of response
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       localStorage.removeItem('userId');
+      localStorage.removeItem('rememberedEmail');
+      localStorage.removeItem('rememberedPassword');
+      localStorage.removeItem('rememberMe');
 
       // Clear all cache
       cacheService.clear();
