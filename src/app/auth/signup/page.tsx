@@ -128,6 +128,9 @@ export default function Signup() {
     e.preventDefault();
     
     if (!validateStep2()) return;
+    
+    // Prevent double submission
+    if (isLoading) return;
 
     hideAlert();
 
@@ -144,24 +147,13 @@ export default function Signup() {
         return;
       }
 
-      // Check if verification is required (based on response data)
-      const requiresVerification = response.data?.user && !response.data.user.emailVerified;
-
-      if (requiresVerification) {
-        showSuccess("Account created successfully! Please check your email for verification.", "Check Your Email");
-        
-        // Navigate to email verification page
-        setTimeout(() => {
-          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email.trim())}`);
-        }, 1500);
-      } else {
-        showSuccess("Account created successfully! Welcome to NoteWise!", "Welcome");
-
-        // Navigate to student dashboard
-        setTimeout(() => {
-          window.location.href = "/student_page/dashboard";
-        }, 100);
-      }
+      // Always redirect to verification page after signup
+      showSuccess("Account created successfully! Please check your email for verification.", "Check Your Email");
+      
+      // Navigate to email verification page immediately
+      setTimeout(() => {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email.trim())}`);
+      }, 1500);
     } catch (error) {
       console.error("Signup error:", error);
       showError(

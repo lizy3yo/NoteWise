@@ -38030,3 +38030,148 @@
 {"timestamp":"2025-11-26T18:38:23.739Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
 {"timestamp":"2025-11-26T18:38:23.761Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
 {"timestamp":"2025-11-26T18:38:23.762Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:28.740Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:28.750Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:28.750Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:33.730Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:33.752Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:33.753Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:37.765Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:37.789Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:37.789Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:43.726Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:43.749Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:43.749Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:48.695Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:48.700Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:48.701Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:53.678Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:53.707Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:53.708Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:58.736Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:38:58.757Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:38:58.758Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:03.669Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:03.698Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:03.699Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:08.687Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:08.708Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:08.709Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:12.692Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:12.702Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:12.702Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:17.674Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:17.690Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:17.691Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:28.694Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:28.722Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:28.723Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:37.696Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:37.716Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:37.717Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:43.684Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:43.707Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:43.707Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:48.703Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:48.713Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:48.714Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:53.745Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:53.768Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:53.769Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:58.671Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:39:58.694Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:39:58.694Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:40:03.681Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:40:03.693Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:40:03.694Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:40:08.693Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:40:08.714Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:40:08.715Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:40:31.232Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:40:31.287Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:40:31.288Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:28.718Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:28.733Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:28.734Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:29.052Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:29.080Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:29.080Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:34.703Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:34.722Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:34.723Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:39.734Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:39.737Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:39.738Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:44.682Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:44.699Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:44.699Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:49.680Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:49.708Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:49.708Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:54.793Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:54.814Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:54.815Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:59.687Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:41:59.703Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:41:59.704Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:05.134Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:05.149Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:05.149Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:05.570Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:05.601Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:05.601Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:05.996Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:06.027Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:06.028Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:06.420Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:06.449Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:06.449Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:06.843Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:06.871Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:06.872Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:07.267Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:07.300Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:07.301Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:07.812Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:07.835Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:07.836Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:07.936Z","level":"info","message":"User refresh token deleted successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTI3NDdlNDkwNjI0YmVhYTU1ZGZmZWMiLCJpYXQiOjE3NjQxODIwMTUsImV4cCI6MTc2NDc4NjgxNSwic3ViIjoicmVmcmVzaEFwaSJ9.zohNzFpUCkKdfq6-0nm-r9aKvTkLYT7UZXmsAeFVs4M"}}
+{"timestamp":"2025-11-26T18:42:07.938Z","level":"info","message":"User logged out successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec"}}
+{"timestamp":"2025-11-26T18:42:08.286Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:08.314Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:08.315Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:08.687Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"692747e490624beaa55dffec","count":1,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:08.719Z","level":"info","message":"GET /flashcard: Found 1 flashcards for user 692747e490624beaa55dffec","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:08.720Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 3_ PROJECT SETUP USING NEXT.JS.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:35.080Z","level":"info","message":"User registered successfully:","service":"gc-quest-api","meta":{"username":"user-skk9qr5b0w","email":"202311564@gordoncollege.edu.ph","role":"student","emailSent":true}}
+{"timestamp":"2025-11-26T18:42:57.735Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:57.774Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:58.297Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:58.342Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:58.808Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:58.862Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:59.242Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:42:59.270Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:42:59.654Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:00.022Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:00.376Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:03.174Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:03.195Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:08.720Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:08.737Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:13.683Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:13.698Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:14.359Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:14.383Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:14.794Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:14.832Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:17.162Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:17.179Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:17.578Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:17.604Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:18.708Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:18.724Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:23.667Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:23.686Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}
+{"timestamp":"2025-11-26T18:43:28.715Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69274a17cfa2d65dd36151c6","count":0,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-26T18:43:28.723Z","level":"info","message":"GET /flashcard: Found 0 flashcards for user 69274a17cfa2d65dd36151c6","service":"gc-quest-api"}

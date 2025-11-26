@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false, // Disable to prevent double API calls in development
   serverExternalPackages: ["mongoose", "mammoth", "pdf-parse", "iconv-lite", "bcrypt"],
   env: {
     MONGO_URI: process.env.MONGO_URI,
