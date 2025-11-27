@@ -544,24 +544,6 @@ We welcome contributions! Please follow these guidelines:
 - Test responsive design
 - Verify accessibility
 
-## Roadmap
-
-### Upcoming Features
-- [ ] Spaced repetition algorithm
-- [ ] Collaborative study groups
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics dashboard
-- [ ] Practice test generation
-- [ ] Voice-to-text flashcard creation
-- [ ] Integration with learning management systems
-- [ ] Offline mode support
-
-### In Progress
-- [x] AI chatbot assistant
-- [x] Achievement system
-- [x] Dark mode
-- [x] Real-time notifications
-
 ## License
 
 This project is licensed under the Apache License 2.0. See individual file headers for specific licensing information.

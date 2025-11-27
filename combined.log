@@ -9966,3 +9966,51 @@
 {"timestamp":"2025-11-27T07:48:07.691Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-27T07:48:07.692Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
 {"timestamp":"2025-11-27T07:48:07.692Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:13.194Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:13.219Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:13.219Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:13.220Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:13.221Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:13.221Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:19.121Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:19.127Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:19.127Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:19.128Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:19.129Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:19.129Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:23.187Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:23.210Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:23.211Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:23.212Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:23.212Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:23.213Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:28.173Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:28.191Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:28.192Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:28.192Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:28.193Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:28.193Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:33.176Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:33.206Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:33.207Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:33.207Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:33.208Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:33.208Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:38.183Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:38.202Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:38.203Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:38.203Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:38.204Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:38.205Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:43.159Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:43.189Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:43.189Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:43.190Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:43.191Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:43.191Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:48.179Z","level":"info","message":"Summaries fetched successfully","service":"gc-quest-api","meta":{"userId":"69270a947afbc7256faabd84","count":2,"subject":null,"isPublic":null}}
+{"timestamp":"2025-11-27T07:48:48.205Z","level":"info","message":"GET /flashcard: Found 4 flashcards for user 69270a947afbc7256faabd84","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:48.206Z","level":"info","message":"  Flashcard 1: \"ACTIVITY 4_ USER PROFILE USING NEXT.JS_De Jesus Kharl.pdf\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:48.207Z","level":"info","message":"  Flashcard 2: \"Programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:48.207Z","level":"info","message":"  Flashcard 3: \"Interactive programming\" - Subject: \"MISSING\"","service":"gc-quest-api"}
+{"timestamp":"2025-11-27T07:48:48.208Z","level":"info","message":"  Flashcard 4: \"Activitysdd\" - Subject: \"MISSING\"","service":"gc-quest-api"}
