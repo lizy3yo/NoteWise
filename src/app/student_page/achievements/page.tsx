@@ -454,7 +454,7 @@ export default function AchievementsPage() {
                 <div className="max-w-6xl mx-auto px-2 sm:px-0 py-6">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Locked Achievements</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
                             {locked.map((achievement) => (
                                 <div key={achievement.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4 sm:p-6 transition-all hover:shadow-lg hover:-translate-y-1 border-gray-200 dark:border-gray-700`}>
                                     <div className="flex flex-col items-center text-center gap-3">
