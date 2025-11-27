@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, Suspense, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PrimaryActionButton from '@/components/ui/buttons/PrimaryActionButton';
 import { useAlert } from '@/hooks/useAlert';
 import { useFlashcardRequest, useSummaryRequest } from '@/hooks';
@@ -121,6 +121,7 @@ function PrivateLibraryContent() {
   const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
 
   const router = useRouter();
+  const pathname = usePathname();
 
   // Helper function to format date and time
   const formatDateTime = (dateString: string) => {
@@ -566,16 +567,55 @@ function PrivateLibraryContent() {
         }
 
         // Update flashcard data when a session finishes in another tab (or match page)
-        if (event.data?.type === 'flashcard.updated' && event.data?.flashcard) {
-          const fc = event.data.flashcard;
-          setFlashcards(prev => {
-            const found = prev.some(f => String(f._id) === String(fc._id));
-            if (found) {
-              return prev.map(f => String(f._id) === String(fc._id) ? { ...f, lastReviewed: fc.lastReviewed, repetitionCount: fc.repetitionCount } : f);
+        // Best-effort: fetch the single updated flashcard from the server (authoritative and efficient).
+        if (event.data?.type === 'flashcard.updated') {
+          console.log('📥 Library received flashcard.updated:', event.data.flashcard || event.data.flashcardId);
+          (async () => {
+            try {
+              const payload = event.data.flashcard;
+              const id = (payload && payload._id) || event.data.flashcardId || (payload && payload.id);
+              if (!id) {
+                // No id available, fall back to refreshing the full list
+                if (typeof fetchFlashcards === 'function') fetchFlashcards(false);
+                return;
+              }
+
+              // Determine userId for server request
+              const uid = userId || (typeof window !== 'undefined' ? localStorage.getItem('userId') : null);
+              if (!uid) {
+                if (typeof fetchFlashcards === 'function') fetchFlashcards(false);
+                return;
+              }
+
+              const res = await fetch(`/api/student_page/flashcard/${id}?userId=${uid}`, { cache: 'no-store' });
+              if (!res.ok) {
+                // fallback to full refresh
+                if (typeof fetchFlashcards === 'function') fetchFlashcards(false);
+                return;
+              }
+
+              const data = await res.json().catch(() => null);
+              const serverFc = data ? (data.flashcard || data) : null;
+              if (!serverFc) {
+                if (typeof fetchFlashcards === 'function') fetchFlashcards(false);
+                return;
+              }
+
+              console.log('✅ Updating flashcard in library:', serverFc._id, serverFc);
+              setFlashcards(prev => {
+                const found = prev.some(f => String(f._id) === String(serverFc._id));
+                if (found) {
+                  console.log('📝 Updating existing flashcard in list');
+                  return prev.map(f => String(f._id) === String(serverFc._id) ? { ...f, ...serverFc } : f);
+                }
+                console.log('➕ Adding new flashcard to list');
+                return [serverFc, ...prev];
+              });
+            } catch (err) {
+              console.warn('Failed to refresh flashcard after broadcast', err);
+              try { if (typeof fetchFlashcards === 'function') fetchFlashcards(false); } catch (e) { /* ignore */ }
             }
-            // if not present, prepend to the list
-            return [fc, ...prev];
-          });
+          })();
         }
 
         // Some flows broadcast only an activity for completion
@@ -591,28 +631,53 @@ function PrivateLibraryContent() {
     } catch (e) {
       console.warn('BroadcastChannel not supported or failed to initialize');
     }
-  }, [fetchFlashcards, fetchSummaries]);
+  }, [fetchFlashcards, fetchSummaries, userId]);
 
-
-
-  // Track if we just navigated from study mode to refresh data
-  const previousPathRef = useRef<string>('');
-  
+  // Refetch data when page becomes visible or focused (e.g., when navigating back from detail page)
   useEffect(() => {
-    const currentPath = window.location.pathname + window.location.search;
-    const tabParam = searchParams.get('tab');
-    
-    // Only refresh if URL changed (navigating TO library, not just switching tabs)
-    if (currentPath !== previousPathRef.current && tabParam && userId && !isLoading) {
-      if (tabParam === 'study_notes') {
-        fetchSummaries(false);
-      } else if (tabParam === 'flashcards') {
+    if (typeof window === 'undefined') return;
+
+    let lastFetchTime = 0;
+    const FETCH_COOLDOWN = 2000; // Prevent multiple fetches within 2 seconds
+
+    const refreshData = () => {
+      const now = Date.now();
+      if (userId && now - lastFetchTime > FETCH_COOLDOWN) {
+        console.log('📄 Page became visible/focused, refreshing data...');
+        lastFetchTime = now;
         fetchFlashcards(false);
+        fetchSummaries(false);
       }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshData();
+      }
+    };
+
+    const handleFocus = () => {
+      refreshData();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [userId, fetchFlashcards, fetchSummaries]);
+
+  // Refetch data when navigating to this page (pathname changes to library)
+  useEffect(() => {
+    if (pathname === '/student_page/library' && userId) {
+      console.log('🔄 Navigated to library page, refreshing data...');
+      fetchFlashcards(false);
+      fetchSummaries(false);
     }
-    
-    previousPathRef.current = currentPath;
-  }, [searchParams, userId, isLoading, fetchSummaries, fetchFlashcards]);
+  }, [pathname, userId, fetchFlashcards, fetchSummaries]);
+
 
   const handleDelete = async (flashcardId: string) => {
     if (!userId) return;
@@ -1694,9 +1759,6 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="mb-2 sm:mb-3">
                                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
-                                  {item.description && (
-                                    <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
-                                  )}
                                 </div>
                                 {item.createdAt && (
                                   <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2012,9 +2074,6 @@ function PrivateLibraryContent() {
                                 </div>
                                 <div className="mb-2 sm:mb-3">
                                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
-                                  {item.description && (
-                                    <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
-                                  )}
                                 </div>
                                 {item.createdAt && (
                                   <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -2452,9 +2511,6 @@ function PrivateLibraryContent() {
                                     </div>
                                     <div className="mb-2 sm:mb-3">
                                       <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
-                                      {item.description && (
-                                        <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
-                                      )}
                                       {item.createdAt && (
                                         <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
                                           {formatDateTime(item.createdAt)}
@@ -2620,9 +2676,6 @@ function PrivateLibraryContent() {
                                   </div>
                                   <div className="mb-2 sm:mb-3">
                                     <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.title}</h4>
-                                    {item.description && (
-                                      <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{item.description}</p>
-                                    )}
                                     {item.createdAt && (
                                       <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
                                         {formatDateTime(item.createdAt)}
@@ -3354,7 +3407,12 @@ function PrivateLibraryContent() {
                                   return it.wordCount || 0;
                                 };
 
-                                // Apply filter first
+                                // Favorites first, ordered by favorite timestamp
+                                if (a.isFavorite && b.isFavorite) return getTs(b) - getTs(a);
+                                if (a.isFavorite && !b.isFavorite) return -1;
+                                if (!a.isFavorite && b.isFavorite) return 1;
+
+                                // Then apply filter for non-favorites
                                 if (filter === 'recent') {
                                   const ra = getCreated(a);
                                   const rb = getCreated(b);
@@ -3367,11 +3425,6 @@ function PrivateLibraryContent() {
                                   const cmp = (a.title || '').localeCompare(b.title || '');
                                   if (cmp !== 0) return cmp;
                                 }
-
-                                // Default: favorites first, ordered by favorite timestamp
-                                if (a.isFavorite && b.isFavorite) return getTs(b) - getTs(a);
-                                if (a.isFavorite && !b.isFavorite) return -1;
-                                if (!a.isFavorite && b.isFavorite) return 1;
 
                                 // Fallback: preserve global order
                                 return (getGlobalIndex(a) - getGlobalIndex(b));
@@ -3461,9 +3514,6 @@ function PrivateLibraryContent() {
                                       </div>
                                       <div className="mb-2 sm:mb-3">
                                         <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-1 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{fc.title}</h4>
-                                        {fc.description && (
-                                          <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 bg-white dark:bg-slate-800 inline-block w-full">{fc.description}</p>
-                                        )}
                                       </div>
                                       {fc.createdAt && (
                                         <div className="text-xs text-gray-500 dark:text-slate-500 mt-2">
@@ -3880,6 +3930,7 @@ export default function PrivateLibraryPage() {
     </Suspense>
   );
 }
+
 
 
 

@@ -74,7 +74,7 @@ export default function FlashcardDetailPage() {
   const [starredIds, setStarredIds] = useState<Set<string>>(new Set());
   // Local-storage key prefix for per-card favorite timestamps (used to keep ordering across reloads)
   const CARD_FAV_TS_KEY = (fcId?: string, uid?: string | null) => `notewise.flashcard.cardFavoriteTimestamps.${fcId || flashcardId}.${uid || userId || 'anon'}`;
-  const [trackProgress, setTrackProgress] = useState<boolean>(false);
+  const [trackProgress, setTrackProgress] = useState<boolean>(true);
   const [openMenuCardId, setOpenMenuCardId] = useState<string | null>(null);
 
   const router = useRouter();
@@ -152,8 +152,6 @@ export default function FlashcardDetailPage() {
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
-    tags: [] as string[],
-    difficulty: "easy" as "easy" | "medium" | "hard",
     // accessType, sharingMode and password removed
     linkRole: "viewer" as "viewer" | "editor",
     publicRole: "viewer" as "viewer" | "editor",
@@ -216,8 +214,6 @@ export default function FlashcardDetailPage() {
         setEditForm({
           title: data.flashcard.title,
           description: data.flashcard.description || "",
-          tags: data.flashcard.tags || [],
-          difficulty: data.flashcard.difficulty || "easy",
           linkRole: data.flashcard.linkRole || "viewer",
           publicRole: data.flashcard.publicRole || "viewer",
         });
@@ -558,6 +554,18 @@ export default function FlashcardDetailPage() {
       const data = (await res.json()) as { flashcard: Flashcard };
       setFlashcard(data.flashcard);
       showSuccess(newFavoriteState ? 'Added to favorites' : 'Removed from favorites');
+
+      // Broadcast update to library page so it refreshes without reload
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          console.log('📡 Broadcasting flashcard.updated (favorite toggle):', data.flashcard);
+          bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+          bc.close();
+        }
+      } catch (e) {
+        console.warn('BroadcastChannel not available:', e);
+      }
     } catch (e: unknown) {
       console.error("Failed to toggle favorite:", e);
       // revert optimistic update on error
@@ -580,10 +588,8 @@ export default function FlashcardDetailPage() {
           body: JSON.stringify({
             title: editForm.title,
             description: editForm.description,
-            tags: editForm.tags,
-            difficulty: editForm.difficulty,
             cards: flashcard.cards, // Keep existing cards
-            // accessType/sharingMode/password removed
+            // accessType/sharingMode and password removed
             linkRole: editForm.linkRole,
             publicRole: editForm.publicRole,
           }),
@@ -606,6 +612,18 @@ export default function FlashcardDetailPage() {
       setFlashcard(data.flashcard);
       setIsEditing(false);
       showSuccess('Flashcard set updated');
+
+      // Broadcast update to library page so it refreshes without reload
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          console.log('📡 Broadcasting flashcard.updated:', data.flashcard);
+          bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+          bc.close();
+        }
+      } catch (e) {
+        console.warn('BroadcastChannel not available:', e);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to update flashcard.");
       showError(e instanceof Error ? e.message : 'Failed to update flashcard');
@@ -699,6 +717,18 @@ export default function FlashcardDetailPage() {
       setIsAddingCard(false);
       setEditingCardId(null);
       showSuccess('Card added');
+
+      // Broadcast update to library page so it refreshes without reload
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          console.log('📡 Broadcasting flashcard.updated (card added):', data.flashcard);
+          bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+          bc.close();
+        }
+      } catch (e) {
+        console.warn('BroadcastChannel not available:', e);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to add card.");
       showError(e instanceof Error ? e.message : 'Failed to add card');
@@ -741,6 +771,18 @@ export default function FlashcardDetailPage() {
       setCardForm({ question: "", answer: "", image: "" });
       setEditingCardId(null);
       showSuccess('Card updated');
+
+      // Broadcast update to library page so it refreshes without reload
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          console.log('📡 Broadcasting flashcard.updated (card edited):', data.flashcard);
+          bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+          bc.close();
+        }
+      } catch (e) {
+        console.warn('BroadcastChannel not available:', e);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to update card.");
       showError(e instanceof Error ? e.message : 'Failed to update card');
@@ -779,6 +821,18 @@ export default function FlashcardDetailPage() {
           const data = (await res.json()) as { flashcard: Flashcard };
           setFlashcard(data.flashcard);
           showSuccess('Card deleted');
+
+          // Broadcast update to library page so it refreshes without reload
+          try {
+            if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+              const bc = new BroadcastChannel('notewise.activities');
+              console.log('📡 Broadcasting flashcard.updated (card deleted):', data.flashcard);
+              bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+              bc.close();
+            }
+          } catch (e) {
+            console.warn('BroadcastChannel not available:', e);
+          }
         } catch (e: unknown) {
           setError(e instanceof Error ? e.message : "Failed to delete card.");
           showError(e instanceof Error ? e.message : 'Failed to delete card');
@@ -855,6 +909,18 @@ export default function FlashcardDetailPage() {
 
       const data = (await res.json()) as { flashcard: Flashcard };
       setFlashcard(data.flashcard);
+
+      // Broadcast update to library page so it refreshes without reload
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          console.log('📡 Broadcasting flashcard.updated (shareable link):', data.flashcard);
+          bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+          bc.close();
+        }
+      } catch (e) {
+        console.warn('BroadcastChannel not available:', e);
+      }
     } catch (e: unknown) {
       setError(
         e instanceof Error ? e.message : "Failed to generate shareable link."
@@ -912,6 +978,18 @@ export default function FlashcardDetailPage() {
 
       const data = (await res.json()) as { flashcard: Flashcard };
       setFlashcard(data.flashcard);
+
+      // Broadcast update to library page so it refreshes without reload
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('notewise.activities');
+          console.log('📡 Broadcasting flashcard.updated (shared user removed):', data.flashcard);
+          bc.postMessage({ type: 'flashcard.updated', flashcard: data.flashcard });
+          bc.close();
+        }
+      } catch (e) {
+        console.warn('BroadcastChannel not available:', e);
+      }
     } catch (e: unknown) {
       setError(
         e instanceof Error ? e.message : "Failed to remove shared user."
@@ -925,8 +1003,6 @@ export default function FlashcardDetailPage() {
       setEditForm({
         title: flashcard.title,
         description: flashcard.description || "",
-        tags: flashcard.tags || [],
-        difficulty: flashcard.difficulty || "easy",
         // accessType/sharingMode/password removed
         linkRole: flashcard.linkRole || "viewer",
         publicRole: flashcard.publicRole || "viewer",
@@ -1560,7 +1636,7 @@ export default function FlashcardDetailPage() {
                   await handleEdit();
                 }}
                 disabled={!editForm.title.trim()}
-                className="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors text-sm font-medium"
+                className="px-4 py-2 rounded-lg bg-teal-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-teal-700 transition-colors text-sm font-medium"
               >
                 Save Changes
               </button>
@@ -1586,40 +1662,6 @@ export default function FlashcardDetailPage() {
               rows={3}
               className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base resize-none"
             />
-          </label>
-
-          <label className="block">
-            <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Tags (comma separated)</div>
-            <input
-              value={editForm.tags.join(", ")}
-              onChange={(e) => handleTagChange(e.target.value)}
-              className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-            />
-          </label>
-
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm mb-2 text-slate-700 dark:text-slate-200 font-medium">Difficulty</label>
-              <select
-                value={editForm.difficulty}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, difficulty: e.target.value as "easy" | "medium" | "hard" }))}
-                className="w-full p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <input
-              type="checkbox"
-              checked={trackProgress}
-              onChange={() => setTrackProgress((v) => !v)}
-              className="w-4 h-4 text-teal-600 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600 rounded focus:ring-teal-600 focus:ring-2"
-            />
-            <span className="text-sm text-slate-700 dark:text-slate-200">Enable progress tracking</span>
           </label>
 
           {/* Collaborators Section */}
