@@ -35,11 +35,13 @@ const clientOptions: ConnectOptions = {
   // Connection pool settings for better performance
   maxPoolSize: 10, // Maximum number of connections in the pool
   minPoolSize: 2,  // Minimum number of connections to maintain
-  maxIdleTimeMS: 30000, // Close connections after 30s of inactivity
+  maxIdleTimeMS: 300000, // Close connections after 5 minutes of inactivity (increased from 30s)
   waitQueueTimeoutMS: 5000, // Wait 5s for a connection from pool
   serverSelectionTimeoutMS: 10000, // Timeout for server selection
   socketTimeoutMS: 45000, // Socket timeout
   family: 4, // Use IPv4, skip trying IPv6
+  retryWrites: true, // Automatically retry write operations
+  retryReads: true, // Automatically retry read operations
 };
 
 let isConnected = false;
@@ -56,9 +58,18 @@ let connectionPromise: Promise<void> | null = null;
  * - Errors are properly handled and rethrown for better debugging.
  */
 const connectToDatabase = async (): Promise<void> => {
-    // Return immediately if already connected
-    if (isConnected && mongoose.connection.readyState === 1) {
+    // Check if connection is truly alive (not just cached state)
+    const readyState = mongoose.connection.readyState;
+    
+    // readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    if (readyState === 1 && isConnected) {
         return;
+    }
+
+    // If connection is stale or disconnected, reset the flag
+    if (readyState === 0 || readyState === 3) {
+        isConnected = false;
+        connectionPromise = null;
     }
 
     // Return pending connection promise if connection is in progress
@@ -74,6 +85,24 @@ const connectToDatabase = async (): Promise<void> => {
     
     connectionPromise = (async () => {
         try {
+            // If there's an existing connection in a bad state, close it first
+            if (mongoose.connection.readyState !== 0) {
+                try {
+                    await mongoose.connection.close(true); // Force close
+                    console.log('🔄 Closed stale connection, reconnecting...');
+                    // Wait a bit for the connection to fully close
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (closeErr) {
+                    console.warn('⚠️ Error closing stale connection:', closeErr);
+                    // Force reset the connection state
+                    try {
+                        await mongoose.disconnect();
+                    } catch (e) {
+                        // Ignore disconnect errors
+                    }
+                }
+            }
+
             await mongoose.connect(mongoUri, clientOptions);
             isConnected = true;
             
@@ -88,6 +117,17 @@ const connectToDatabase = async (): Promise<void> => {
         } catch (err) {
             console.error('❌ Failed to connect to the database:', err);
             isConnected = false;
+            connectionPromise = null;
+            
+            // Force cleanup on connection failure
+            try {
+                if (mongoose.connection.readyState !== 0) {
+                    await mongoose.disconnect();
+                }
+            } catch (cleanupErr) {
+                console.warn('⚠️ Error during cleanup:', cleanupErr);
+            }
+            
             if (err instanceof Error) {
                 throw err;
             }
@@ -101,7 +141,7 @@ const connectToDatabase = async (): Promise<void> => {
 }
 
 /**
- * Setup connection event handlers for monitoring
+ * Setup connection event handlers for monitoring and auto-recovery
  */
 function setupConnectionHandlers(): void {
     // Prevent duplicate event listeners
@@ -112,11 +152,24 @@ function setupConnectionHandlers(): void {
     mongoose.connection.on('error', (err) => {
         console.error('❌ Mongoose connection error:', err);
         isConnected = false;
+        connectionPromise = null;
     });
 
     mongoose.connection.on('disconnected', () => {
         console.log('📴 Mongoose disconnected from MongoDB');
         isConnected = false;
+        connectionPromise = null;
+    });
+
+    mongoose.connection.on('reconnected', () => {
+        console.log(' Mongoose reconnected to MongoDB');
+        isConnected = true;
+    });
+
+    mongoose.connection.on('close', () => {
+        console.log('🔒 Mongoose connection closed');
+        isConnected = false;
+        connectionPromise = null;
     });
 
     // Graceful shutdown
