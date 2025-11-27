@@ -422,15 +422,15 @@ export default function AchievementsPage() {
                         {unlocked.length > 0 && (
                             <div>
                                 <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Unlocked</h3>
-                                <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
+                                <div className="grid grid-cols-1 gap-3 sm:gap-4">
                                     {unlocked.map((achievement) => (
                                         <div key={achievement.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4 sm:p-6 transition-all hover:shadow-lg hover:-translate-y-1 ${achievement.earned ? 'border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
-                                            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                                            <div className="flex flex-col items-center text-center gap-3">
                                                 <div className={`text-3xl sm:text-4xl flex-shrink-0 ${achievement.earned ? 'grayscale-0' : 'grayscale opacity-50'}`}>{achievement.icon}</div>
-                                                <div className="flex-1 min-w-0">
+                                                <div className="w-full">
                                                     <h3 className={`text-base sm:text-lg font-semibold mb-2 ${achievement.earned ? 'text-teal-900 dark:text-teal-100' : 'text-gray-900 dark:text-white'}`}>{achievement.title}</h3>
                                                     <p className={`text-xs sm:text-sm mb-3 leading-relaxed ${achievement.earned ? 'text-teal-700 dark:text-teal-300' : 'text-gray-600 dark:text-gray-400'}`}>{achievement.description}</p>
-                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                                    <div className="flex flex-col items-center gap-1 sm:gap-2">
                                                         <span className="text-xs font-medium text-teal-600 dark:text-teal-400">✓ Earned</span>
                                                     </div>
                                                 </div>
@@ -454,7 +454,7 @@ export default function AchievementsPage() {
                 <div className="max-w-6xl mx-auto px-2 sm:px-0 py-6">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Locked Achievements</h3>
-                        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
+                        <div className="grid grid-cols-1 gap-3 sm:gap-4">
                             {locked.map((achievement) => (
                                 <div key={achievement.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4 sm:p-6 transition-all hover:shadow-lg hover:-translate-y-1 border-gray-200 dark:border-gray-700`}>
                                     <div className="flex flex-col items-center text-center gap-3">
