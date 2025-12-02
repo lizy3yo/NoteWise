@@ -63,6 +63,8 @@ export interface FlashcardGenerationResult {
 
 export class InternalFlashcardGenerator {
   private genAI: any;
+  private primaryModel: string;
+  private fallbackModels: string[];
 
   constructor() {
     const apiKey = process.env.GOOGLE_AI_API_KEY_FLASHCARD || process.env.GOOGLE_AI_API_KEY;
@@ -80,6 +82,8 @@ export class InternalFlashcardGenerator {
 
     // Initialize Bytez client with the flashcard API key (uses models like openai/gpt-4.1)
     this.genAI = new Bytez(apiKey);
+    this.primaryModel = 'openai/gpt-4.1';
+    this.fallbackModels = ['google/gemma-3-1b-it', 'openai-community/gpt2'];
   }
 
   async generateFlashcards(options: InternalFlashcardOptions): Promise<FlashcardGenerationResult> {
@@ -96,65 +100,99 @@ export class InternalFlashcardGenerator {
     const prompt = this.createPrompt(content, title, difficulty, contentType, maxCards);
 
     try {
-      logger.info('Generating flashcards with OpenAI GPT-4.1', {
+      logger.info('Generating flashcards with Bytez', {
         contentLength: content.length,
         maxCards,
         difficulty,
-        contentType
+        contentType,
+        primaryModel: this.primaryModel
       });
 
-      // Use Bytez SDK to call model openai/gpt-4.1
-      const model = this.genAI.model('openai/gpt-4.1');
-      const res: any = await model.run([
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]);
-
-      if (res?.error) {
-        throw new Error(`Model error: ${JSON.stringify(res.error)}`);
-      }
-
-      // Normalize output - Bytez returns { output: { role: 'assistant', content: 'text' } }
       let generatedText = '';
-      const output = res?.output;
-      
-      if (!output) {
-        generatedText = '';
-      } else if (typeof output === 'string') {
-        generatedText = output;
-      } else if (typeof output === 'object' && !Array.isArray(output)) {
-        // Primary case for Bytez: { role: 'assistant', content: 'JSON string' }
-        if (typeof output.content === 'string') {
-          generatedText = output.content;
-        } else if (typeof output.text === 'string') {
-          generatedText = output.text;
-        } else if (output.message && typeof output.message.content === 'string') {
-          generatedText = output.message.content;
-        }
-      } else if (Array.isArray(output)) {
-        for (const item of output) {
-          if (!item) continue;
-          if (typeof item === 'string') generatedText += item;
-          else if (typeof item === 'object') {
-            if (typeof item.content === 'string') generatedText += item.content;
-            else if (typeof item.text === 'string') generatedText += item.text;
-            else if (Array.isArray(item.content)) {
-              for (const c of item.content) {
-                if (typeof c === 'string') generatedText += c;
-                else if (typeof c.text === 'string') generatedText += c.text;
-              }
-            } else if (item.message && typeof item.message.content === 'string') {
-              generatedText += item.message.content;
+      const modelsToTry = [this.primaryModel, ...this.fallbackModels];
+      let lastError: Error | null = null;
+
+      for (const modelName of modelsToTry) {
+        try {
+          logger.info('Attempting flashcard generation', { model: modelName });
+          
+          const model = this.genAI.model(modelName);
+          const res: any = await model.run([
+            {
+              role: 'user',
+              content: prompt
             }
+          ]);
+
+          if (res?.error) {
+            throw new Error(`Model error: ${JSON.stringify(res.error)}`);
+          }
+
+          // Normalize output - Bytez returns { output: { role: 'assistant', content: 'text' } }
+          const output = res?.output;
+          
+          if (!output) {
+            generatedText = '';
+          } else if (typeof output === 'string') {
+            generatedText = output;
+          } else if (typeof output === 'object' && !Array.isArray(output)) {
+            // Primary case for Bytez: { role: 'assistant', content: 'JSON string' }
+            if (typeof output.content === 'string') {
+              generatedText = output.content;
+            } else if (typeof output.text === 'string') {
+              generatedText = output.text;
+            } else if (output.message && typeof output.message.content === 'string') {
+              generatedText = output.message.content;
+            }
+          } else if (Array.isArray(output)) {
+            for (const item of output) {
+              if (!item) continue;
+              if (typeof item === 'string') generatedText += item;
+              else if (typeof item === 'object') {
+                if (typeof item.content === 'string') generatedText += item.content;
+                else if (typeof item.text === 'string') generatedText += item.text;
+                else if (Array.isArray(item.content)) {
+                  for (const c of item.content) {
+                    if (typeof c === 'string') generatedText += c;
+                    else if (typeof c.text === 'string') generatedText += c.text;
+                  }
+                } else if (item.message && typeof item.message.content === 'string') {
+                  generatedText += item.message.content;
+                }
+              }
+            }
+          }
+
+          if (!generatedText) {
+            throw new Error('No response text generated');
+          }
+
+          logger.info('AI response received successfully', {
+            model: modelName,
+            responseLength: generatedText.length
+          });
+
+          // Success - break out of fallback loop
+          break;
+
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error('Unknown error');
+          logger.warn('Model failed, trying next fallback', {
+            failedModel: modelName,
+            error: lastError.message,
+            remainingModels: modelsToTry.length - modelsToTry.indexOf(modelName) - 1
+          });
+
+          // If this was the last model, we'll throw below
+          if (modelName === modelsToTry[modelsToTry.length - 1]) {
+            throw lastError;
           }
         }
       }
 
-      logger.info('AI response received', {
-        responseLength: generatedText.length
-      });
+      if (!generatedText) {
+        throw lastError || new Error('All models failed to generate flashcards');
+      }
 
       // Parse the JSON response
       const parsedResult = this.parseAIResponse(generatedText);

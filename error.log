@@ -246,3 +246,138 @@
 {"timestamp":"2025-11-27T07:57:23.611Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
 {"timestamp":"2025-11-27T07:57:23.671Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
 {"timestamp":"2025-11-27T07:57:24.080Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:42:54.160Z","level":"error","message":"Internal summary generation failed:","service":"gc-quest-api","meta":{"error":"Model error: \"You currently are not on a plan. Please activate a plan by visiting https://bytez.com/api\\n\\nIf this looks like an issue with the Bytez API - Please contact us in our discord https://discord.gg/ZydhEJTd3R or email us at team@bytez.com.\"","contentLength":7871}}
+{"timestamp":"2025-12-02T14:43:46.483Z","level":"error","message":"Internal flashcard generation failed:","service":"gc-quest-api","meta":{"error":"Model error: \"You currently are not on a plan. Please activate a plan by visiting https://bytez.com/api\\n\\nIf this looks like an issue with the Bytez API - Please contact us in our discord https://discord.gg/ZydhEJTd3R or email us at team@bytez.com.\"","contentLength":7874}}
+{"timestamp":"2025-12-02T14:44:04.018Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:04.431Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:04.952Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:05.441Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:09.394Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:09.446Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:11.564Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:11.570Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:17.420Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:17.516Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:22.385Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:22.493Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:27.393Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:27.450Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:32.431Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:32.578Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:35.931Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:36.430Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:41.378Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:41.493Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:45.525Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:45.656Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:46.276Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:46.390Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:46.776Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:46.872Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:47.782Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:47.892Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:48.269Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:48.398Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:50.745Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:50.858Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:55.750Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:55.913Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:56.491Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:56.587Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:44:57.001Z","level":"error","message":"Error fetching folders:: Connection was force closed","service":"gc-quest-api","stack":"MongooseError: Connection was force closed\n    at NativeCollection.<computed> [as find] (C:\\00-projects\\NoteWise\\node_modules\\mongoose\\lib\\drivers\\node-mongodb-native\\collection.js:115:21)\n    at model.Query._find (C:\\00-projects\\NoteWise\\node_modules\\mongoose\\lib\\query.js:2425:48)\n    at model.Query.exec (C:\\00-projects\\NoteWise\\node_modules\\mongoose\\lib\\query.js:4627:80)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async GET (C:\\00-projects\\NoteWise\\.next\\server\\chunks\\[root-of-the-server]__becaa8f1._.js:610:25)\n    at async AppRouteRouteModule.do (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38696)\n    at async AppRouteRouteModule.handle (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45978)\n    at async responseGenerator (C:\\00-projects\\NoteWise\\.next\\server\\chunks\\node_modules_next_336f42e1._.js:14164:38)\n    at async AppRouteRouteModule.handleResponse (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:187643)\n    at async handleResponse (C:\\00-projects\\NoteWise\\.next\\server\\chunks\\node_modules_next_336f42e1._.js:14226:32)\n    at async handler (C:\\00-projects\\NoteWise\\.next\\server\\chunks\\node_modules_next_336f42e1._.js:14278:13)\n    at async DevServer.renderToResponseWithComponentsImpl (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\base-server.js:1422:9)\n    at async DevServer.renderPageComponent (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\base-server.js:1474:24)\n    at async DevServer.renderToResponseImpl (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\base-server.js:1514:32)\n    at async DevServer.pipeImpl (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\base-server.js:1025:25)\n    at async NextNodeServer.handleCatchallRenderRequest (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\base-server.js:916:17)\n    at async C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:399:20\n    at async Span.traceAsyncFn (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:395:24)\n    at async invokeRender (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\lib\\router-server.js:240:21)\n    at async handleRequest (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\lib\\router-server.js:437:24)\n    at async requestHandlerImpl (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\lib\\router-server.js:485:13)\n    at async Server.requestListener (C:\\00-projects\\NoteWise\\node_modules\\next\\dist\\server\\lib\\start-server.js:226:13)"}
+{"timestamp":"2025-12-02T14:44:57.008Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:44:57.059Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:01.389Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:01.435Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:06.443Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:06.541Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:11.487Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:11.615Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:12.105Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:12.211Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:17.382Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:17.476Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:22.372Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:22.419Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:26.386Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:26.490Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:26.876Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:26.986Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:27.366Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:27.476Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:27.822Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:27.871Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:32.430Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:32.543Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:33.243Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:33.351Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:33.737Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:33.851Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:34.196Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:34.262Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:37.413Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:37.523Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:42.392Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:42.495Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:47.400Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:47.525Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:52.376Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:52.440Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:57.368Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:57.472Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:58.989Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:59.142Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:59.487Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:45:59.616Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:45:59.989Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:00.048Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:02.373Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:02.418Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:07.383Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:07.499Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:11.452Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:11.499Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:17.392Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:17.486Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:22.447Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:22.580Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:27.393Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:27.491Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:32.394Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:32.506Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:37.442Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:37.689Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:42.387Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:42.479Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:46.395Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:46.527Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:52.400Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:52.588Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:46:57.370Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:46:57.422Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:11.547Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:11.756Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:17.399Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:17.447Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:22.481Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:22.647Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:27.369Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:27.418Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:32.435Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:32.560Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:37.376Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:37.427Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:40.751Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:40.806Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:41.320Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:41.501Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:42.079Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:42.087Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:42.567Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:42.635Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:43.131Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:43.204Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:47:43.612Z","level":"error","message":"Failed to fetch summaries:","service":"gc-quest-api","meta":{"error":"Connection was force closed"}}
+{"timestamp":"2025-12-02T14:47:43.619Z","level":"error","message":"Error in GET /flashcard:","service":"gc-quest-api","meta":{"error":{}}}
+{"timestamp":"2025-12-02T14:48:16.856Z","level":"error","message":"Internal flashcard generation failed:","service":"gc-quest-api","meta":{"error":"Model error: \"You currently are not on a plan. Please activate a plan by visiting https://bytez.com/api\\n\\nIf this looks like an issue with the Bytez API - Please contact us in our discord https://discord.gg/ZydhEJTd3R or email us at team@bytez.com.\"","contentLength":5475}}
+{"timestamp":"2025-12-02T14:49:53.144Z","level":"error","message":"Internal flashcard generation failed:","service":"gc-quest-api","meta":{"error":"[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API key not valid. Please pass a valid API key.\"}]","contentLength":5475}}

@@ -32,16 +32,18 @@ const clientOptions: ConnectOptions = {
     strict: true,
     deprecationErrors: true,
   },
-  // Connection pool settings for better performance
+  // Connection pool settings for better performance and stability
   maxPoolSize: 10, // Maximum number of connections in the pool
   minPoolSize: 2,  // Minimum number of connections to maintain
-  maxIdleTimeMS: 300000, // Close connections after 5 minutes of inactivity (increased from 30s)
-  waitQueueTimeoutMS: 5000, // Wait 5s for a connection from pool
-  serverSelectionTimeoutMS: 10000, // Timeout for server selection
-  socketTimeoutMS: 45000, // Socket timeout
+  maxIdleTimeMS: 600000, // Close connections after 10 minutes of inactivity
+  waitQueueTimeoutMS: 10000, // Wait 10s for a connection from pool (increased)
+  serverSelectionTimeoutMS: 15000, // Timeout for server selection (increased)
+  socketTimeoutMS: 60000, // Socket timeout (increased to 60s)
+  connectTimeoutMS: 15000, // Connection timeout
   family: 4, // Use IPv4, skip trying IPv6
   retryWrites: true, // Automatically retry write operations
   retryReads: true, // Automatically retry read operations
+  autoIndex: false, // Don't build indexes in production
 };
 
 let isConnected = false;
@@ -66,10 +68,9 @@ const connectToDatabase = async (): Promise<void> => {
         return;
     }
 
-    // If connection is stale or disconnected, reset the flag
-    if (readyState === 0 || readyState === 3) {
-        isConnected = false;
-        connectionPromise = null;
+    // If already connecting, wait for that connection
+    if (readyState === 2 && connectionPromise) {
+        return connectionPromise;
     }
 
     // Return pending connection promise if connection is in progress
@@ -85,48 +86,48 @@ const connectToDatabase = async (): Promise<void> => {
     
     connectionPromise = (async () => {
         try {
-            // If there's an existing connection in a bad state, close it first
-            if (mongoose.connection.readyState !== 0) {
-                try {
-                    await mongoose.connection.close(true); // Force close
-                    console.log('🔄 Closed stale connection, reconnecting...');
-                    // Wait a bit for the connection to fully close
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                } catch (closeErr) {
-                    console.warn('⚠️ Error closing stale connection:', closeErr);
-                    // Force reset the connection state
-                    try {
-                        await mongoose.disconnect();
-                    } catch (e) {
-                        // Ignore disconnect errors
-                    }
+            const currentState = mongoose.connection.readyState;
+            
+            // Only connect if truly disconnected (readyState 0)
+            if (currentState === 0) {
+                await mongoose.connect(mongoUri, clientOptions);
+                isConnected = true;
+                
+                console.log('✅ Connected to Database successfully', {
+                    host: mongoose.connection.host,
+                    database: mongoose.connection.db?.databaseName,
+                    poolSize: clientOptions.maxPoolSize,
+                });
+
+                // Setup connection event handlers
+                setupConnectionHandlers();
+            } else if (currentState === 1) {
+                // Already connected, just update flag
+                isConnected = true;
+            } else {
+                // Connection is in a transitional state (connecting/disconnecting)
+                // Wait a bit and check again
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const newState = mongoose.connection.readyState;
+                
+                switch (newState) {
+                    case 1:
+                        isConnected = true;
+                        break;
+                    case 0:
+                        // Try connecting again
+                        await mongoose.connect(mongoUri, clientOptions);
+                        isConnected = true;
+                        setupConnectionHandlers();
+                        break;
+                    default:
+                        throw new Error(`Connection in unexpected state: ${newState}`);
                 }
             }
-
-            await mongoose.connect(mongoUri, clientOptions);
-            isConnected = true;
-            
-            console.log('✅ Connected to Database successfully', {
-                host: mongoose.connection.host,
-                database: mongoose.connection.db?.databaseName,
-                poolSize: clientOptions.maxPoolSize,
-            });
-
-            // Setup connection event handlers
-            setupConnectionHandlers();
         } catch (err) {
             console.error('❌ Failed to connect to the database:', err);
             isConnected = false;
             connectionPromise = null;
-            
-            // Force cleanup on connection failure
-            try {
-                if (mongoose.connection.readyState !== 0) {
-                    await mongoose.disconnect();
-                }
-            } catch (cleanupErr) {
-                console.warn('⚠️ Error during cleanup:', cleanupErr);
-            }
             
             if (err instanceof Error) {
                 throw err;

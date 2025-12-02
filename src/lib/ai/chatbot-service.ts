@@ -26,6 +26,7 @@ export interface ChatbotResponse {
 export class ChatbotService {
     private genAI: any;
     private currentModel: string;
+    private fallbackModels: string[];
 
     constructor() {
         // Priority order: Use dedicated chatbot key first, then fallback to shared keys
@@ -47,7 +48,8 @@ export class ChatbotService {
         try {
             // Initialize Bytez client with the chatbot API key
             this.genAI = new Bytez(apiKey);
-            this.currentModel = "openai/gpt-4.1"; // Using Bytez with OpenAI GPT-4.1
+            this.currentModel = "openai/gpt-4.1";
+            this.fallbackModels = ["google/gemma-3-1b-it", "openai-community/gpt2"];
         } catch (error) {
             logger.error('Failed to initialize Bytez:', error);
             throw new Error('Failed to initialize chatbot service');
@@ -107,95 +109,111 @@ export class ChatbotService {
             // Create prompt
             const prompt = this.createPrompt(systemContext, userMessage, conversationHistory, isAuthenticated);
 
-            // Use Bytez SDK to call model openai/gpt-4.1
-            logger.info('Generating chatbot response with Bytez/OpenAI GPT-4.1');
+            // Use Bytez SDK to call model with fallback support
+            logger.info('Generating chatbot response with Bytez', { model: this.currentModel });
 
-            try {
-                const model = this.genAI.model(this.currentModel);
-                const res: any = await model.run([
-                    {
-                        role: 'user',
-                        content: prompt
+            let responseText = '';
+            const modelsToTry = [this.currentModel, ...this.fallbackModels];
+            let lastError: Error | null = null;
+
+            for (const modelName of modelsToTry) {
+                try {
+                    logger.info('Attempting model', { model: modelName });
+                    const model = this.genAI.model(modelName);
+                    const res: any = await model.run([
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ]);
+
+                    if (res?.error) {
+                        throw new Error(`Model error: ${JSON.stringify(res.error)}`);
                     }
-                ]);
 
-                if (res?.error) {
-                    throw new Error(`Model error: ${JSON.stringify(res.error)}`);
-                }
-
-                // Normalize output - Bytez returns { output: { role: 'assistant', content: 'text' } }
-                let responseText = '';
-                const output = res?.output;
-                
-                if (!output) {
-                    responseText = '';
-                } else if (typeof output === 'string') {
-                    responseText = output;
-                } else if (typeof output === 'object' && !Array.isArray(output)) {
-                    if (typeof output.content === 'string') {
-                        responseText = output.content;
-                    } else if (typeof output.text === 'string') {
-                        responseText = output.text;
-                    } else if (output.message && typeof output.message.content === 'string') {
-                        responseText = output.message.content;
-                    }
-                } else if (Array.isArray(output)) {
-                    for (const item of output) {
-                        if (!item) continue;
-                        if (typeof item === 'string') responseText += item;
-                        else if (typeof item === 'object') {
-                            if (typeof item.content === 'string') responseText += item.content;
-                            else if (typeof item.text === 'string') responseText += item.text;
-                            else if (Array.isArray(item.content)) {
-                                for (const c of item.content) {
-                                    if (typeof c === 'string') responseText += c;
-                                    else if (typeof c.text === 'string') responseText += c.text;
+                    // Normalize output - Bytez returns { output: { role: 'assistant', content: 'text' } }
+                    const output = res?.output;
+                    
+                    if (!output) {
+                        responseText = '';
+                    } else if (typeof output === 'string') {
+                        responseText = output;
+                    } else if (typeof output === 'object' && !Array.isArray(output)) {
+                        if (typeof output.content === 'string') {
+                            responseText = output.content;
+                        } else if (typeof output.text === 'string') {
+                            responseText = output.text;
+                        } else if (output.message && typeof output.message.content === 'string') {
+                            responseText = output.message.content;
+                        }
+                    } else if (Array.isArray(output)) {
+                        for (const item of output) {
+                            if (!item) continue;
+                            if (typeof item === 'string') responseText += item;
+                            else if (typeof item === 'object') {
+                                if (typeof item.content === 'string') responseText += item.content;
+                                else if (typeof item.text === 'string') responseText += item.text;
+                                else if (Array.isArray(item.content)) {
+                                    for (const c of item.content) {
+                                        if (typeof c === 'string') responseText += c;
+                                        else if (typeof c.text === 'string') responseText += c.text;
+                                    }
+                                } else if (item.message && typeof item.message.content === 'string') {
+                                    responseText += item.message.content;
                                 }
-                            } else if (item.message && typeof item.message.content === 'string') {
-                                responseText += item.message.content;
                             }
                         }
                     }
-                }
 
-                if (!responseText) {
-                    throw new Error('No response text generated');
-                }
-
-                logger.info('Chatbot response generated', {
-                    responseLength: responseText.length
-                });
-
-                // Generate suggestions based on context
-                const suggestions = this.generateSuggestions(userMessage, isAuthenticated, userContextData);
-
-                return {
-                    message: responseText,
-                    context: isAuthenticated ? 'authenticated' : 'landing',
-                    suggestions
-                };
-
-            } catch (error) {
-                logger.error('Bytez model error:', {
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    model: this.currentModel
-                });
-
-                // Provide specific error messages
-                if (error instanceof Error) {
-                    if (error.message.includes('401') || error.message.includes('API key')) {
-                        throw new Error('Invalid API key. Please update your chatbot API key configuration.');
+                    if (!responseText) {
+                        throw new Error('No response text generated');
                     }
-                    if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('rate limit')) {
-                        throw new Error('AI service is currently rate-limited. Please try again in a few minutes.');
-                    }
-                    if (error.message.includes('503') || error.message.includes('overloaded')) {
-                        throw new Error('AI service is temporarily overloaded. Please try again in a moment.');
+
+                    logger.info('Chatbot response generated successfully', {
+                        model: modelName,
+                        responseLength: responseText.length
+                    });
+
+                    // Success - break out of fallback loop
+                    break;
+
+                } catch (error) {
+                    lastError = error instanceof Error ? error : new Error('Unknown error');
+                    logger.warn('Model failed, trying next fallback', {
+                        failedModel: modelName,
+                        error: lastError.message,
+                        remainingModels: modelsToTry.length - modelsToTry.indexOf(modelName) - 1
+                    });
+
+                    // If this was the last model, we'll throw the error below
+                    if (modelName === modelsToTry[modelsToTry.length - 1]) {
+                        // Provide specific error messages
+                        if (lastError.message.includes('401') || lastError.message.includes('API key')) {
+                            throw new Error('Invalid API key. Please update your chatbot API key configuration.');
+                        }
+                        if (lastError.message.includes('429') || lastError.message.includes('quota') || lastError.message.includes('rate limit')) {
+                            throw new Error('AI service is currently rate-limited. Please try again in a few minutes.');
+                        }
+                        if (lastError.message.includes('503') || lastError.message.includes('overloaded')) {
+                            throw new Error('AI service is temporarily overloaded. Please try again in a moment.');
+                        }
+                        throw lastError;
                     }
                 }
-
-                throw error;
             }
+
+            if (!responseText) {
+                throw lastError || new Error('All models failed to generate response');
+            }
+
+            // Generate suggestions based on context
+            const suggestions = this.generateSuggestions(userMessage, isAuthenticated, userContextData);
+
+            return {
+                message: responseText,
+                context: isAuthenticated ? 'authenticated' : 'landing',
+                suggestions
+            };
 
         } catch (error) {
             logger.error('Chatbot error:', {
